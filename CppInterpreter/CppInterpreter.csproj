@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <RootNamespace>CppInterpreter</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Antlr4.Runtime.Standard" Version="4.13.1" />
+      <PackageReference Include="Antlr4BuildTasks" Version="12.11.0" />
+      <PackageReference Include="CSharpFunctionalExtensions" Version="3.6.0" />
+      <PackageReference Include="OneOf" Version="3.0.271" />
+      <PackageReference Include="OneOf.Extended" Version="3.0.271" />
+      <PackageReference Include="OneOf.Serialization.SystemTextJson" Version="1.1.1" />
+      <PackageReference Include="OneOf.SourceGenerator" Version="3.0.271" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Antlr4 Include="Grammar.g4">
+            <Listener>False</Listener>
+            <AntOutDir>Generated</AntOutDir>
+            <Package>Language</Package>
+        </Antlr4>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ClCompile Include="Examples\test.cpp" />
+    </ItemGroup>
+    
+</Project>

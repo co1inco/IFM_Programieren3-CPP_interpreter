@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppInterpreter", "CppInterpreter\CppInterpreter.csproj", "{31AF7532-30E4-43E8-AF15-DC6EDB327777}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CppInterpreter.Test", "CppInterpreter.Test\CppInterpreter.Test.csproj", "{FDF941E5-68C5-4CFE-8363-4ED175BA56AD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{31AF7532-30E4-43E8-AF15-DC6EDB327777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{31AF7532-30E4-43E8-AF15-DC6EDB327777}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{31AF7532-30E4-43E8-AF15-DC6EDB327777}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{31AF7532-30E4-43E8-AF15-DC6EDB327777}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FDF941E5-68C5-4CFE-8363-4ED175BA56AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDF941E5-68C5-4CFE-8363-4ED175BA56AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDF941E5-68C5-4CFE-8363-4ED175BA56AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDF941E5-68C5-4CFE-8363-4ED175BA56AD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
