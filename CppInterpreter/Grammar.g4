@@ -15,7 +15,7 @@ statement : expression ';'
 		  | 'return' expression? ';';
 
 
-functionDefinition : typeIdentifier ident=IDENTIFIER '(' parameterList ')' block;
+functionDefinition : (typeIdentifier | TYPE_VOID) ident=IDENTIFIER '(' parameterList ')' block;
 
 parameterList : (typeIdentifierUsage varIdentifier)? (',' typeIdentifierUsage varIdentifier)* ; 
 
@@ -35,6 +35,8 @@ doWhileStmt : 'do' block 'while' '(' cond=expression ')' ';';
 
 
 expression : func=expression '(' param=expression (',' param=expression)* ')' 
+		   | subscript=expression '[' param=expression ']'
+		   // TODO: Member access
 		   | unary=('++' | '--') expression 
            | unary=('+' | '-' | '!' | '~' ) expression 
 		   | left=expression binop=('*' | '/' | '%') right=expression
@@ -64,11 +66,11 @@ intLiteral :  int=INTEGER
 
 varIdentifier : ident=IDENTIFIER;
 
-typeIdentifierUsage : typeIdentifier ref='&'?;
+typeIdentifierUsage : typeIdentifier ref='&'?; // & should actually be part of name?
 typeIdentifier : int=TYPE_INT
 			   | str=TYPE_STRING
 			   | bool=TYPE_BOOL
-			   | void=TYPE_VOID
+//			   | void=TYPE_VOID
 			   | ident=IDENTIFIER;
 
 innerBlock : block | statement ';' | ';';

@@ -39,6 +39,12 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitProgram([NotNull] GrammarParser.ProgramContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.topLevelStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTopLevelStatement([NotNull] GrammarParser.TopLevelStatementContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.statement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -51,6 +57,12 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitFunctionDefinition([NotNull] GrammarParser.FunctionDefinitionContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.parameterList"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitParameterList([NotNull] GrammarParser.ParameterListContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.variableDefinition"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
@@ -62,6 +74,12 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitIfStmt([NotNull] GrammarParser.IfStmtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.elseStmt"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitElseStmt([NotNull] GrammarParser.ElseStmtContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.whileStmt"/>.
 	/// </summary>
@@ -116,6 +134,12 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitVarIdentifier([NotNull] GrammarParser.VarIdentifierContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.typeIdentifierUsage"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTypeIdentifierUsage([NotNull] GrammarParser.TypeIdentifierUsageContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.typeIdentifier"/>.
 	/// </summary>
