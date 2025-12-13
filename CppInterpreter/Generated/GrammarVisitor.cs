@@ -45,11 +45,41 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitStatement([NotNull] GrammarParser.StatementContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.terminalStastement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTerminalStastement([NotNull] GrammarParser.TerminalStastementContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitExpression([NotNull] GrammarParser.ExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.funcDecl"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFuncDecl([NotNull] GrammarParser.FuncDeclContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.funcReturnMod"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFuncReturnMod([NotNull] GrammarParser.FuncReturnModContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.funcReturnType"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFuncReturnType([NotNull] GrammarParser.FuncReturnTypeContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.funcDefinition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFuncDefinition([NotNull] GrammarParser.FuncDefinitionContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.varDeclAssignment"/>.
 	/// </summary>
@@ -63,23 +93,17 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVarAssignment([NotNull] GrammarParser.VarAssignmentContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GrammarParser.funcDecl"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFuncDecl([NotNull] GrammarParser.FuncDeclContext context);
-	/// <summary>
-	/// Visit a parse tree produced by <see cref="GrammarParser.funcDefinition"/>.
-	/// </summary>
-	/// <param name="context">The parse tree.</param>
-	/// <return>The visitor result.</return>
-	Result VisitFuncDefinition([NotNull] GrammarParser.FuncDefinitionContext context);
-	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.varDecl"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitVarDecl([NotNull] GrammarParser.VarDeclContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.varDeclSingle"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitVarDeclSingle([NotNull] GrammarParser.VarDeclSingleContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.varDeclIdent"/>.
 	/// </summary>
@@ -87,11 +111,17 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitVarDeclIdent([NotNull] GrammarParser.VarDeclIdentContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GrammarParser.declType"/>.
+	/// Visit a parse tree produced by <see cref="GrammarParser.arrayDecl"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitDeclType([NotNull] GrammarParser.DeclTypeContext context);
+	Result VisitArrayDecl([NotNull] GrammarParser.ArrayDeclContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.typeUsage"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitTypeUsage([NotNull] GrammarParser.TypeUsageContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.identifier"/>.
 	/// </summary>
@@ -105,17 +135,41 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssignment([NotNull] GrammarParser.AssignmentContext context);
 	/// <summary>
-	/// Visit a parse tree produced by <see cref="GrammarParser.typeidentifier"/>.
+	/// Visit a parse tree produced by <see cref="GrammarParser.typeIdentifier"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
-	Result VisitTypeidentifier([NotNull] GrammarParser.TypeidentifierContext context);
+	Result VisitTypeIdentifier([NotNull] GrammarParser.TypeIdentifierContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.block"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	/// <return>The visitor result.</return>
 	Result VisitBlock([NotNull] GrammarParser.BlockContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.constExpression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitConstExpression([NotNull] GrammarParser.ConstExpressionContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.literal"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitLiteral([NotNull] GrammarParser.LiteralContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.intLiteral"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitIntLiteral([NotNull] GrammarParser.IntLiteralContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.reference"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitReference([NotNull] GrammarParser.ReferenceContext context);
 	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.pointer"/>.
 	/// </summary>

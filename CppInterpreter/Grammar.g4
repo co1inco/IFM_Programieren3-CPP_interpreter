@@ -4,33 +4,43 @@ program : statement*;
 
 //declaration : 
 
-statement : varDecl ;
+statement : funcDefinition 
+		  | terminalStastement ';';
+terminalStastement : varDecl 
+				   | funcDecl;
+
 
 expression : statement; 
 
 
+funcDecl : funcReturnType funcReturnMod ident=IDENTIFIER '(' varDeclSingle* ')';
+funcReturnMod : reference | (pointer CONST?)*;
+funcReturnType : void=VOID | typeUsage;
+//funcParameters : '';
+funcDefinition : funcDecl (block | statement);
 
 
 varDeclAssignment : varDecl assignment;
 varAssignment : identifier assignment;
 
-funcDecl : funcDeclType ident=IDENTIFIER '(' ')';
-funcDeclType : (void=VOID (pointer CONST?)?) | (declType (pointer CONST? | AMP)?);
-funcDefinition : funcDecl (block | statement);
 
+varDecl : typeUsage varDeclIdent (',' varDeclIdent)*;
+varDeclSingle : typeUsage varDeclIdent;
+varDeclIdent : (pointer const_ptr=CONST?)? IDENTIFIER arrayDecl?;
 
-varDecl : declType varDeclIdent (',' varDeclIdent)*;
-varDeclIdent : (pointer const_ptr=CONST?)? IDENTIFIER;
-declType : const=CONST typeidentifier 
-		 | typeidentifier const=CONST 
-		 | typeidentifier;
+arrayDecl : '[' intLiteral ']';
+
+typeUsage : const=CONST typeIdentifier 
+          | typeIdentifier const=CONST 
+          | typeIdentifier;
+
 
 
 identifier : pointer? IDENTIFIER;
 
 assignment : '=' expression END;
 
-typeidentifier : TYPE_INT 
+typeIdentifier : TYPE_INT 
 			   | TYPE_STRING 
 			   | TYPE_BOOL 
 			   | IDENTIFIER;
@@ -38,7 +48,19 @@ typeidentifier : TYPE_INT
 
 block : '{' statement* '}';
 
+constExpression : literal;
+
+literal : int=intLiteral
+		| string=STRING 
+		| char=CHAR; 
+
+intLiteral : int=INTEGER 
+		   | hex=INTEGER_HEX
+           | bin=INTEGER_BIN;
+
+reference : AMP;
 pointer : STAR;
+
 
 
 //Tokens

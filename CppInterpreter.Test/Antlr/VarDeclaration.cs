@@ -18,7 +18,7 @@ public class VarDeclaration
         var decl = GetTree("int test");
         
         //Assert
-        decl.declType()?.typeidentifier()
+        decl.typeUsage()?.typeIdentifier()
             .ShouldNotBeNull()
             .GetText().ShouldBe("int");
         decl.varDeclIdent()
@@ -42,7 +42,7 @@ public class VarDeclaration
         var decl = GetTree(text);
         
         //Assert
-        decl.declType()?.typeidentifier()
+        decl.typeUsage()?.typeIdentifier()
             .ShouldNotBeNull()
             .GetText().ShouldBe("int");
         decl.varDeclIdent()
@@ -63,7 +63,7 @@ public class VarDeclaration
         var decl = GetTree("int a, b");
         
         //Assert
-        decl.declType()?.typeidentifier()
+        decl.typeUsage()?.typeIdentifier()
             .ShouldNotBeNull()
             .GetText().ShouldBe("int");
         decl.varDeclIdent()
@@ -90,7 +90,7 @@ public class VarDeclaration
         var decl = GetTree("int* a, b, *c");
         
         //Assert
-        decl.declType()?.typeidentifier()
+        decl.typeUsage()?.typeIdentifier()
             .ShouldNotBeNull()
             .GetText().ShouldBe("int");
         decl.varDeclIdent()
@@ -122,10 +122,10 @@ public class VarDeclaration
         //Arrange
         
         //Act
-        var type = ParserHelper.GetTree(text, g => g.declType());
+        var type = ParserHelper.GetTree(text, g => g.typeUsage());
         
         //Assert
-        type.typeidentifier().ShouldNotBeNull();
+        type.typeIdentifier().ShouldNotBeNull();
         type.@const.ShouldNotBeNull();
     }
     
@@ -135,10 +135,10 @@ public class VarDeclaration
         //Arrange
         
         //Act
-        var type = ParserHelper.GetTree("int", g => g.declType());
+        var type = ParserHelper.GetTree("int", g => g.typeUsage());
         
         //Assert
-        type.typeidentifier().ShouldNotBeNull();
+        type.typeIdentifier().ShouldNotBeNull();
         type.@const.ShouldBeNull();
     }
     

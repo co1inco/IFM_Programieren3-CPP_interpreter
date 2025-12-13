@@ -37,31 +37,36 @@ public partial class GrammarParser : Parser {
 	protected static DFA[] decisionToDFA;
 	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
 	public const int
-		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, TYPE_INT=7, TYPE_STRING=8, 
-		TYPE_BOOL=9, INTEGER=10, INTEGER_HEX=11, INTEGER_BIN=12, STRING=13, CHAR=14, 
-		CONST=15, IF=16, CLASS=17, VOID=18, IDENTIFIER=19, STAR=20, AMP=21, END=22, 
-		SPACES1=23, COMMENT=24, ML_COMMENT=25;
+		T__0=1, T__1=2, T__2=3, T__3=4, T__4=5, T__5=6, T__6=7, T__7=8, TYPE_INT=9, 
+		TYPE_STRING=10, TYPE_BOOL=11, INTEGER=12, INTEGER_HEX=13, INTEGER_BIN=14, 
+		STRING=15, CHAR=16, CONST=17, IF=18, CLASS=19, VOID=20, IDENTIFIER=21, 
+		STAR=22, AMP=23, END=24, SPACES1=25, COMMENT=26, ML_COMMENT=27;
 	public const int
-		RULE_program = 0, RULE_statement = 1, RULE_expression = 2, RULE_varDeclAssignment = 3, 
-		RULE_varAssignment = 4, RULE_funcDecl = 5, RULE_funcDefinition = 6, RULE_varDecl = 7, 
-		RULE_varDeclIdent = 8, RULE_declType = 9, RULE_identifier = 10, RULE_assignment = 11, 
-		RULE_typeidentifier = 12, RULE_block = 13, RULE_pointer = 14;
+		RULE_program = 0, RULE_statement = 1, RULE_terminalStastement = 2, RULE_expression = 3, 
+		RULE_funcDecl = 4, RULE_funcReturnMod = 5, RULE_funcReturnType = 6, RULE_funcDefinition = 7, 
+		RULE_varDeclAssignment = 8, RULE_varAssignment = 9, RULE_varDecl = 10, 
+		RULE_varDeclSingle = 11, RULE_varDeclIdent = 12, RULE_arrayDecl = 13, 
+		RULE_typeUsage = 14, RULE_identifier = 15, RULE_assignment = 16, RULE_typeIdentifier = 17, 
+		RULE_block = 18, RULE_constExpression = 19, RULE_literal = 20, RULE_intLiteral = 21, 
+		RULE_reference = 22, RULE_pointer = 23;
 	public static readonly string[] ruleNames = {
-		"program", "statement", "expression", "varDeclAssignment", "varAssignment", 
-		"funcDecl", "funcDefinition", "varDecl", "varDeclIdent", "declType", "identifier", 
-		"assignment", "typeidentifier", "block", "pointer"
+		"program", "statement", "terminalStastement", "expression", "funcDecl", 
+		"funcReturnMod", "funcReturnType", "funcDefinition", "varDeclAssignment", 
+		"varAssignment", "varDecl", "varDeclSingle", "varDeclIdent", "arrayDecl", 
+		"typeUsage", "identifier", "assignment", "typeIdentifier", "block", "constExpression", 
+		"literal", "intLiteral", "reference", "pointer"
 	};
 
 	private static readonly string[] _LiteralNames = {
-		null, "'('", "')'", "','", "'='", "'{'", "'}'", "'int'", "'string'", "'bool'", 
-		null, null, null, null, null, "'const'", "'if'", "'class'", "'void'", 
-		null, "'*'", "'&'", "';'"
+		null, "'('", "')'", "','", "'['", "']'", "'='", "'{'", "'}'", "'int'", 
+		"'string'", "'bool'", null, null, null, null, null, "'const'", "'if'", 
+		"'class'", "'void'", null, "'*'", "'&'", "';'"
 	};
 	private static readonly string[] _SymbolicNames = {
-		null, null, null, null, null, null, null, "TYPE_INT", "TYPE_STRING", "TYPE_BOOL", 
-		"INTEGER", "INTEGER_HEX", "INTEGER_BIN", "STRING", "CHAR", "CONST", "IF", 
-		"CLASS", "VOID", "IDENTIFIER", "STAR", "AMP", "END", "SPACES1", "COMMENT", 
-		"ML_COMMENT"
+		null, null, null, null, null, null, null, null, null, "TYPE_INT", "TYPE_STRING", 
+		"TYPE_BOOL", "INTEGER", "INTEGER_HEX", "INTEGER_BIN", "STRING", "CHAR", 
+		"CONST", "IF", "CLASS", "VOID", "IDENTIFIER", "STAR", "AMP", "END", "SPACES1", 
+		"COMMENT", "ML_COMMENT"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -123,17 +128,17 @@ public partial class GrammarParser : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 33;
+			State = 51;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 557952L) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 3280384L) != 0)) {
 				{
 				{
-				State = 30;
+				State = 48;
 				statement();
 				}
 				}
-				State = 35;
+				State = 53;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -151,9 +156,13 @@ public partial class GrammarParser : Parser {
 	}
 
 	public partial class StatementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
-			return GetRuleContext<VarDeclContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public FuncDefinitionContext funcDefinition() {
+			return GetRuleContext<FuncDefinitionContext>(0);
 		}
+		[System.Diagnostics.DebuggerNonUserCode] public TerminalStastementContext terminalStastement() {
+			return GetRuleContext<TerminalStastementContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode END() { return GetToken(GrammarParser.END, 0); }
 		public StatementContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -172,10 +181,80 @@ public partial class GrammarParser : Parser {
 		StatementContext _localctx = new StatementContext(Context, State);
 		EnterRule(_localctx, 2, RULE_statement);
 		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 36;
-			varDecl();
+			State = 58;
+			ErrorHandler.Sync(this);
+			switch ( Interpreter.AdaptivePredict(TokenStream,1,Context) ) {
+			case 1:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 54;
+				funcDefinition();
+				}
+				break;
+			case 2:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 55;
+				terminalStastement();
+				State = 56;
+				Match(END);
+				}
+				break;
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class TerminalStastementContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
+			return GetRuleContext<VarDeclContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public FuncDeclContext funcDecl() {
+			return GetRuleContext<FuncDeclContext>(0);
+		}
+		public TerminalStastementContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_terminalStastement; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitTerminalStastement(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public TerminalStastementContext terminalStastement() {
+		TerminalStastementContext _localctx = new TerminalStastementContext(Context, State);
+		EnterRule(_localctx, 4, RULE_terminalStastement);
+		try {
+			State = 62;
+			ErrorHandler.Sync(this);
+			switch ( Interpreter.AdaptivePredict(TokenStream,2,Context) ) {
+			case 1:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 60;
+				varDecl();
+				}
+				break;
+			case 2:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 61;
+				funcDecl();
+				}
+				break;
 			}
 		}
 		catch (RecognitionException re) {
@@ -209,100 +288,12 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public ExpressionContext expression() {
 		ExpressionContext _localctx = new ExpressionContext(Context, State);
-		EnterRule(_localctx, 4, RULE_expression);
+		EnterRule(_localctx, 6, RULE_expression);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 38;
+			State = 64;
 			statement();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class VarDeclAssignmentContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
-			return GetRuleContext<VarDeclContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public AssignmentContext assignment() {
-			return GetRuleContext<AssignmentContext>(0);
-		}
-		public VarDeclAssignmentContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_varDeclAssignment; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitVarDeclAssignment(this);
-			else return visitor.VisitChildren(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public VarDeclAssignmentContext varDeclAssignment() {
-		VarDeclAssignmentContext _localctx = new VarDeclAssignmentContext(Context, State);
-		EnterRule(_localctx, 6, RULE_varDeclAssignment);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 40;
-			varDecl();
-			State = 41;
-			assignment();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class VarAssignmentContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
-			return GetRuleContext<IdentifierContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public AssignmentContext assignment() {
-			return GetRuleContext<AssignmentContext>(0);
-		}
-		public VarAssignmentContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_varAssignment; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
-			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitVarAssignment(this);
-			else return visitor.VisitChildren(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public VarAssignmentContext varAssignment() {
-		VarAssignmentContext _localctx = new VarAssignmentContext(Context, State);
-		EnterRule(_localctx, 8, RULE_varAssignment);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 43;
-			identifier();
-			State = 44;
-			assignment();
 			}
 		}
 		catch (RecognitionException re) {
@@ -318,15 +309,19 @@ public partial class GrammarParser : Parser {
 
 	public partial class FuncDeclContext : ParserRuleContext {
 		public IToken ident;
-		[System.Diagnostics.DebuggerNonUserCode] public DeclTypeContext declType() {
-			return GetRuleContext<DeclTypeContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public FuncReturnTypeContext funcReturnType() {
+			return GetRuleContext<FuncReturnTypeContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public FuncReturnModContext funcReturnMod() {
+			return GetRuleContext<FuncReturnModContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(GrammarParser.IDENTIFIER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public PointerContext pointer() {
-			return GetRuleContext<PointerContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public VarDeclSingleContext[] varDeclSingle() {
+			return GetRuleContexts<VarDeclSingleContext>();
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AMP() { return GetToken(GrammarParser.AMP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CONST() { return GetToken(GrammarParser.CONST, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public VarDeclSingleContext varDeclSingle(int i) {
+			return GetRuleContext<VarDeclSingleContext>(i);
+		}
 		public FuncDeclContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -343,47 +338,183 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public FuncDeclContext funcDecl() {
 		FuncDeclContext _localctx = new FuncDeclContext(Context, State);
-		EnterRule(_localctx, 10, RULE_funcDecl);
+		EnterRule(_localctx, 8, RULE_funcDecl);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 46;
-			declType();
-			State = 52;
+			State = 66;
+			funcReturnType();
+			State = 67;
+			funcReturnMod();
+			State = 68;
+			_localctx.ident = Match(IDENTIFIER);
+			State = 69;
+			Match(T__0);
+			State = 73;
 			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case STAR:
+			_la = TokenStream.LA(1);
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 2231808L) != 0)) {
 				{
-				State = 47;
-				pointer();
-				State = 49;
+				{
+				State = 70;
+				varDeclSingle();
+				}
+				}
+				State = 75;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
-				if (_la==CONST) {
-					{
-					State = 48;
-					Match(CONST);
-					}
-				}
+			}
+			State = 76;
+			Match(T__1);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
 
+	public partial class FuncReturnModContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ReferenceContext reference() {
+			return GetRuleContext<ReferenceContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public PointerContext[] pointer() {
+			return GetRuleContexts<PointerContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public PointerContext pointer(int i) {
+			return GetRuleContext<PointerContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] CONST() { return GetTokens(GrammarParser.CONST); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CONST(int i) {
+			return GetToken(GrammarParser.CONST, i);
+		}
+		public FuncReturnModContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_funcReturnMod; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitFuncReturnMod(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public FuncReturnModContext funcReturnMod() {
+		FuncReturnModContext _localctx = new FuncReturnModContext(Context, State);
+		EnterRule(_localctx, 10, RULE_funcReturnMod);
+		int _la;
+		try {
+			State = 88;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case AMP:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 78;
+				reference();
 				}
 				break;
-			case AMP:
+			case IDENTIFIER:
+			case STAR:
+				EnterOuterAlt(_localctx, 2);
 				{
-				State = 51;
-				Match(AMP);
+				State = 85;
+				ErrorHandler.Sync(this);
+				_la = TokenStream.LA(1);
+				while (_la==STAR) {
+					{
+					{
+					State = 79;
+					pointer();
+					State = 81;
+					ErrorHandler.Sync(this);
+					_la = TokenStream.LA(1);
+					if (_la==CONST) {
+						{
+						State = 80;
+						Match(CONST);
+						}
+					}
+
+					}
+					}
+					State = 87;
+					ErrorHandler.Sync(this);
+					_la = TokenStream.LA(1);
+				}
 				}
 				break;
 			default:
 				throw new NoViableAltException(this);
 			}
-			State = 54;
-			_localctx.ident = Match(IDENTIFIER);
-			State = 55;
-			Match(T__0);
-			State = 56;
-			Match(T__1);
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class FuncReturnTypeContext : ParserRuleContext {
+		public IToken @void;
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode VOID() { return GetToken(GrammarParser.VOID, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public TypeUsageContext typeUsage() {
+			return GetRuleContext<TypeUsageContext>(0);
+		}
+		public FuncReturnTypeContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_funcReturnType; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitFuncReturnType(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public FuncReturnTypeContext funcReturnType() {
+		FuncReturnTypeContext _localctx = new FuncReturnTypeContext(Context, State);
+		EnterRule(_localctx, 12, RULE_funcReturnType);
+		try {
+			State = 92;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case VOID:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 90;
+				_localctx.@void = Match(VOID);
+				}
+				break;
+			case TYPE_INT:
+			case TYPE_STRING:
+			case TYPE_BOOL:
+			case CONST:
+			case IDENTIFIER:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 91;
+				typeUsage();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
 			}
 		}
 		catch (RecognitionException re) {
@@ -423,18 +554,18 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public FuncDefinitionContext funcDefinition() {
 		FuncDefinitionContext _localctx = new FuncDefinitionContext(Context, State);
-		EnterRule(_localctx, 12, RULE_funcDefinition);
+		EnterRule(_localctx, 14, RULE_funcDefinition);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 58;
+			State = 94;
 			funcDecl();
-			State = 61;
+			State = 97;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
-			case T__4:
+			case T__6:
 				{
-				State = 59;
+				State = 95;
 				block();
 				}
 				break;
@@ -442,9 +573,10 @@ public partial class GrammarParser : Parser {
 			case TYPE_STRING:
 			case TYPE_BOOL:
 			case CONST:
+			case VOID:
 			case IDENTIFIER:
 				{
-				State = 60;
+				State = 96;
 				statement();
 				}
 				break;
@@ -464,9 +596,97 @@ public partial class GrammarParser : Parser {
 		return _localctx;
 	}
 
+	public partial class VarDeclAssignmentContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public VarDeclContext varDecl() {
+			return GetRuleContext<VarDeclContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public AssignmentContext assignment() {
+			return GetRuleContext<AssignmentContext>(0);
+		}
+		public VarDeclAssignmentContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_varDeclAssignment; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitVarDeclAssignment(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public VarDeclAssignmentContext varDeclAssignment() {
+		VarDeclAssignmentContext _localctx = new VarDeclAssignmentContext(Context, State);
+		EnterRule(_localctx, 16, RULE_varDeclAssignment);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 99;
+			varDecl();
+			State = 100;
+			assignment();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class VarAssignmentContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
+			return GetRuleContext<IdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public AssignmentContext assignment() {
+			return GetRuleContext<AssignmentContext>(0);
+		}
+		public VarAssignmentContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_varAssignment; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitVarAssignment(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public VarAssignmentContext varAssignment() {
+		VarAssignmentContext _localctx = new VarAssignmentContext(Context, State);
+		EnterRule(_localctx, 18, RULE_varAssignment);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 102;
+			identifier();
+			State = 103;
+			assignment();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
 	public partial class VarDeclContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public DeclTypeContext declType() {
-			return GetRuleContext<DeclTypeContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public TypeUsageContext typeUsage() {
+			return GetRuleContext<TypeUsageContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public VarDeclIdentContext[] varDeclIdent() {
 			return GetRuleContexts<VarDeclIdentContext>();
@@ -474,7 +694,6 @@ public partial class GrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public VarDeclIdentContext varDeclIdent(int i) {
 			return GetRuleContext<VarDeclIdentContext>(i);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode END() { return GetToken(GrammarParser.END, 0); }
 		public VarDeclContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -491,33 +710,75 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public VarDeclContext varDecl() {
 		VarDeclContext _localctx = new VarDeclContext(Context, State);
-		EnterRule(_localctx, 14, RULE_varDecl);
+		EnterRule(_localctx, 20, RULE_varDecl);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 63;
-			declType();
-			State = 64;
+			State = 105;
+			typeUsage();
+			State = 106;
 			varDeclIdent();
-			State = 69;
+			State = 111;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==T__2) {
 				{
 				{
-				State = 65;
+				State = 107;
 				Match(T__2);
-				State = 66;
+				State = 108;
 				varDeclIdent();
 				}
 				}
-				State = 71;
+				State = 113;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			State = 72;
-			Match(END);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class VarDeclSingleContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public TypeUsageContext typeUsage() {
+			return GetRuleContext<TypeUsageContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public VarDeclIdentContext varDeclIdent() {
+			return GetRuleContext<VarDeclIdentContext>(0);
+		}
+		public VarDeclSingleContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_varDeclSingle; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitVarDeclSingle(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public VarDeclSingleContext varDeclSingle() {
+		VarDeclSingleContext _localctx = new VarDeclSingleContext(Context, State);
+		EnterRule(_localctx, 22, RULE_varDeclSingle);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 114;
+			typeUsage();
+			State = 115;
+			varDeclIdent();
 			}
 		}
 		catch (RecognitionException re) {
@@ -537,6 +798,9 @@ public partial class GrammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public PointerContext pointer() {
 			return GetRuleContext<PointerContext>(0);
 		}
+		[System.Diagnostics.DebuggerNonUserCode] public ArrayDeclContext arrayDecl() {
+			return GetRuleContext<ArrayDeclContext>(0);
+		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CONST() { return GetToken(GrammarParser.CONST, 0); }
 		public VarDeclIdentContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
@@ -554,18 +818,43 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public VarDeclIdentContext varDeclIdent() {
 		VarDeclIdentContext _localctx = new VarDeclIdentContext(Context, State);
-		EnterRule(_localctx, 16, RULE_varDeclIdent);
+		EnterRule(_localctx, 24, RULE_varDeclIdent);
+		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			{
-			State = 74;
-			pointer();
-			State = 75;
-			_localctx.const_ptr = Match(CONST);
+			State = 121;
+			ErrorHandler.Sync(this);
+			_la = TokenStream.LA(1);
+			if (_la==STAR) {
+				{
+				State = 117;
+				pointer();
+				State = 119;
+				ErrorHandler.Sync(this);
+				_la = TokenStream.LA(1);
+				if (_la==CONST) {
+					{
+					State = 118;
+					_localctx.const_ptr = Match(CONST);
+					}
+				}
+
+				}
 			}
-			State = 77;
+
+			State = 123;
 			Match(IDENTIFIER);
+			State = 125;
+			ErrorHandler.Sync(this);
+			_la = TokenStream.LA(1);
+			if (_la==T__3) {
+				{
+				State = 124;
+				arrayDecl();
+				}
+			}
+
 			}
 		}
 		catch (RecognitionException re) {
@@ -579,56 +868,99 @@ public partial class GrammarParser : Parser {
 		return _localctx;
 	}
 
-	public partial class DeclTypeContext : ParserRuleContext {
-		public IToken @const;
-		[System.Diagnostics.DebuggerNonUserCode] public TypeidentifierContext typeidentifier() {
-			return GetRuleContext<TypeidentifierContext>(0);
+	public partial class ArrayDeclContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public IntLiteralContext intLiteral() {
+			return GetRuleContext<IntLiteralContext>(0);
 		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CONST() { return GetToken(GrammarParser.CONST, 0); }
-		public DeclTypeContext(ParserRuleContext parent, int invokingState)
+		public ArrayDeclContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_declType; } }
+		public override int RuleIndex { get { return RULE_arrayDecl; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitDeclType(this);
+			if (typedVisitor != null) return typedVisitor.VisitArrayDecl(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public DeclTypeContext declType() {
-		DeclTypeContext _localctx = new DeclTypeContext(Context, State);
-		EnterRule(_localctx, 18, RULE_declType);
+	public ArrayDeclContext arrayDecl() {
+		ArrayDeclContext _localctx = new ArrayDeclContext(Context, State);
+		EnterRule(_localctx, 26, RULE_arrayDecl);
 		try {
-			State = 85;
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 127;
+			Match(T__3);
+			State = 128;
+			intLiteral();
+			State = 129;
+			Match(T__4);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class TypeUsageContext : ParserRuleContext {
+		public IToken @const;
+		[System.Diagnostics.DebuggerNonUserCode] public TypeIdentifierContext typeIdentifier() {
+			return GetRuleContext<TypeIdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CONST() { return GetToken(GrammarParser.CONST, 0); }
+		public TypeUsageContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_typeUsage; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitTypeUsage(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public TypeUsageContext typeUsage() {
+		TypeUsageContext _localctx = new TypeUsageContext(Context, State);
+		EnterRule(_localctx, 28, RULE_typeUsage);
+		try {
+			State = 137;
 			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,5,Context) ) {
+			switch ( Interpreter.AdaptivePredict(TokenStream,13,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 79;
+				State = 131;
 				_localctx.@const = Match(CONST);
-				State = 80;
-				typeidentifier();
+				State = 132;
+				typeIdentifier();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 81;
-				typeidentifier();
-				State = 82;
+				State = 133;
+				typeIdentifier();
+				State = 134;
 				_localctx.@const = Match(CONST);
 				}
 				break;
 			case 3:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 84;
-				typeidentifier();
+				State = 136;
+				typeIdentifier();
 				}
 				break;
 			}
@@ -665,22 +997,22 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public IdentifierContext identifier() {
 		IdentifierContext _localctx = new IdentifierContext(Context, State);
-		EnterRule(_localctx, 20, RULE_identifier);
+		EnterRule(_localctx, 30, RULE_identifier);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 88;
+			State = 140;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==STAR) {
 				{
-				State = 87;
+				State = 139;
 				pointer();
 				}
 			}
 
-			State = 90;
+			State = 142;
 			Match(IDENTIFIER);
 			}
 		}
@@ -716,15 +1048,15 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public AssignmentContext assignment() {
 		AssignmentContext _localctx = new AssignmentContext(Context, State);
-		EnterRule(_localctx, 22, RULE_assignment);
+		EnterRule(_localctx, 32, RULE_assignment);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 92;
-			Match(T__3);
-			State = 93;
+			State = 144;
+			Match(T__5);
+			State = 145;
 			expression();
-			State = 94;
+			State = 146;
 			Match(END);
 			}
 		}
@@ -739,35 +1071,35 @@ public partial class GrammarParser : Parser {
 		return _localctx;
 	}
 
-	public partial class TypeidentifierContext : ParserRuleContext {
+	public partial class TypeIdentifierContext : ParserRuleContext {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TYPE_INT() { return GetToken(GrammarParser.TYPE_INT, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TYPE_STRING() { return GetToken(GrammarParser.TYPE_STRING, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TYPE_BOOL() { return GetToken(GrammarParser.TYPE_BOOL, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(GrammarParser.IDENTIFIER, 0); }
-		public TypeidentifierContext(ParserRuleContext parent, int invokingState)
+		public TypeIdentifierContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
 		}
-		public override int RuleIndex { get { return RULE_typeidentifier; } }
+		public override int RuleIndex { get { return RULE_typeIdentifier; } }
 		[System.Diagnostics.DebuggerNonUserCode]
 		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
 			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
-			if (typedVisitor != null) return typedVisitor.VisitTypeidentifier(this);
+			if (typedVisitor != null) return typedVisitor.VisitTypeIdentifier(this);
 			else return visitor.VisitChildren(this);
 		}
 	}
 
 	[RuleVersion(0)]
-	public TypeidentifierContext typeidentifier() {
-		TypeidentifierContext _localctx = new TypeidentifierContext(Context, State);
-		EnterRule(_localctx, 24, RULE_typeidentifier);
+	public TypeIdentifierContext typeIdentifier() {
+		TypeIdentifierContext _localctx = new TypeIdentifierContext(Context, State);
+		EnterRule(_localctx, 34, RULE_typeIdentifier);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 96;
+			State = 148;
 			_la = TokenStream.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 525184L) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 2100736L) != 0)) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
@@ -810,29 +1142,237 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public BlockContext block() {
 		BlockContext _localctx = new BlockContext(Context, State);
-		EnterRule(_localctx, 26, RULE_block);
+		EnterRule(_localctx, 36, RULE_block);
 		int _la;
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 98;
-			Match(T__4);
-			State = 102;
+			State = 150;
+			Match(T__6);
+			State = 154;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 557952L) != 0)) {
+			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 3280384L) != 0)) {
 				{
 				{
-				State = 99;
+				State = 151;
 				statement();
 				}
 				}
-				State = 104;
+				State = 156;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
-			State = 105;
-			Match(T__5);
+			State = 157;
+			Match(T__7);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class ConstExpressionContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public LiteralContext literal() {
+			return GetRuleContext<LiteralContext>(0);
+		}
+		public ConstExpressionContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_constExpression; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitConstExpression(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public ConstExpressionContext constExpression() {
+		ConstExpressionContext _localctx = new ConstExpressionContext(Context, State);
+		EnterRule(_localctx, 38, RULE_constExpression);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 159;
+			literal();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class LiteralContext : ParserRuleContext {
+		public IntLiteralContext @int;
+		public IToken @string;
+		public IToken @char;
+		[System.Diagnostics.DebuggerNonUserCode] public IntLiteralContext intLiteral() {
+			return GetRuleContext<IntLiteralContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING() { return GetToken(GrammarParser.STRING, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CHAR() { return GetToken(GrammarParser.CHAR, 0); }
+		public LiteralContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_literal; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitLiteral(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public LiteralContext literal() {
+		LiteralContext _localctx = new LiteralContext(Context, State);
+		EnterRule(_localctx, 40, RULE_literal);
+		try {
+			State = 164;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case INTEGER:
+			case INTEGER_HEX:
+			case INTEGER_BIN:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 161;
+				_localctx.@int = intLiteral();
+				}
+				break;
+			case STRING:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 162;
+				_localctx.@string = Match(STRING);
+				}
+				break;
+			case CHAR:
+				EnterOuterAlt(_localctx, 3);
+				{
+				State = 163;
+				_localctx.@char = Match(CHAR);
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class IntLiteralContext : ParserRuleContext {
+		public IToken @int;
+		public IToken hex;
+		public IToken bin;
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INTEGER() { return GetToken(GrammarParser.INTEGER, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INTEGER_HEX() { return GetToken(GrammarParser.INTEGER_HEX, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INTEGER_BIN() { return GetToken(GrammarParser.INTEGER_BIN, 0); }
+		public IntLiteralContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_intLiteral; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitIntLiteral(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public IntLiteralContext intLiteral() {
+		IntLiteralContext _localctx = new IntLiteralContext(Context, State);
+		EnterRule(_localctx, 42, RULE_intLiteral);
+		try {
+			State = 169;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case INTEGER:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 166;
+				_localctx.@int = Match(INTEGER);
+				}
+				break;
+			case INTEGER_HEX:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 167;
+				_localctx.hex = Match(INTEGER_HEX);
+				}
+				break;
+			case INTEGER_BIN:
+				EnterOuterAlt(_localctx, 3);
+				{
+				State = 168;
+				_localctx.bin = Match(INTEGER_BIN);
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class ReferenceContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AMP() { return GetToken(GrammarParser.AMP, 0); }
+		public ReferenceContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_reference; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override TResult Accept<TResult>(IParseTreeVisitor<TResult> visitor) {
+			IGrammarVisitor<TResult> typedVisitor = visitor as IGrammarVisitor<TResult>;
+			if (typedVisitor != null) return typedVisitor.VisitReference(this);
+			else return visitor.VisitChildren(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public ReferenceContext reference() {
+		ReferenceContext _localctx = new ReferenceContext(Context, State);
+		EnterRule(_localctx, 44, RULE_reference);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 171;
+			Match(AMP);
 			}
 		}
 		catch (RecognitionException re) {
@@ -864,11 +1404,11 @@ public partial class GrammarParser : Parser {
 	[RuleVersion(0)]
 	public PointerContext pointer() {
 		PointerContext _localctx = new PointerContext(Context, State);
-		EnterRule(_localctx, 28, RULE_pointer);
+		EnterRule(_localctx, 46, RULE_pointer);
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 107;
+			State = 173;
 			Match(STAR);
 			}
 		}
@@ -884,36 +1424,59 @@ public partial class GrammarParser : Parser {
 	}
 
 	private static int[] _serializedATN = {
-		4,1,25,110,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		4,1,27,176,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
 		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
-		1,0,5,0,32,8,0,10,0,12,0,35,9,0,1,1,1,1,1,2,1,2,1,3,1,3,1,3,1,4,1,4,1,
-		4,1,5,1,5,1,5,3,5,50,8,5,1,5,3,5,53,8,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,3,
-		6,62,8,6,1,7,1,7,1,7,1,7,5,7,68,8,7,10,7,12,7,71,9,7,1,7,1,7,1,8,1,8,1,
-		8,1,8,1,8,1,9,1,9,1,9,1,9,1,9,1,9,3,9,86,8,9,1,10,3,10,89,8,10,1,10,1,
-		10,1,11,1,11,1,11,1,11,1,12,1,12,1,13,1,13,5,13,101,8,13,10,13,12,13,104,
-		9,13,1,13,1,13,1,14,1,14,1,14,0,0,15,0,2,4,6,8,10,12,14,16,18,20,22,24,
-		26,28,0,1,2,0,7,9,19,19,103,0,33,1,0,0,0,2,36,1,0,0,0,4,38,1,0,0,0,6,40,
-		1,0,0,0,8,43,1,0,0,0,10,46,1,0,0,0,12,58,1,0,0,0,14,63,1,0,0,0,16,74,1,
-		0,0,0,18,85,1,0,0,0,20,88,1,0,0,0,22,92,1,0,0,0,24,96,1,0,0,0,26,98,1,
-		0,0,0,28,107,1,0,0,0,30,32,3,2,1,0,31,30,1,0,0,0,32,35,1,0,0,0,33,31,1,
-		0,0,0,33,34,1,0,0,0,34,1,1,0,0,0,35,33,1,0,0,0,36,37,3,14,7,0,37,3,1,0,
-		0,0,38,39,3,2,1,0,39,5,1,0,0,0,40,41,3,14,7,0,41,42,3,22,11,0,42,7,1,0,
-		0,0,43,44,3,20,10,0,44,45,3,22,11,0,45,9,1,0,0,0,46,52,3,18,9,0,47,49,
-		3,28,14,0,48,50,5,15,0,0,49,48,1,0,0,0,49,50,1,0,0,0,50,53,1,0,0,0,51,
-		53,5,21,0,0,52,47,1,0,0,0,52,51,1,0,0,0,53,54,1,0,0,0,54,55,5,19,0,0,55,
-		56,5,1,0,0,56,57,5,2,0,0,57,11,1,0,0,0,58,61,3,10,5,0,59,62,3,26,13,0,
-		60,62,3,2,1,0,61,59,1,0,0,0,61,60,1,0,0,0,62,13,1,0,0,0,63,64,3,18,9,0,
-		64,69,3,16,8,0,65,66,5,3,0,0,66,68,3,16,8,0,67,65,1,0,0,0,68,71,1,0,0,
-		0,69,67,1,0,0,0,69,70,1,0,0,0,70,72,1,0,0,0,71,69,1,0,0,0,72,73,5,22,0,
-		0,73,15,1,0,0,0,74,75,3,28,14,0,75,76,5,15,0,0,76,77,1,0,0,0,77,78,5,19,
-		0,0,78,17,1,0,0,0,79,80,5,15,0,0,80,86,3,24,12,0,81,82,3,24,12,0,82,83,
-		5,15,0,0,83,86,1,0,0,0,84,86,3,24,12,0,85,79,1,0,0,0,85,81,1,0,0,0,85,
-		84,1,0,0,0,86,19,1,0,0,0,87,89,3,28,14,0,88,87,1,0,0,0,88,89,1,0,0,0,89,
-		90,1,0,0,0,90,91,5,19,0,0,91,21,1,0,0,0,92,93,5,4,0,0,93,94,3,4,2,0,94,
-		95,5,22,0,0,95,23,1,0,0,0,96,97,7,0,0,0,97,25,1,0,0,0,98,102,5,5,0,0,99,
-		101,3,2,1,0,100,99,1,0,0,0,101,104,1,0,0,0,102,100,1,0,0,0,102,103,1,0,
-		0,0,103,105,1,0,0,0,104,102,1,0,0,0,105,106,5,6,0,0,106,27,1,0,0,0,107,
-		108,5,20,0,0,108,29,1,0,0,0,8,33,49,52,61,69,85,88,102
+		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
+		2,22,7,22,2,23,7,23,1,0,5,0,50,8,0,10,0,12,0,53,9,0,1,1,1,1,1,1,1,1,3,
+		1,59,8,1,1,2,1,2,3,2,63,8,2,1,3,1,3,1,4,1,4,1,4,1,4,1,4,5,4,72,8,4,10,
+		4,12,4,75,9,4,1,4,1,4,1,5,1,5,1,5,3,5,82,8,5,5,5,84,8,5,10,5,12,5,87,9,
+		5,3,5,89,8,5,1,6,1,6,3,6,93,8,6,1,7,1,7,1,7,3,7,98,8,7,1,8,1,8,1,8,1,9,
+		1,9,1,9,1,10,1,10,1,10,1,10,5,10,110,8,10,10,10,12,10,113,9,10,1,11,1,
+		11,1,11,1,12,1,12,3,12,120,8,12,3,12,122,8,12,1,12,1,12,3,12,126,8,12,
+		1,13,1,13,1,13,1,13,1,14,1,14,1,14,1,14,1,14,1,14,3,14,138,8,14,1,15,3,
+		15,141,8,15,1,15,1,15,1,16,1,16,1,16,1,16,1,17,1,17,1,18,1,18,5,18,153,
+		8,18,10,18,12,18,156,9,18,1,18,1,18,1,19,1,19,1,20,1,20,1,20,3,20,165,
+		8,20,1,21,1,21,1,21,3,21,170,8,21,1,22,1,22,1,23,1,23,1,23,0,0,24,0,2,
+		4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,0,1,2,0,
+		9,11,21,21,172,0,51,1,0,0,0,2,58,1,0,0,0,4,62,1,0,0,0,6,64,1,0,0,0,8,66,
+		1,0,0,0,10,88,1,0,0,0,12,92,1,0,0,0,14,94,1,0,0,0,16,99,1,0,0,0,18,102,
+		1,0,0,0,20,105,1,0,0,0,22,114,1,0,0,0,24,121,1,0,0,0,26,127,1,0,0,0,28,
+		137,1,0,0,0,30,140,1,0,0,0,32,144,1,0,0,0,34,148,1,0,0,0,36,150,1,0,0,
+		0,38,159,1,0,0,0,40,164,1,0,0,0,42,169,1,0,0,0,44,171,1,0,0,0,46,173,1,
+		0,0,0,48,50,3,2,1,0,49,48,1,0,0,0,50,53,1,0,0,0,51,49,1,0,0,0,51,52,1,
+		0,0,0,52,1,1,0,0,0,53,51,1,0,0,0,54,59,3,14,7,0,55,56,3,4,2,0,56,57,5,
+		24,0,0,57,59,1,0,0,0,58,54,1,0,0,0,58,55,1,0,0,0,59,3,1,0,0,0,60,63,3,
+		20,10,0,61,63,3,8,4,0,62,60,1,0,0,0,62,61,1,0,0,0,63,5,1,0,0,0,64,65,3,
+		2,1,0,65,7,1,0,0,0,66,67,3,12,6,0,67,68,3,10,5,0,68,69,5,21,0,0,69,73,
+		5,1,0,0,70,72,3,22,11,0,71,70,1,0,0,0,72,75,1,0,0,0,73,71,1,0,0,0,73,74,
+		1,0,0,0,74,76,1,0,0,0,75,73,1,0,0,0,76,77,5,2,0,0,77,9,1,0,0,0,78,89,3,
+		44,22,0,79,81,3,46,23,0,80,82,5,17,0,0,81,80,1,0,0,0,81,82,1,0,0,0,82,
+		84,1,0,0,0,83,79,1,0,0,0,84,87,1,0,0,0,85,83,1,0,0,0,85,86,1,0,0,0,86,
+		89,1,0,0,0,87,85,1,0,0,0,88,78,1,0,0,0,88,85,1,0,0,0,89,11,1,0,0,0,90,
+		93,5,20,0,0,91,93,3,28,14,0,92,90,1,0,0,0,92,91,1,0,0,0,93,13,1,0,0,0,
+		94,97,3,8,4,0,95,98,3,36,18,0,96,98,3,2,1,0,97,95,1,0,0,0,97,96,1,0,0,
+		0,98,15,1,0,0,0,99,100,3,20,10,0,100,101,3,32,16,0,101,17,1,0,0,0,102,
+		103,3,30,15,0,103,104,3,32,16,0,104,19,1,0,0,0,105,106,3,28,14,0,106,111,
+		3,24,12,0,107,108,5,3,0,0,108,110,3,24,12,0,109,107,1,0,0,0,110,113,1,
+		0,0,0,111,109,1,0,0,0,111,112,1,0,0,0,112,21,1,0,0,0,113,111,1,0,0,0,114,
+		115,3,28,14,0,115,116,3,24,12,0,116,23,1,0,0,0,117,119,3,46,23,0,118,120,
+		5,17,0,0,119,118,1,0,0,0,119,120,1,0,0,0,120,122,1,0,0,0,121,117,1,0,0,
+		0,121,122,1,0,0,0,122,123,1,0,0,0,123,125,5,21,0,0,124,126,3,26,13,0,125,
+		124,1,0,0,0,125,126,1,0,0,0,126,25,1,0,0,0,127,128,5,4,0,0,128,129,3,42,
+		21,0,129,130,5,5,0,0,130,27,1,0,0,0,131,132,5,17,0,0,132,138,3,34,17,0,
+		133,134,3,34,17,0,134,135,5,17,0,0,135,138,1,0,0,0,136,138,3,34,17,0,137,
+		131,1,0,0,0,137,133,1,0,0,0,137,136,1,0,0,0,138,29,1,0,0,0,139,141,3,46,
+		23,0,140,139,1,0,0,0,140,141,1,0,0,0,141,142,1,0,0,0,142,143,5,21,0,0,
+		143,31,1,0,0,0,144,145,5,6,0,0,145,146,3,6,3,0,146,147,5,24,0,0,147,33,
+		1,0,0,0,148,149,7,0,0,0,149,35,1,0,0,0,150,154,5,7,0,0,151,153,3,2,1,0,
+		152,151,1,0,0,0,153,156,1,0,0,0,154,152,1,0,0,0,154,155,1,0,0,0,155,157,
+		1,0,0,0,156,154,1,0,0,0,157,158,5,8,0,0,158,37,1,0,0,0,159,160,3,40,20,
+		0,160,39,1,0,0,0,161,165,3,42,21,0,162,165,5,15,0,0,163,165,5,16,0,0,164,
+		161,1,0,0,0,164,162,1,0,0,0,164,163,1,0,0,0,165,41,1,0,0,0,166,170,5,12,
+		0,0,167,170,5,13,0,0,168,170,5,14,0,0,169,166,1,0,0,0,169,167,1,0,0,0,
+		169,168,1,0,0,0,170,43,1,0,0,0,171,172,5,23,0,0,172,45,1,0,0,0,173,174,
+		5,22,0,0,174,47,1,0,0,0,18,51,58,62,73,81,85,88,92,97,111,119,121,125,
+		137,140,154,164,169
 	};
 
 	public static readonly ATN _ATN =
