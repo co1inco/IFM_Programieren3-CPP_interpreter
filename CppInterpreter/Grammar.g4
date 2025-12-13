@@ -1,91 +1,109 @@
 ﻿grammar Grammar;
 
-program : statement*;
+program : topLevelStatement*;
 
-//declaration : 
+topLevelStatement : functionDefinition
+		          | variableDefinition ';';
 
-statement : funcDefinition 
-		  | terminalStastement ';';
-terminalStastement : varDecl 
-				   | funcDecl;
-
-
-expression : statement; 
-
-
-funcDecl : funcReturnType funcReturnMod ident=IDENTIFIER '(' varDeclSingle* ')';
-funcReturnMod : reference | (pointer CONST?)*;
-funcReturnType : void=VOID | typeUsage;
-//funcParameters : '';
-funcDefinition : funcDecl (block | statement);
+statement : expression ';'
+		  | functionDefinition
+		  | variableDefinition ';'
+		  | ifStmt
+		  | whileStmt
+		  | forStmt
+		  | doWhileStmt
+		  | 'return' expression? ';';
 
 
-varDeclAssignment : varDecl assignment;
-varAssignment : identifier assignment;
+functionDefinition : typeIdentifier ident=IDENTIFIER '(' parameterList ')' block;
+
+parameterList : (typeIdentifierUsage varIdentifier)? (',' typeIdentifierUsage varIdentifier)* ; 
+
+variableDefinition : typeIdentifierUsage assignment 
+				   | typeIdentifierUsage varIdentifier;
+
+ifStmt : 'if' '(' cond=expression ')' innerBlock elseStmt?;
+
+elseStmt : 'else' (ifStmt | innerBlock);
 
 
-varDecl : typeUsage varDeclIdent (',' varDeclIdent)*;
-varDeclSingle : typeUsage varDeclIdent;
-varDeclIdent : (pointer const_ptr=CONST?)? IDENTIFIER arrayDecl?;
+whileStmt : 'while' '(' cond=expression ')' innerBlock;
 
-arrayDecl : '[' intLiteral ']';
+forStmt : 'for' '(' setup=statement? ';' cond=expression? ';' incr=expression? ')' innerBlock;
 
-typeUsage : const=CONST typeIdentifier 
-          | typeIdentifier const=CONST 
-          | typeIdentifier;
+doWhileStmt : 'do' block 'while' '(' cond=expression ')' ';';
 
 
+expression : func=expression '(' param=expression (',' param=expression)* ')' 
+		   | unary=('++' | '--') expression 
+           | unary=('+' | '-' | '!' | '~' ) expression 
+		   | left=expression binop=('*' | '/' | '%') right=expression
+		   | left=expression binop=('+' | '-') right=expression
+		   | left=expression comp=('<' | '<=' | '>' | '>=') right=expression 
+		   | left=expression comp=('==' | '!=') right=expression 
+		   | left=expression bit='&' right=expression 
+		   | left=expression bit='^' right=expression 
+		   | left=expression bit='|' right=expression 
+		   | left=expression logic=('&&' | '||') right=expression 
+		   | assignment
+		   | atom
+		   | literal; //TODO
 
-identifier : pointer? IDENTIFIER;
+assignment : varIdentifier '=' expression;
 
-assignment : '=' expression END;
+atom : IDENTIFIER;
 
-typeIdentifier : TYPE_INT 
-			   | TYPE_STRING 
-			   | TYPE_BOOL 
-			   | IDENTIFIER;
+literal : intLiteral
+		| str=STRING 
+		| char=CHAR 
+		| bool=BOOL;
 
+intLiteral :  int=INTEGER 
+           |  hex=INTEGER_HEX 
+           |  bin=INTEGER_BIN; 
+
+varIdentifier : ident=IDENTIFIER;
+
+typeIdentifierUsage : typeIdentifier ref='&'?;
+typeIdentifier : int=TYPE_INT
+			   | str=TYPE_STRING
+			   | bool=TYPE_BOOL
+			   | void=TYPE_VOID
+			   | ident=IDENTIFIER;
+
+innerBlock : block | statement ';' | ';';
 
 block : '{' statement* '}';
 
-constExpression : literal;
-
-literal : int=intLiteral
-		| string=STRING 
-		| char=CHAR; 
-
-intLiteral : int=INTEGER 
-		   | hex=INTEGER_HEX
-           | bin=INTEGER_BIN;
-
-reference : AMP;
-pointer : STAR;
-
-
-
+//include : '#include' '<' file=.*? '>'
+//		| '#include' '"' file=.*? '"';
 //Tokens
 
 
 TYPE_INT : 'int';
 TYPE_STRING : 'string';
 TYPE_BOOL : 'bool';
+TYPE_VOID : 'void';
 
 INTEGER: [0-9]+;
 INTEGER_HEX: '0x'[0-9a-fA-F]+;
 INTEGER_BIN: '0b'[0-1_]+;
-STRING: '"'(~('"')|(' '|'\b'|'\f'|'r'|'\n'|'\t'|'\\"'|'\\'))*'"';
-CHAR: '\''(~('\'')|(' '|'\b'|'\f'|'r'|'\n'|'\t'|'\\\''|'\\'))'\'';
+STRING: '"'(~('"')|(' '|'\b'|'\f'|'r'|'\n'|'\t'|'\\"'|'\\'|'\\0'))*'"';
+CHAR: '\''(~('\'')|(' '|'\b'|'\f'|'r'|'\n'|'\t'|'\\\''|'\\'|'\\0'))'\'';
+BOOL: 'true' | 'false';
 
-CONST : 'const';
-IF : 'if';
-CLASS : 'class';
-VOID : 'void';
+//CONST : 'const';
+//IF : 'if';
+//CLASS : 'class';
+//VOID : 'void';
 IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_]*;
 
-STAR : '*';
-AMP : '&';
-END : ';';
+//OPPERATOR : '+' | '-' | '*' | '/' | '%';
+//COMPARATOR : '==' | '!=' | '>' | '>=' | '<' | '<=' ;
+
+INCLUDE: '#include' .*? '\n' -> skip;
 
 SPACES1: [ \t\n\r\f]+ -> skip;
 COMMENT: '//' .*? '\n' -> skip;
 ML_COMMENT: '/*' .*? '*/' -> skip;
+

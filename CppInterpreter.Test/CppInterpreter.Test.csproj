@@ -22,4 +22,14 @@
       <ProjectReference Include="..\CppInterpreter\CppInterpreter.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+        <None Include="Examples\**\*.cpp">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Examples\" />
+    </ItemGroup>
+
 </Project>
