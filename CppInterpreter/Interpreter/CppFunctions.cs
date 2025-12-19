@@ -10,6 +10,7 @@ public interface ICppFunction
     ICppValue Invoke(ICppValue? instance, ICppValue[] parameters);
 }
 
+
 public sealed class MemberAction<TInstance>(string name, Action<TInstance> action) : ICppFunction 
     where TInstance : ICppValue
 {
@@ -56,7 +57,7 @@ public sealed class MemberFunction<TInstance, TReturn>(string name, Func<TInstan
     where TReturn : ICppValue
 {
     public string Name => name;
-    public ICppType ReturnType => new CppVoidType();
+    public ICppType ReturnType => TReturn.SType;
     public ICppType? InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [];
     
@@ -75,7 +76,7 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
     where TReturn : ICppValue
 {
     public string Name => name;
-    public ICppType ReturnType => new CppVoidType();
+    public ICppType ReturnType => TReturn.SType;
     public ICppType? InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [];
     
@@ -90,3 +91,16 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
         return function(tInstance, v1);
     }
 }
+
+// public static class CppFunctionExtensions
+// {
+//     extension(ICppType type)
+//     {
+//         public ICppFunction GetFunction(string name, IEnumerable<ICppType> parameterTypes)
+//         {
+//             
+//         }
+//     }
+//     
+//     
+// }

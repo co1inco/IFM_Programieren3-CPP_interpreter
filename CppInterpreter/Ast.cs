@@ -55,7 +55,7 @@ public partial class AstExpression : OneOfBase<
     
 }
 
-
+// TODO: The operator is only used to create the the name for the function (eg. operator+) so storing it here as a simple string should be enough
 [GenerateOneOf]
 public partial class AstBinOp : OneOfBase<
     AstBinOp.Equatable,
@@ -84,7 +84,6 @@ public partial class AstBinOp : OneOfBase<
         BitAnd,
         BitOr,
         BitXor,
-        Modulo
     }
 
     public enum BoolOp
@@ -99,6 +98,8 @@ public partial class AstBinOp : OneOfBase<
         Subtract,
         Multiply,
         Divide,
+        Modulo
+        
     }
 }
 
