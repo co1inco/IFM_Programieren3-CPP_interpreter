@@ -1,13 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using Antlr4.Runtime;
-using CSharpFunctionalExtensions;
-using Language;
-
-using static CppInterpreter.Ast;
 using static Language.GrammarParser;
 
-namespace CppInterpreter;
+namespace CppInterpreter.Ast;
 
 public class ParserException : Exception
 {
@@ -31,7 +27,7 @@ public static class AstParser
     public static AstExpression ParseExpression(ExpressionContext ctx)
     {
         if (ctx.literal() is { } literal) return ParseLiteral(literal);
-        if (ctx.atom() is { } atom) return new Atom(atom.GetText());
+        if (ctx.atom() is { } atom) return new AstAtom(atom.GetText());
         if (ctx.assignment() is { } assignment) return ParseAssignment(assignment);
         if (ctx is { left: { } left, right: { } right })
         {
@@ -44,50 +40,50 @@ public static class AstParser
         throw new NotImplementedException();
     }
 
-    public static Ast.BinOp ParseLogicBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
+    public static AstBinOp ParseLogicBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
         {
-            "&&" => AstBinOp.BoolOp.And,
-            "||" => AstBinOp.BoolOp.Or,
+            "&&" => AstBinOpOperator.BoolOp.And,
+            "||" => AstBinOpOperator.BoolOp.Or,
             _ => throw new AntlrMissMatchException($"Invalid  logic operator '{logicOperator.Text}'")
         });
 
-    public static Ast.BinOp ParseBitBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
+    public static AstBinOp ParseBitBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
         {
-            "|" => AstBinOp.IntegerOp.BitOr,
-            "&" => AstBinOp.IntegerOp.BitAnd,
-            "^" => AstBinOp.IntegerOp.BitXor,
+            "|" => AstBinOpOperator.IntegerOp.BitOr,
+            "&" => AstBinOpOperator.IntegerOp.BitAnd,
+            "^" => AstBinOpOperator.IntegerOp.BitXor,
             _ => throw new AntlrMissMatchException($"Invalid bit operator '{logicOperator.Text}'")
         }); 
 
-    public static Ast.BinOp ParseCompareBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
+    public static AstBinOp ParseCompareBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
         {
-            "==" => AstBinOp.Equatable.Equal,
-            "!=" => AstBinOp.Equatable.NotEqual,
-            "<" => AstBinOp.Comparable.LessThan,
-            "<=" => AstBinOp.Comparable.LessThanOrEqual,
-            ">" => AstBinOp.Comparable.GreaterThan,
-            ">=" => AstBinOp.Comparable.GreaterThanOrEqual,
+            "==" => AstBinOpOperator.Equatable.Equal,
+            "!=" => AstBinOpOperator.Equatable.NotEqual,
+            "<" => AstBinOpOperator.Comparable.LessThan,
+            "<=" => AstBinOpOperator.Comparable.LessThanOrEqual,
+            ">" => AstBinOpOperator.Comparable.GreaterThan,
+            ">=" => AstBinOpOperator.Comparable.GreaterThanOrEqual,
             _ => throw new AntlrMissMatchException($"Invalid comparison operator '{logicOperator.Text}'")
         }); 
     
-    public static Ast.BinOp ParseArithmeticBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
+    public static AstBinOp ParseArithmeticBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
         {
-            "+" => AstBinOp.Arithmetic.Add,
-            "-" => AstBinOp.Arithmetic.Subtract,
-            "*" => AstBinOp.Arithmetic.Multiply,
-            "/" => AstBinOp.Arithmetic.Divide,
-            "%" => AstBinOp.Arithmetic.Modulo,
+            "+" => AstBinOpOperator.Arithmetic.Add,
+            "-" => AstBinOpOperator.Arithmetic.Subtract,
+            "*" => AstBinOpOperator.Arithmetic.Multiply,
+            "/" => AstBinOpOperator.Arithmetic.Divide,
+            "%" => AstBinOpOperator.Arithmetic.Modulo,
             _ => throw new AntlrMissMatchException($"Invalid arithmetic operator '{logicOperator.Text}'")
         }); 
     
     // public static Ast.BinOp Parse
     
     
-    public static Ast.Assignment ParseAssignment(AssignmentContext ctx) =>
+    public static AstAssignment ParseAssignment(AssignmentContext ctx) =>
         new(
             ParseVarIdentifier(ctx.varIdentifier()),
             ParseExpression(ctx.expression())
@@ -95,25 +91,25 @@ public static class AstParser
 
     
 
-    public static VarDefinition ParseVarDefinition(VariableDefinitionContext ctx) =>
+    public static AstVarDefinition ParseVarDefinition(VariableDefinitionContext ctx) =>
         new(
             ParseTypeUsage(ctx.typeIdentifierUsage()),
             ParseVarIdentifier(ctx.varIdentifier())
         );
 
-    public static TypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)
+    public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)
     {
         if (ctx.typeIdentifier().GetText() == "void")
             throw new ParserException($"'void' can not be used as a variable type");
                 
-        return new TypeIdentifier(
+        return new AstTypeIdentifier(
             ctx.typeIdentifier().GetText(),
             ctx.@ref is not null
         );
     }
 
-    public static Identifier ParseVarIdentifier(VarIdentifierContext ctx) =>
-        new Identifier(ctx.ident.Text);
+    public static AstIdentifier ParseVarIdentifier(VarIdentifierContext ctx) =>
+        new AstIdentifier(ctx.ident.Text);
 
     public static AstLiteral ParseLiteral(LiteralContext ctx)
     {

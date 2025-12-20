@@ -1,4 +1,5 @@
-﻿using Shouldly;
+﻿using CppInterpreter.Ast;
+using Shouldly;
 namespace CppInterpreter.Test.AstParser;
 
 using static CppInterpreter.Test.Helper.ParserHelper;
@@ -14,7 +15,7 @@ public class ExpressionTest
         var tree = GetTree("123", t => t.expression());
 
         //Act
-        var expression = CppInterpreter.AstParser.ParseExpression(tree);
+        var expression = Ast.AstParser.ParseExpression(tree);
         
         //Assert
         expression.Value.ShouldBeOfType<AstLiteral>()
@@ -29,10 +30,10 @@ public class ExpressionTest
         var tree = GetTree("hello", t => t.expression());
 
         //Act
-        var expression = CppInterpreter.AstParser.ParseExpression(tree);
+        var expression = Ast.AstParser.ParseExpression(tree);
         
         //Assert
-        expression.Value.ShouldBeOfType<Ast.Atom>()
+        expression.Value.ShouldBeOfType<Ast.AstAtom>()
             .Value.ShouldBe("hello");
     }
     
@@ -43,10 +44,10 @@ public class ExpressionTest
         var tree = GetTree("hello = world", t => t.expression());
 
         //Act
-        var expression = CppInterpreter.AstParser.ParseExpression(tree);
+        var expression = Ast.AstParser.ParseExpression(tree);
         
         //Assert
-        expression.Value.ShouldBeOfType<Ast.Assignment>()
+        expression.Value.ShouldBeOfType<Ast.AstAssignment>()
             .Target.Value.ShouldBe("hello");
     }
     
@@ -57,10 +58,10 @@ public class ExpressionTest
         var tree = GetTree("5 + 6", t => t.expression());
 
         //Act
-        var expression = CppInterpreter.AstParser.ParseExpression(tree);
+        var expression = Ast.AstParser.ParseExpression(tree);
         
         //Assert
-        var binOp = expression.Value.ShouldBeOfType<Ast.BinOp>();
+        var binOp = expression.Value.ShouldBeOfType<Ast.AstBinOp>();
         binOp.Left.Value.ShouldBeAssignableTo<AstLiteral>().Value.ShouldBe(5);
         binOp.Right.Value.ShouldBeAssignableTo<AstLiteral>().Value.ShouldBe(6);
     }

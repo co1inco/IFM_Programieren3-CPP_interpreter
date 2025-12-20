@@ -5,7 +5,7 @@ namespace CppInterpreter.Test.AstParser;
 using static CppInterpreter.Test.Helper.ParserHelper;
 
 [TestClass]
-public class AssignmentTest
+public class AstAssignmentTest
 {
 
 
@@ -16,7 +16,7 @@ public class AssignmentTest
         var tree = GetTree("abc = 123", t => t.assignment());
 
         //Act
-        var assignment = CppInterpreter.AstParser.ParseAssignment(tree);
+        var assignment = Ast.AstParser.ParseAssignment(tree);
         
         //Assert
         assignment.Target.Value.ShouldBe("abc");

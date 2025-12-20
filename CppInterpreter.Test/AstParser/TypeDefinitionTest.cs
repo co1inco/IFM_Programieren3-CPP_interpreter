@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Test.Helper;
+﻿using CppInterpreter.Ast;
+using CppInterpreter.Test.Helper;
 using Shouldly;
 
 using static CppInterpreter.Test.Helper.ParserHelper;
@@ -19,7 +20,7 @@ public class TypeDefinitionTest
          var tree = ParserHelper.GetTree(type, t => t.typeIdentifierUsage());
 
         //Act
-        var ast = CppInterpreter.AstParser.ParseTypeUsage(tree);
+        var ast = Ast.AstParser.ParseTypeUsage(tree);
         
         //Assert
         ast.Ident.ShouldBe(type);
@@ -37,7 +38,7 @@ public class TypeDefinitionTest
         var tree = ParserHelper.GetTree($"{type}&", t => t.typeIdentifierUsage());
 
         //Act
-        var ast = CppInterpreter.AstParser.ParseTypeUsage(tree);
+        var ast = Ast.AstParser.ParseTypeUsage(tree);
         
         //Assert
         ast.Ident.ShouldBe(type);
@@ -51,7 +52,7 @@ public class TypeDefinitionTest
         var tree = ParserHelper.GetTree($"void", t => t.typeIdentifierUsage());
         
         //Act Assert
-        Should.Throw<ParserException>(() => CppInterpreter.AstParser.ParseTypeUsage(tree));
+        Should.Throw<ParserException>(() => Ast.AstParser.ParseTypeUsage(tree));
     }
 
 
@@ -62,10 +63,10 @@ public class TypeDefinitionTest
         var tree = GetTree("int test", t => t.variableDefinition());
 
         //Act
-        var ast = CppInterpreter.AstParser.ParseVarDefinition(tree);
+        var ast = Ast.AstParser.ParseVarDefinition(tree);
         
         //Assert
-        ast.Type.Ident.ShouldBe("int");
+        ast.AstType.Ident.ShouldBe("int");
         ast.Value.Value.ShouldBe("test");
     }
 }

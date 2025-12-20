@@ -17,7 +17,7 @@ public class LiteralTest
         var tree = GetTree("1234", t => t.literal());
 
         //Act
-        var literal = CppInterpreter.AstParser.ParseLiteral(tree);
+        var literal = Ast.AstParser.ParseLiteral(tree);
 
         //Assert
         literal.Value.ShouldBeOfType<int>().ShouldBe(1234);   
@@ -30,7 +30,7 @@ public class LiteralTest
         var tree = GetTree("0x1234", t => t.literal());
 
         //Act
-        var literal = CppInterpreter.AstParser.ParseLiteral(tree);
+        var literal = Ast.AstParser.ParseLiteral(tree);
 
         //Assert
         literal.Value.ShouldBeOfType<int>().ShouldBe(0x1234);   
@@ -43,7 +43,7 @@ public class LiteralTest
         var tree = GetTree("0b1010", t => t.literal());
 
         //Act
-        var literal = CppInterpreter.AstParser.ParseLiteral(tree);
+        var literal = Ast.AstParser.ParseLiteral(tree);
 
         //Assert
         literal.Value.ShouldBeOfType<int>().ShouldBe(10);   
@@ -56,7 +56,7 @@ public class LiteralTest
         var tree = GetTree("'c'", t => t.literal());
 
         //Act
-        var literal = CppInterpreter.AstParser.ParseLiteral(tree);
+        var literal = Ast.AstParser.ParseLiteral(tree);
 
         //Assert
         literal.Value.ShouldBeOfType<char>().ShouldBe('c');   
@@ -69,7 +69,7 @@ public class LiteralTest
         var tree = GetTree("\"Hello world!\"", t => t.literal());
 
         //Act
-        var literal = CppInterpreter.AstParser.ParseLiteral(tree);
+        var literal = Ast.AstParser.ParseLiteral(tree);
 
         //Assert
         literal.Value.ShouldBeOfType<string>().ShouldBe("Hello world!");   
