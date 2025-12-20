@@ -32,8 +32,8 @@ public static class AstParser
         if (ctx is { left: { } left, right: { } right })
         {
             if (ctx.logic is { } logic) return ParseLogicBinOp(left, right, logic);
-            if (ctx.bit is { } bit) return ParseLogicBinOp(left, right, bit);
-            if (ctx.comp is { } comp) return ParseLogicBinOp(left, right, comp);
+            if (ctx.bit is { } bit) return ParseBitBinOp(left, right, bit);
+            if (ctx.comp is { } comp) return ParseCompareBinOp(left, right, comp);
             if (ctx.binop is { } ar) return ParseArithmeticBinOp(left, right, ar);
             throw new AntlrMissMatchException("Got left and right but no supported operator");
         }

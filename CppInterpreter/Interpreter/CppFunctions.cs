@@ -4,7 +4,7 @@ public interface ICppFunction
 {
     string Name { get; }
     ICppType ReturnType { get; }
-    ICppType? InstanceType { get; }
+    ICppType? InstanceType { get; } // TODO: remove instance type from ICppFunction
     ICppType[] ParameterTypes { get; }
 
     ICppValue Invoke(ICppValue? instance, ICppValue[] parameters);
@@ -78,7 +78,7 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
     public string Name => name;
     public ICppType ReturnType => TReturn.SType;
     public ICppType? InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [];
+    public ICppType[] ParameterTypes => [ TValue1.SType ];
     
     public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
     {

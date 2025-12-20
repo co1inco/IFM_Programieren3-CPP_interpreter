@@ -1,16 +1,40 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using System.Diagnostics.CodeAnalysis;
+using Antlr4.Runtime;
+using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using Language;
 
 Console.WriteLine("Hello, World!");
 
 
-var a = new CppInt32Value(1);
-var b = new CppInt32Value(2);
-var c = a.InvokeMemberFunc("operator+", b);
+// var a = new CppInt32Value(1);
+// var b = new CppInt32Value(2);
+// var c = a.InvokeMemberFunc("operator+", b);
+//
+// Console.WriteLine($"{a} + {b} = {c}");
 
-Console.WriteLine($"{a} + {b} = {c}");
+
+while (true)
+{
+    Console.Write(">>> ");
+    var line = Console.ReadLine();
+    
+    if (line == "quit")
+        break;
+    if (string.IsNullOrWhiteSpace(line))
+        continue;
+
+    var lexer = new GrammarLexer(CharStreams.fromString(line));
+    var aParser = new GrammarParser(new CommonTokenStream(lexer));
+
+    var ast = AstParser.ParseExpression(aParser.expression());
+
+    var cpp = CppInterpreter.CppParser.CppParser.ParseExpression(ast);
+
+    Console.WriteLine(cpp.Evaluate().StringRep());
+}
 
 
 // var intType = new CppType("int", [], []);

@@ -24,53 +24,6 @@ public class InvalidParametersException(string message) : Exception(message)
 }
 
 
-
-public interface ICppValue
-{
-    static abstract ICppType SType { get; }
-    
-    ICppType Type { get; }
-}
-
-public struct CppVoidValue : ICppValue
-{
-    public static ICppType SType => new CppVoidType();
-    public ICppType Type => SType;
-}
-
-
-public interface ICppPrimitiveValue<T, TType> : ICppValue
-{
-    public static abstract TType Create(T value);
-    public T Value { get; set; }
-};
-
-
-public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppValue
-{
-    public ICppType Type => TType.SType;
-
-    public T Value { get; set; } = value;
-
-    public override string ToString() => Value?.ToString() ?? "null";
-}
-
-public sealed class CppInt32Value(int value) 
-    : CppPrimitiveValue<int, CppInt32Value>(value)
-    , ICppPrimitiveValue<int, CppInt32Value>
-{
-    public static ICppType SType => CppTypes.Int32;
-    public static CppInt32Value Create(int value) => new CppInt32Value(value);
-}
-
-public sealed class CppInt64Value(Int64 value) 
-    : CppPrimitiveValue<Int64, CppInt64Value>(value)
-    , ICppPrimitiveValue<long, CppInt64Value>
-{
-    public static ICppType SType => CppTypes.Int64;
-    public static CppInt64Value Create(long value) => new CppInt64Value(value);
-}
-
 public static class CppTypeExtensions
 {
     extension<T>(T instance) where T : ICppValue
@@ -87,6 +40,63 @@ public static class CppTypeExtensions
         
         
     }
-    
+
+    extension(ICppType type)
+    {
+        public ICppFunction GetFunction(string name, params ICppType[] parameters)
+        {
+            foreach (var function in type.Functions.Where(x => x.Name == name))
+            {
+                if (parameters is [] && function.InstanceType is null && function.ParameterTypes.Length == 0)
+                    return function;
+
+                if (parameters is [var instance, .. var param]
+                    && instance == function.InstanceType
+                    && param.ZipFill(function.ParameterTypes).All(x => x.Left == x.Right))
+                    return function;
+
+                if (function.InstanceType is null &&
+                    function.ParameterTypes.ZipFill(parameters).All(x => x.Left == x.Right))
+                    return function;
+            }
+
+            if (type.Functions.All(x => x.Name == name))
+                throw new Exception($"Type '{type}' does not have a function named  '{name}'");
+            
+            throw new Exception($"No matching function '{name}' found on type '{type}'");
+        }
+    }
+
+    extension<T>(IEnumerable<T> collection)
+    {
+        public IEnumerable<(T? Left, TR? Right)> ZipFill<TR>(IEnumerable<TR> other)
+        {
+            using var l = collection.GetEnumerator();
+            using var r = other.GetEnumerator();
+
+            var lNext = l.MoveNext();
+            var rNext = r.MoveNext();
+            
+            while (lNext && rNext)
+            {
+                yield return (l.Current, r.Current);
+                
+                lNext = l.MoveNext();
+                rNext = r.MoveNext();
+            }
+
+            while (lNext)
+            {
+                yield return (l.Current, default(TR));
+                lNext = l.MoveNext();
+            }
+            
+            while (rNext)
+            {
+                yield return (default(T), r.Current);
+                rNext = r.MoveNext();
+            }
+        }
+    }
     
 }

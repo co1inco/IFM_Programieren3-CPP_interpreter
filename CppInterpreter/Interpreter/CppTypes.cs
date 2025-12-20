@@ -49,6 +49,7 @@ public interface ICppType : IEquatable<ICppType>
     public bool IsAssignableTo(ICppType other);
 }
 
+
 public class CppPrimitiveType : ICppType
 {
     public CppPrimitiveType(string name, ICppFunction[]? functions = null)
@@ -121,4 +122,3 @@ public static class CppCommonOperators
         PrimitiveAssignment<T, TP>()
     ];
 }
-
