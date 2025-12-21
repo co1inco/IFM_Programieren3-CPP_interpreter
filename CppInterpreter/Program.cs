@@ -3,6 +3,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Antlr4.Runtime;
 using CppInterpreter.Ast;
+using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
 using Language;
 
@@ -14,6 +15,14 @@ Console.WriteLine("Hello, World!");
 // var c = a.InvokeMemberFunc("operator+", b);
 //
 // Console.WriteLine($"{a} + {b} = {c}");
+
+var scope = new CppStage1Scope()
+{
+    Values = new Scope<ICppValueBase>(),
+    Types = new Scope<ICppType>()
+};
+
+scope.Values.TryBindSymbol("test", new CppInt32Value(0));
 
 
 while (true)
@@ -31,7 +40,7 @@ while (true)
 
     var ast = AstParser.ParseExpression(aParser.expression());
 
-    var cpp = CppInterpreter.CppParser.CppParser.ParseExpression(ast);
+    var cpp = CppInterpreter.CppParser.CppParser.ParseExpression(ast, scope);
 
     Console.WriteLine(cpp.Evaluate().StringRep());
 }

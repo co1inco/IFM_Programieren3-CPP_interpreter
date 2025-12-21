@@ -1,12 +1,16 @@
 ﻿namespace CppInterpreter.Interpreter;
 
-public interface ICppValue
+
+public interface ICppValueBase
+{
+    ICppType Type { get; }
+    string StringRep();
+}
+
+public interface ICppValue : ICppValueBase
 {
     static abstract ICppType SType { get; }
-    
-    ICppType Type { get; }
 
-    string StringRep();
 }
 
 public struct CppVoidValue : ICppValue

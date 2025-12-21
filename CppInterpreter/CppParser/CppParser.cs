@@ -9,6 +9,10 @@ public class P1Statement
 }
 
 
+
+
+
+
 public class CppParser
 {
 
@@ -17,19 +21,37 @@ public class CppParser
         throw new NotImplementedException();
     }
 
-    public static ICppExpression ParseExpression(AstExpression expression)
+
+    public static void ParseDefinition(AstVarDefinition definition, CppStage1Scope scope)
+    {
+        throw new NotImplementedException();
+    }
+    
+    
+    public static ICppExpression ParseExpression(AstExpression expression, CppStage1Scope scope)
     {
         return expression.Match(
             ParseLiteral,
-            _ => throw new NotImplementedException(),
-            _ => throw new NotImplementedException(),
-            ParseBinOp,
+            a => ParseAtom(a, scope),
+            a => ParseAssignment(a, scope),
+            b => ParseBinOp(b, scope),
             _ => throw new NotImplementedException()
         );
     }
 
+    public static ICppExpression ParseAtom(AstAtom atom, CppStage1Scope scope)
+    {
+        return new CppAtomStatement(atom.Value, scope);
+    }
+    
+    public static ICppExpression ParseAssignment(AstAssignment assignment, CppStage1Scope scope) => 
+        new CppAssignmentExpression(
+            assignment.Target.Value,
+            ParseExpression(assignment.Value, scope),
+            scope);
 
-    public static ICppExpression ParseBinOp(AstBinOp op)
+
+    public static ICppExpression ParseBinOp(AstBinOp op, CppStage1Scope scope)
     {
         var function = op.Operator.Match(
             e => e switch
@@ -71,8 +93,8 @@ public class CppParser
         );
         
         return new CppBinOpExpression(
-            ParseExpression(op.Left),
-            ParseExpression(op.Right),
+            ParseExpression(op.Left, scope),
+            ParseExpression(op.Right, scope),
             $"operator{function}");
     }
     

@@ -29,7 +29,7 @@ public static class CppTypeExtensions
     extension<T>(T instance) where T : ICppValue
     {
 
-        public ICppValue InvokeMemberFunc(string name, params ICppValue[] parameters)
+        public ICppValueBase InvokeMemberFunc(string name, params ICppValueBase[] parameters)
         {
             // todo: look for the correct overload
             var f = T.SType.Functions.FirstOrDefault(x => x.Name == name);
@@ -45,26 +45,58 @@ public static class CppTypeExtensions
     {
         public ICppFunction GetFunction(string name, params ICppType[] parameters)
         {
-            foreach (var function in type.Functions.Where(x => x.Name == name))
+            foreach (var function in type.Functions
+                         .Where(x => x.Name == name)
+                         .Where(x => x.InstanceType == type))
             {
                 if (parameters is [] && function.InstanceType is null && function.ParameterTypes.Length == 0)
                     return function;
 
-                if (parameters is [var instance, .. var param]
-                    && instance == function.InstanceType
-                    && param.ZipFill(function.ParameterTypes).All(x => x.Left == x.Right))
+                if (parameters.ZipFill(function.ParameterTypes).All(x => x.Left?.Equals(x.Right) ?? false))
                     return function;
-
-                if (function.InstanceType is null &&
-                    function.ParameterTypes.ZipFill(parameters).All(x => x.Left == x.Right))
-                    return function;
+                
+                // if (parameters is [var instance, .. var param]
+                //     && instance == function.InstanceType
+                //     && param.ZipFill(function.ParameterTypes).All(x => x.Left == x.Right))
+                //     return function;
+                //
+                // if (function.InstanceType is null &&
+                //     function.ParameterTypes.ZipFill(parameters).All(x => x.Left == x.Right))
+                //     return function;
             }
 
-            if (type.Functions.All(x => x.Name == name))
+            if (type.Functions.All(x => x.Name != name))
                 throw new Exception($"Type '{type}' does not have a function named  '{name}'");
             
             throw new Exception($"No matching function '{name}' found on type '{type}'");
         }
+
+        public ICppValue Construct<T>(params ICppValue[] parameters) where T : ICppValue
+        {
+            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.Type).ToArray();
+            
+            var ctor = T.SType.Constructor.FirstOrDefault(x =>
+                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
+            
+            if (ctor is null)
+                throw new Exception($"Constructor '{typeof(T)}' not found");
+            
+            return ctor.Construct(parameters);
+        }
+        
+        public ICppValue Construct(params ICppValue[] parameters)
+        {
+            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.Type).ToArray();
+            
+            var ctor = type.Constructor.FirstOrDefault(x =>
+                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
+            
+            if (ctor is null)
+                throw new Exception($"Constructor '{type}' not found");
+            
+            return ctor.Construct(parameters);
+        }
+        
     }
 
     extension<T>(IEnumerable<T> collection)

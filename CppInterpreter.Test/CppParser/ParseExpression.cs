@@ -18,9 +18,9 @@ public class ParseExpression
             new AstExpression(new AstLiteral(6)),
             AstBinOpOperator.Arithmetic.Add
         ));
-
+        
         //Act
-        var expr = CppInterpreter.CppParser.CppParser.ParseExpression(ast);
+        var expr = CppInterpreter.CppParser.CppParser.ParseExpression(ast, null!);
         var result = expr.Evaluate();
         
         //Assert

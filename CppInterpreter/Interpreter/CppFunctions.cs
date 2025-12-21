@@ -7,7 +7,7 @@ public interface ICppFunction
     ICppType? InstanceType { get; } // TODO: remove instance type from ICppFunction
     ICppType[] ParameterTypes { get; }
 
-    ICppValue Invoke(ICppValue? instance, ICppValue[] parameters);
+    ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters);
 }
 
 
@@ -19,7 +19,7 @@ public sealed class MemberAction<TInstance>(string name, Action<TInstance> actio
     public ICppType? InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [];
     
-    public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
+    public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
             throw new InvalidTypeException(TInstance.SType, instance?.Type);
@@ -36,9 +36,9 @@ public sealed class MemberAction<TInstance, TValue1>(string name, Action<TInstan
     public string Name => name;
     public ICppType ReturnType => new CppVoidType();
     public ICppType? InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [];
+    public ICppType[] ParameterTypes => [ TValue1.SType ];
     
-    public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
+    public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
             throw new InvalidTypeException(TInstance.SType, instance?.Type);
@@ -61,7 +61,7 @@ public sealed class MemberFunction<TInstance, TReturn>(string name, Func<TInstan
     public ICppType? InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [];
     
-    public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
+    public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
             throw new InvalidTypeException(TInstance.SType, instance?.Type);
@@ -80,7 +80,7 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
     public ICppType? InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [ TValue1.SType ];
     
-    public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
+    public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
             throw new InvalidTypeException(TInstance.SType, instance?.Type);
@@ -90,6 +90,39 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
         
         return function(tInstance, v1);
     }
+}
+
+
+public interface ICppConstructor
+{
+    ICppType InstanceType { get; }
+    ICppType[] ParameterTypes { get; }
+    ICppValue Construct(ICppValue[] parameters);
+};
+
+public sealed class ConstructorFunction<TInstance>(Func<TInstance> constructor) : ICppConstructor
+    where TInstance : ICppValue
+{
+    public ICppType InstanceType => TInstance.SType;
+    public ICppType[] ParameterTypes => [ ];
+
+    public ICppValue Construct(ICppValue[] parameters) => constructor();
+}
+
+public sealed class ConstructorFunction<TInstance, TValue1>(Func<TValue1, TInstance> constructor)
+    where TInstance : ICppValue
+    where TValue1 : ICppValue
+{
+    public ICppType InstanceType => TInstance.SType;
+    public ICppType[] ParameterTypes => [ TValue1.SType ];
+    public ICppValue Construct(ICppValue[] parameters)
+    {
+        if (parameters is not [ TValue1 v1 ])
+            throw new InvalidParametersException("Invalid parameters");
+        
+        return constructor(v1);
+    }
+
 }
 
 // public static class CppFunctionExtensions
