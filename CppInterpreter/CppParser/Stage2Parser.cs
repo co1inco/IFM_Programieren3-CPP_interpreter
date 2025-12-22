@@ -19,7 +19,7 @@ public partial class Stage2VarDefinition : OneOfBase<AstAssignment, Default>
 } 
 
 
-public record Stage2SyntaxTree(Stage2Statement[] Statement, Scope<ICppValueBase> Scope, Scope<ICppType> TypeScope);
+public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValueBase> Scope, Scope<ICppType> TypeScope);
 
 
 /// <summary>
@@ -32,9 +32,9 @@ public static class Stage2Parser
     public static Scope<ICppType> CreateBaseScope() => new Scope<ICppType>();
     
 
-    public static Stage2SyntaxTree ParseProgram(Stage1SymbolTree program, Scope<ICppValueBase> scope)
+    public static Stage2SymbolTree ParseProgram(Stage1SymbolTree program, Scope<ICppValueBase> scope)
     {
-        return new Stage2SyntaxTree(
+        return new Stage2SymbolTree(
             program.Statements
                 .Select(x => ParseStatement(x, scope, program.Scope))
                 .ToArray(),
@@ -59,6 +59,7 @@ public static class Stage2Parser
         if (!typeScope.TryGetSymbol(definition.AstType.Ident, out var type))
             throw new Exception($"Unknown type '{definition.AstType.Ident}'");
 
+        // Maybe don't use the values here but instead add a ValueReference type?
         var value = type.Create();
         
         if (!scope.TryBindSymbol(definition.Ident.Value, value))
