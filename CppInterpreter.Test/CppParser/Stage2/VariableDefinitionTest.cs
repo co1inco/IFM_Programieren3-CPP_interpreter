@@ -28,7 +28,7 @@ public class VariableDefinitionTest
         var result = Stage2Parser.ParseVarDefinition(ast, scope, typeScope);
         
         //Assert
-        result.Value.ShouldBeOfType<Default>();
+        result.ShouldBeOfType<Default>();
 
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();
         test.ShouldBeOfType<CppInt32Value>();
@@ -54,7 +54,7 @@ public class VariableDefinitionTest
         var result = Stage2Parser.ParseVarDefinition(ast, scope, typeScope);
         
         //Assert
-        result.Value.ShouldBeOfType<AstAssignment>().Value
+        result.ShouldBeOfType<AstAssignment>().Value
             .Value.ShouldBe(initializer);
 
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();

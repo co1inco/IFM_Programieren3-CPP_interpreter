@@ -16,14 +16,21 @@ Console.WriteLine("Hello, World!");
 //
 // Console.WriteLine($"{a} + {b} = {c}");
 
-var scope = new CppStage1Scope()
-{
-    Values = new Scope<ICppValueBase>(),
-    Types = new Scope<ICppType>()
-};
+// var scope = new CppStage1Scope()
+// {
+//     Values = new Scope<ICppValueBase>(),
+//     Types = new Scope<ICppType>()
+// };
+//
+// scope.Values.TryBindSymbol("test", new CppInt32Value(0));
 
-scope.Values.TryBindSymbol("test", new CppInt32Value(0));
+var typeScope = new Scope<ICppType>();
+typeScope.TryBindSymbol("int", CppTypes.Int32);
+typeScope.TryBindSymbol("long", CppTypes.Int64);
 
+var stage1Scope = Stage1Parser.CreateBaseScope();
+var stage2Scope = Stage2Parser.CreateBaseScope();
+var scope = new Scope<ICppValueBase>();
 
 while (true)
 {
@@ -38,11 +45,30 @@ while (true)
     var lexer = new GrammarLexer(CharStreams.fromString(line));
     var aParser = new GrammarParser(new CommonTokenStream(lexer));
 
-    var ast = AstParser.ParseExpression(aParser.expression());
+    // var ast = AstParser.ParseExpression(aParser.expression());
 
-    var cpp = CppInterpreter.CppParser.CppParser.ParseExpression(ast, scope);
+    var ast = AstParser.ParseStatement(aParser.statement());
+    var s1 = Stage1Parser.ParseProgram([ ast ], stage1Scope);
+    var s2 = Stage2Parser.ParseProgram(s1, stage2Scope);
 
-    Console.WriteLine(cpp.Evaluate().StringRep());
+    try
+    {
+        var stmt = Stage3Parser.ParseProgram(s2);
+
+        Console.WriteLine(stmt(scope)?.StringRep() ?? "<void>");
+    }
+    catch (NotImplementedException)
+    {
+        throw;
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Eval failed: {ex.Message}");
+    }
+     
+    // var cpp = CppInterpreter.CppParser.CppParser.ParseExpression(ast, scope);
+    //
+    // Console.WriteLine(cpp.Evaluate().StringRep());
 }
 
 

@@ -24,6 +24,16 @@ public sealed class AntlrMissMatchException(string message) : Exception(message)
 public static class AstParser
 {
 
+    public static AstStatement ParseStatement(StatementContext ctx)
+    {
+        if (ctx.expression() is {} expr)
+            return ParseExpression(expr);
+        if (ctx.variableDefinition() is {} varDef)
+            return ParseVarDefinition(varDef);
+
+        throw new NotImplementedException();
+    }
+    
     public static AstExpression ParseExpression(ExpressionContext ctx)
     {
         if (ctx.literal() is { } literal) return ParseLiteral(literal);
@@ -95,7 +105,7 @@ public static class AstParser
         new(
             ParseTypeUsage(ctx.typeIdentifierUsage()),
             ParseVarIdentifier(ctx.varIdentifier()),
-            null
+            ctx.expression() is not null ? ParseExpression(ctx.expression()) : null
         );
 
     public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)

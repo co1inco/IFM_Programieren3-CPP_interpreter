@@ -4,7 +4,7 @@ using CppInterpreter.Interpreter;
 namespace CppInterpreter.CppParser;
 
 
-public delegate void InterpreterStatement(Scope<ICppValueBase> scope);
+public delegate ICppValueBase? InterpreterStatement(Scope<ICppValueBase> scope);
 public delegate ICppValueBase InterpreterExpression(Scope<ICppValueBase> scope);
 
 public class Stage3Parser
@@ -19,15 +19,40 @@ public class Stage3Parser
                     var expr = ParseExpression(e);
                     return s => expr(s);
                 },
-                i => throw new NotImplementedException()
+                i =>
+                {
+                    var def = ParseVariableDefinition(i);
+                    return s => def(s);
+                }
             ));
 
         return s =>
         {
+            ICppValueBase? last = null;
             foreach (var statement in statements)
             {
-                statement(s);
+                last = statement(s);
             }
+
+            return last;
+        };
+    }
+
+    public static InterpreterStatement ParseVariableDefinition(Stage2VarDefinition definition)
+    {
+        var initializer = definition.Initializer is null
+            ? null
+            : ParseAssignment(new AstAssignment(
+                new AstIdentifier(definition.Name), 
+                definition.Initializer));
+        
+        return scope =>
+        {
+            var instance = definition.Type.Create();
+            if (!scope.TryBindSymbol(definition.Name, instance))
+                throw new Exception($"Variable '{definition.Name}' was already defined");
+
+            return initializer?.Invoke(scope);
         };
     }
     

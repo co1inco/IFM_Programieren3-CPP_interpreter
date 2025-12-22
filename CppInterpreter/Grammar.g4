@@ -19,8 +19,7 @@ functionDefinition : (typeIdentifier | TYPE_VOID) ident=IDENTIFIER '(' parameter
 
 parameterList : (typeIdentifierUsage varIdentifier)? (',' typeIdentifierUsage varIdentifier)* ; 
 
-variableDefinition : typeIdentifierUsage assignment 
-				   | typeIdentifierUsage varIdentifier;
+variableDefinition : typeIdentifierUsage varIdentifier ('=' expression);
 
 ifStmt : 'if' '(' cond=expression ')' innerBlock elseStmt?;
 

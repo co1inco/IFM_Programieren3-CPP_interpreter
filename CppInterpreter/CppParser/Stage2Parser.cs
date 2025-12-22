@@ -12,11 +12,13 @@ public partial class Stage2Statement : OneOfBase<AstExpression, Stage2VarDefinit
     
 }
 
-[GenerateOneOf]
-public partial class Stage2VarDefinition : OneOfBase<AstAssignment, Default>
-{
-    
-} 
+// [GenerateOneOf]
+// public partial class Stage2VarDefinition : OneOfBase<AstAssignment, Default>
+// {
+//     
+// } 
+
+public record Stage2VarDefinition(ICppType Type, string Name, AstExpression? Initializer);
 
 
 public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValueBase> Scope, Scope<ICppType> TypeScope);
@@ -29,11 +31,12 @@ public static class Stage2Parser
 {
 
 
-    public static Scope<ICppType> CreateBaseScope() => new Scope<ICppType>();
+    public static Scope<ICppValueBase> CreateBaseScope() => new Scope<ICppValueBase>();
     
 
     public static Stage2SymbolTree ParseProgram(Stage1SymbolTree program, Scope<ICppValueBase> scope)
     {
+        // TODO: TopLevel statements must be collected and initialization must happen before any user code is executed
         return new Stage2SymbolTree(
             program.Statements
                 .Select(x => ParseStatement(x, scope, program.Scope))
@@ -65,8 +68,6 @@ public static class Stage2Parser
         if (!scope.TryBindSymbol(definition.Ident.Value, value))
             throw new Exception($"'{definition.Ident.Value}' was already defined");
 
-        if (definition.Initializer is not null)
-            return new AstAssignment(definition.Ident, definition.Initializer);
-        return new Default();
+        return new Stage2VarDefinition(type, definition.Ident.Value, definition.Initializer);
     }
 }
