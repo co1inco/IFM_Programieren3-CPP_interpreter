@@ -94,7 +94,8 @@ public static class AstParser
     public static AstVarDefinition ParseVarDefinition(VariableDefinitionContext ctx) =>
         new(
             ParseTypeUsage(ctx.typeIdentifierUsage()),
-            ParseVarIdentifier(ctx.varIdentifier())
+            ParseVarIdentifier(ctx.varIdentifier()),
+            null
         );
 
     public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)

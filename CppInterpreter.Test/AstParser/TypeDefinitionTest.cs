@@ -67,6 +67,6 @@ public class TypeDefinitionTest
         
         //Assert
         ast.AstType.Ident.ShouldBe("int");
-        ast.Value.Value.ShouldBe("test");
+        ast.Ident.Value.ShouldBe("test");
     }
 }

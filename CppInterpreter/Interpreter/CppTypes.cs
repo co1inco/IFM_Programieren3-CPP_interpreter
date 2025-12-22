@@ -48,12 +48,14 @@ public interface ICppType : IEquatable<ICppType>
     ICppConverter[] Converter { get; }
 
     public bool IsAssignableTo(ICppType other);
+
+    ICppValueBase Create();
 }
 
 
-public class CppPrimitiveType : ICppType
+public abstract class CppPrimitiveType : ICppType
 {
-    public CppPrimitiveType(string name, ICppFunction[]? functions = null)
+    protected CppPrimitiveType(string name, ICppFunction[]? functions = null)
     {
         Name = name;
         if (functions is not null)
@@ -69,7 +71,8 @@ public class CppPrimitiveType : ICppType
     public bool IsAssignableTo(ICppType other) => other.GetType() == GetType();
     
     public bool Equals(ICppType? other) => Name == other?.Name;
-    
+
+    public abstract ICppValueBase Create();
 }
 
 public sealed class CppVoidType : CppPrimitiveType
@@ -79,6 +82,8 @@ public sealed class CppVoidType : CppPrimitiveType
         Constructor = [ new ConstructorFunction<CppVoidValue>(() => new CppVoidValue() ) ];
         Functions = [];
     }
+
+    public override ICppValueBase Create() => new CppVoidValue();
 };
 
 public sealed class CppInt32Type : CppPrimitiveType
@@ -91,6 +96,8 @@ public sealed class CppInt32Type : CppPrimitiveType
             ..CppCommonOperators.IntegerOperators<CppInt32Value, Int32>()
         ];
     }
+
+    public override ICppValueBase Create() => new CppInt32Value(0);
 }
 
 public sealed class CppInt64Type : CppPrimitiveType
@@ -103,6 +110,8 @@ public sealed class CppInt64Type : CppPrimitiveType
             ..CppCommonOperators.IntegerOperators<CppInt64Value, Int64>()
         ];
     }
+    
+    public override ICppValueBase Create() => new CppInt64Value(0);
 }
 
 

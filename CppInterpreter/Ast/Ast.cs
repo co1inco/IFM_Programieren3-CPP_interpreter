@@ -7,7 +7,12 @@ public class AstProgram
     
 }
 
-public class AstStatement
+[GenerateOneOf]
+public partial class AstStatement : OneOfBase<
+    AstExpression,
+    AstVarDefinition
+    // TODO: function definition
+>
 {
     
 }
@@ -31,7 +36,7 @@ public record AstUnary(AstExpression Expression, AstUnary.UnaryOperator Operator
     
 public record AstAssignment(AstIdentifier Target, AstExpression Value);
     
-public record AstVarDefinition(AstTypeIdentifier AstType, AstIdentifier Value);
+public record AstVarDefinition(AstTypeIdentifier AstType, AstIdentifier Ident, AstExpression? Initializer);
 
 public record struct AstTypeIdentifier(string Ident, bool IsReference);
 
