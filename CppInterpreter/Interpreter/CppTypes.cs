@@ -34,6 +34,7 @@ public class CppTypes
     public static ICppType Int64 => field ??= new CppInt64Type();
     
     public static ICppType Void => field ??= new CppVoidType();
+    public static ICppType Boolean => field ??= new CppBoolType();
     
     
 }
@@ -85,6 +86,20 @@ public sealed class CppVoidType : CppPrimitiveType
 
     public override ICppValueBase Create() => new CppVoidValue();
 };
+
+
+public sealed class CppBoolType : CppPrimitiveType
+{
+    public CppBoolType() : base("bool")
+    {
+        Functions =
+        [
+            ..CppCommonOperators.EquatorOperators<CppBoolValue, bool>()
+        ];
+    }
+
+    public override ICppValueBase Create() => new CppBoolValue(false);
+}
 
 public sealed class CppInt32Type : CppPrimitiveType
 {
@@ -139,6 +154,15 @@ public static class CppCommonOperators
         where TP : INumber<TP> =>
     [
         ..ArithmeticOperators<T, TP>(),
+        ..EquatorOperators<T, TP>(),
         PrimitiveAssignment<T, TP>()
+    ];
+    
+    public static IEnumerable<ICppFunction> EquatorOperators<T, TP>()
+        where T : ICppPrimitiveValue<TP, T>
+        where TP : IEquatable<TP> =>
+    [
+        new MemberFunction<T, T, CppBoolValue>("operator==", (a, b) => new CppBoolValue(a.Value.Equals(b.Value))),
+        new MemberFunction<T, T, CppBoolValue>("operator!=", (a, b) => new CppBoolValue(!a.Value.Equals(b.Value)))
     ];
 }

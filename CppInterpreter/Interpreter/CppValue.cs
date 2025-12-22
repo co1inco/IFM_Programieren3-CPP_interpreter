@@ -40,6 +40,14 @@ public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppVal
     public string StringRep() => Value?.ToString() ?? "(null)";
 }
 
+public sealed class CppBoolValue(bool value)
+    : CppPrimitiveValue<bool, CppBoolValue>(value)
+    , ICppPrimitiveValue<bool, CppBoolValue>
+{
+    public static ICppType SType => CppTypes.Boolean;
+    public static CppBoolValue Create(bool value) => new CppBoolValue(value);
+}
+
 public sealed class CppInt32Value(int value) 
     : CppPrimitiveValue<int, CppInt32Value>(value)
     , ICppPrimitiveValue<int, CppInt32Value>
