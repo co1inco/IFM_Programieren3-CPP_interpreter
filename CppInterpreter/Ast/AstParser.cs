@@ -99,7 +99,7 @@ public static class AstParser
             ParseExpression(ctx.expression())
         );
 
-    
+
 
     public static AstVarDefinition ParseVarDefinition(VariableDefinitionContext ctx) =>
         new(
