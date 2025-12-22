@@ -36,6 +36,7 @@ public static class AstParser
     
     public static AstExpression ParseExpression(ExpressionContext ctx)
     {
+        if (ctx.brace is {} expr) return ParseExpression(expr);
         if (ctx.literal() is { } literal) return ParseLiteral(literal);
         if (ctx.atom() is { } atom) return new AstAtom(atom.GetText());
         if (ctx.assignment() is { } assignment) return ParseAssignment(assignment);

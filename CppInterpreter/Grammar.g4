@@ -33,7 +33,8 @@ forStmt : 'for' '(' setup=statement? ';' cond=expression? ';' incr=expression? '
 doWhileStmt : 'do' block 'while' '(' cond=expression ')' ';';
 
 
-expression : func=expression '(' param=expression (',' param=expression)* ')' 
+expression : '(' brace=expression ')'
+ 		   | func=expression '(' param=expression (',' param=expression)* ')' 
 		   | subscript=expression '[' param=expression ']'
 		   // TODO: Member access
 		   | unary=('++' | '--') expression 
