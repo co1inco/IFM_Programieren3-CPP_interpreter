@@ -21,11 +21,27 @@ public class CppCallableValue : ICppValue
 
     public bool AddOverload(ICppFunction overload)
     {
-        throw new NotImplementedException();
+        if (_overloads
+            .Any(x => x.ParameterTypes
+                .ZipFill(overload.ParameterTypes)
+                .All(y => y.Right == y.Left)))
+            throw new Exception("Overloads already exists");
+        
+        _overloads.Add(overload);
+        return true;
     }
     
-    public ICppFunction? GetOverload(params ICppType[] parameters)
+    public ICppFunction? GetOverload(params IEnumerable<ICppType> parameters) =>
+        _overloads
+            .SingleOrDefault(x => x.ParameterTypes
+                .ZipFill(parameters)
+                .All(y => y.Right?.Equals(y.Left) ?? false));
+
+    public ICppValueBase Invoke(params ICppValueBase[] parameters)
     {
-        throw new NotImplementedException();
+        if (GetOverload(parameters.Select(x => x.Type)) is not {} overload)
+            throw new Exception("Overload doesn't exist");
+
+        return overload.Invoke(null, parameters);
     }
 }

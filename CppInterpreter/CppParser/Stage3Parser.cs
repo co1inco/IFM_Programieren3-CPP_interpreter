@@ -64,7 +64,7 @@ public class Stage3Parser
             ParseAssignment,
             ParseBinOp,
             unary => throw new NotImplementedException(),
-            func => throw new NotImplementedException()
+            func => ParseFunction(func, null)
         );
 
     public static InterpreterExpression ParseAtom(AstAtom atom) => s =>
@@ -156,4 +156,24 @@ public class Stage3Parser
             s => throw new NotImplementedException(),
             b => _ => new CppBoolValue(b)
         );
+
+    public static InterpreterExpression ParseFunction(AstFunctionCall functionCall, Scope<ICppValueBase> scope)
+    {
+        // TODO: check functionCall type here
+        var callable = ParseExpression(functionCall.Function);
+        var arguments = functionCall.Arguments.Select(ParseExpression).ToArray();
+        
+        //TODO: already have the type of the callable here and validate parameters / get overload
+        
+        return s =>
+        {
+            var c = callable(s);
+            var a = arguments.Select(x => x(s)).ToArray();
+
+            if (c is not CppCallableValue callableValue)
+                throw new Exception("Value was not a Callable");
+
+            return callableValue.Invoke(a);
+        };
+    }
 }
