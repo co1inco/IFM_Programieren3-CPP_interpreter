@@ -28,7 +28,7 @@ public class Scope<T>
             return true;
 
         if (_parentScope is not null)
-            _parentScope.TryGetSymbol(name, out value);
+            return _parentScope.TryGetSymbol(name, out value);
 
         value = default(T);
         return false;

@@ -39,6 +39,11 @@ public static class Stage2Parser
 
         var print = new CppCallableValue(scope);
         scope.TryBindSymbol("print", print);
+        
+        print.AddOverload(new CppAction<CppInt32Value>("print", Console.WriteLine));
+        print.AddOverload(new CppAction<CppInt64Value>("print", Console.WriteLine));
+        print.AddOverload(new CppAction<CppBoolValue>("print", Console.WriteLine));
+        
         return scope;
     }
 

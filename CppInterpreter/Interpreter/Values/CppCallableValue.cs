@@ -5,7 +5,7 @@ namespace CppInterpreter.Interpreter.Values;
 public class CppCallableValue : ICppValue
 {
     private readonly Scope<ICppValueBase> _scope;
-    private List<ICppFunction> _overloads = [];
+    private readonly List<ICppFunction> _overloads = [];
     
     public static ICppType SType => CppTypes.Callable;
     public ICppType Type => SType;
