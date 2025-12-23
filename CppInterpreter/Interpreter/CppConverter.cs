@@ -1,4 +1,7 @@
-﻿namespace CppInterpreter.Interpreter;
+﻿using CppInterpreter.Interpreter.Types;
+using CppInterpreter.Interpreter.Values;
+
+namespace CppInterpreter.Interpreter;
 
 public interface ICppConverter
 {

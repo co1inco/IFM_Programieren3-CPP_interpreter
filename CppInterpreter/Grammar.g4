@@ -34,7 +34,7 @@ doWhileStmt : 'do' block 'while' '(' cond=expression ')' ';';
 
 
 expression : '(' brace=expression ')'
- 		   | func=expression '(' param=expression (',' param=expression)* ')' 
+ 		   | func=expression '(' funcParameters? ')' 
 		   | subscript=expression '[' param=expression ']'
 		   // TODO: Member access
 		   | unary=('++' | '--') expression 
@@ -52,6 +52,8 @@ expression : '(' brace=expression ')'
 		   | literal; //TODO
 
 assignment : varIdentifier '=' expression;
+
+funcParameters : expression (',' expression)*;
 
 atom : IDENTIFIER;
 

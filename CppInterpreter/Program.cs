@@ -5,6 +5,8 @@ using Antlr4.Runtime;
 using CppInterpreter.Ast;
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Types;
+using CppInterpreter.Interpreter.Values;
 using Language;
 
 Console.WriteLine("Hello, World!");
@@ -30,7 +32,7 @@ typeScope.TryBindSymbol("long", CppTypes.Int64);
 
 var stage1Scope = Stage1Parser.CreateBaseScope();
 var stage2Scope = Stage2Parser.CreateBaseScope();
-var scope = new Scope<ICppValueBase>();
+var scope = new Scope<ICppValueBase>(stage2Scope);
 
 while (true)
 {

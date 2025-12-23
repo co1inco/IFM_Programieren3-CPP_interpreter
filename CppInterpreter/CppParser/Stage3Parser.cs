@@ -1,5 +1,6 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.CppParser;
 
@@ -62,7 +63,8 @@ public class Stage3Parser
             ParseAtom,
             ParseAssignment,
             ParseBinOp,
-            unary => throw new NotImplementedException()
+            unary => throw new NotImplementedException(),
+            func => throw new NotImplementedException()
         );
 
     public static InterpreterExpression ParseAtom(AstAtom atom) => s =>

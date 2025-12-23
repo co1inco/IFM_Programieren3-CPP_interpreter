@@ -1,4 +1,5 @@
 ﻿using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Values;
 using Shouldly;
 
 namespace CppInterpreter.Test.Interpreter;

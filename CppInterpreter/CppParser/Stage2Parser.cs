@@ -1,5 +1,7 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Types;
+using CppInterpreter.Interpreter.Values;
 using OneOf;
 
 namespace CppInterpreter.CppParser;
@@ -31,8 +33,15 @@ public static class Stage2Parser
 {
 
 
-    public static Scope<ICppValueBase> CreateBaseScope() => new Scope<ICppValueBase>();
-    
+    public static Scope<ICppValueBase> CreateBaseScope()
+    {
+        var scope = new Scope<ICppValueBase>();
+
+        var print = new CppCallableValue(scope);
+        scope.TryBindSymbol("print", print);
+        return scope;
+    }
+
 
     public static Stage2SymbolTree ParseProgram(Stage1SymbolTree program, Scope<ICppValueBase> scope)
     {

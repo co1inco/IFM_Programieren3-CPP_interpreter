@@ -48,6 +48,7 @@ public static class AstParser
             if (ctx.binop is { } ar) return ParseArithmeticBinOp(left, right, ar);
             throw new AntlrMissMatchException("Got left and right but no supported operator");
         }
+        if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
         throw new NotImplementedException();
     }
 
@@ -91,16 +92,17 @@ public static class AstParser
             _ => throw new AntlrMissMatchException($"Invalid arithmetic operator '{logicOperator.Text}'")
         }); 
     
-    // public static Ast.BinOp Parse
-    
-    
     public static AstAssignment ParseAssignment(AssignmentContext ctx) =>
         new(
             ParseVarIdentifier(ctx.varIdentifier()),
             ParseExpression(ctx.expression())
         );
 
-
+    public static AstFunctionCall ParseFunctionCall(ExpressionContext function, FuncParametersContext? arguments) =>
+        new(
+            ParseExpression(function),
+            arguments?.expression().Select(ParseExpression).ToArray() ?? []
+        );
 
     public static AstVarDefinition ParseVarDefinition(VariableDefinitionContext ctx) =>
         new(

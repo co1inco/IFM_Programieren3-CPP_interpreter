@@ -111,6 +111,12 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitAssignment([NotNull] GrammarParser.AssignmentContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.funcParameters"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitFuncParameters([NotNull] GrammarParser.FuncParametersContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.atom"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

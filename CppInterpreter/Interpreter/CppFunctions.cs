@@ -1,4 +1,7 @@
-﻿namespace CppInterpreter.Interpreter;
+﻿using CppInterpreter.Interpreter.Types;
+using CppInterpreter.Interpreter.Values;
+
+namespace CppInterpreter.Interpreter;
 
 public interface ICppFunction
 {
@@ -89,6 +92,28 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
             throw new InvalidParametersException("Invalid parameters");
         
         return function(tInstance, v1);
+    }
+}
+
+public sealed class CppAction<TValue1>(string name, Action<TValue1> action) : ICppFunction
+    where TValue1 : ICppValue
+{
+    public string Name => name;
+
+    public ICppType ReturnType => CppTypes.Void;
+    public ICppType? InstanceType => null;
+    public ICppType[] ParameterTypes => [ TValue1.SType ];
+    public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
+    {
+        if (instance is not null)
+            throw new Exception("Function is not a member function");
+        
+        if (parameters is not [ TValue1 v1 ])
+            throw new Exception("Invalid parameters");
+
+        action(v1);
+        
+        return new CppVoidValue();
     }
 }
 

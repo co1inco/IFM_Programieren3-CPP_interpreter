@@ -1,5 +1,6 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.CppParser;
 
@@ -35,6 +36,7 @@ public class CppParser
             a => ParseAtom(a, scope),
             a => ParseAssignment(a, scope),
             b => ParseBinOp(b, scope),
+            _ => throw new NotImplementedException(),
             _ => throw new NotImplementedException()
         );
     }

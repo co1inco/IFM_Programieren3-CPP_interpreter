@@ -1,5 +1,6 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Types;
 using OneOf;
 
 namespace CppInterpreter.CppParser;

@@ -47,10 +47,11 @@ public record struct AstAtom(string Value);
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<
     AstLiteral, 
-    Ast.AstAtom, 
-    Ast.AstAssignment,
-    Ast.AstBinOp,
-    Ast.AstUnary>
+    AstAtom, 
+    AstAssignment,
+    AstBinOp,
+    AstUnary,
+    AstFunctionCall>
 {
     
 }
@@ -108,3 +109,5 @@ public partial class AstLiteral : OneOfBase<char, int, string, bool>
 {
         
 }
+
+public record AstFunctionCall(AstExpression Function, AstExpression[] Arguments);

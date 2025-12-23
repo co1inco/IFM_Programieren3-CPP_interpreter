@@ -1,5 +1,7 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Types;
+using CppInterpreter.Interpreter.Values;
 using OneOf.Types;
 
 namespace CppInterpreter.CppParser;
