@@ -30,7 +30,8 @@ public static class AstParser
             return ParseExpression(expr);
         if (ctx.variableDefinition() is {} varDef)
             return ParseVarDefinition(varDef);
-
+        if (ctx.functionDefinition() is {} funcDef)
+            return ParseFunctionDefinition(funcDef);
         throw new NotImplementedException();
     }
     
@@ -111,6 +112,32 @@ public static class AstParser
             ctx.expression() is not null ? ParseExpression(ctx.expression()) : null
         );
 
+    public static AstFuncDefinition ParseFunctionDefinition(FunctionDefinitionContext ctx)
+    {
+        var returnType = ctx.TYPE_VOID() is not null
+            ? new AstTypeIdentifier("void", false)
+            : ParseTypeUsage(ctx.typeIdentifierUsage());
+                
+        return new AstFuncDefinition(
+            new AstIdentifier(ctx.ident.Text),
+            returnType,
+            Enumerable.Zip(
+                    ctx.parameterList()
+                        .typeIdentifierUsage()
+                        .Select(ParseTypeUsage),
+                    ctx.parameterList()
+                        .varIdentifier()
+                        .Select(x => new AstIdentifier(x.ident.Text))
+                    ).ToArray(),
+            ParseBlock(ctx.block())
+        );
+    }
+
+    public static AstStatement[] ParseBlock(BlockContext ctx) => 
+        ctx.statement()
+            .Select(ParseStatement)
+            .ToArray();
+    
     public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)
     {
         if (ctx.typeIdentifier().GetText() == "void")

@@ -349,6 +349,7 @@ public partial class GrammarParser : Parser {
 	}
 
 	public partial class FunctionDefinitionContext : ParserRuleContext {
+		public IToken @void;
 		public IToken ident;
 		[System.Diagnostics.DebuggerNonUserCode] public ParameterListContext parameterList() {
 			return GetRuleContext<ParameterListContext>(0);
@@ -357,8 +358,8 @@ public partial class GrammarParser : Parser {
 			return GetRuleContext<BlockContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(GrammarParser.IDENTIFIER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public TypeIdentifierContext typeIdentifier() {
-			return GetRuleContext<TypeIdentifierContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public TypeIdentifierUsageContext typeIdentifierUsage() {
+			return GetRuleContext<TypeIdentifierUsageContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TYPE_VOID() { return GetToken(GrammarParser.TYPE_VOID, 0); }
 		public FunctionDefinitionContext(ParserRuleContext parent, int invokingState)
@@ -390,13 +391,13 @@ public partial class GrammarParser : Parser {
 			case IDENTIFIER:
 				{
 				State = 74;
-				typeIdentifier();
+				typeIdentifierUsage();
 				}
 				break;
 			case TYPE_VOID:
 				{
 				State = 75;
-				Match(TYPE_VOID);
+				_localctx.@void = Match(TYPE_VOID);
 				}
 				break;
 			default:
@@ -1861,7 +1862,7 @@ public partial class GrammarParser : Parser {
 		3,12,6,0,64,73,3,16,8,0,65,73,3,18,9,0,66,73,3,20,10,0,67,69,5,2,0,0,68,
 		70,3,22,11,0,69,68,1,0,0,0,69,70,1,0,0,0,70,71,1,0,0,0,71,73,5,1,0,0,72,
 		56,1,0,0,0,72,59,1,0,0,0,72,60,1,0,0,0,72,63,1,0,0,0,72,64,1,0,0,0,72,
-		65,1,0,0,0,72,66,1,0,0,0,72,67,1,0,0,0,73,5,1,0,0,0,74,77,3,38,19,0,75,
+		65,1,0,0,0,72,66,1,0,0,0,72,67,1,0,0,0,73,5,1,0,0,0,74,77,3,36,18,0,75,
 		77,5,39,0,0,76,74,1,0,0,0,76,75,1,0,0,0,77,78,1,0,0,0,78,79,5,46,0,0,79,
 		80,5,3,0,0,80,81,3,8,4,0,81,82,5,4,0,0,82,83,3,42,21,0,83,7,1,0,0,0,84,
 		85,3,36,18,0,85,86,3,34,17,0,86,88,1,0,0,0,87,84,1,0,0,0,87,88,1,0,0,0,

@@ -15,7 +15,7 @@ statement : expression ';'
 		  | 'return' expression? ';';
 
 
-functionDefinition : (typeIdentifier | TYPE_VOID) ident=IDENTIFIER '(' parameterList ')' block;
+functionDefinition : (typeIdentifierUsage | void=TYPE_VOID) ident=IDENTIFIER '(' parameterList ')' block;
 
 parameterList : (typeIdentifierUsage varIdentifier)? (',' typeIdentifierUsage varIdentifier)* ; 
 

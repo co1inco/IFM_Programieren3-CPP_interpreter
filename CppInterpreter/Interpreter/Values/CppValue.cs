@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Interpreter.Types;
+﻿using System.Diagnostics.CodeAnalysis;
+using CppInterpreter.Interpreter.Types;
 
 namespace CppInterpreter.Interpreter.Values;
 
@@ -14,6 +15,43 @@ public interface ICppValue : ICppValueBase
     static abstract ICppType SType { get; }
 
 }
+
+public static class CppValues
+{
+    extension(Scope<ICppValueBase> scope)
+    {
+        public bool TryBindFunction(string name, ICppFunction func)
+        {
+
+            if (!scope.TryEnsureCallable(name, out var callable))
+                return false;
+
+            callable.AddOverload(func);
+            return true;
+        }
+
+        private bool TryEnsureCallable(string name, [NotNullWhen(true)] out CppCallableValue? callable)
+        {
+            if (!scope.TryGetSymbol(name, out var symbol))
+            {
+                callable = new CppCallableValue(scope);
+                return scope.TryBindSymbol(name, callable);
+            }
+
+            if (symbol is not CppCallableValue c)
+            {
+                callable = null;
+                return false;
+            }
+
+            callable = c;
+            return true;
+        } 
+        
+        
+    }
+}
+
 
 public struct CppVoidValue : ICppValue
 {

@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Interpreter.Types;
+﻿using CppInterpreter.Ast;
+using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter;
@@ -116,6 +117,62 @@ public sealed class CppAction<TValue1>(string name, Action<TValue1> action) : IC
         return new CppVoidValue();
     }
 }
+
+public sealed class CppUserFunction : ICppFunction
+{
+    public CppUserFunction(
+        string name,
+        ICppType returnType, 
+        (string Name, ICppType Type)[] arguments,
+        AstStatement[] body)
+    {
+        Name = name;
+        ReturnType = returnType;
+        ParameterTypes = arguments.Select(x => x.Type).ToArray();
+        Arguments = arguments;
+        Body = body;
+    }
+    
+    public string Name { get; }
+    public ICppType ReturnType { get; }
+    public ICppType? InstanceType => null;
+    public ICppType[] ParameterTypes { get; }
+    
+    public (string Name, ICppType)[] Arguments { get; }
+    
+    public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
+    {
+        if (instance is not null)
+            throw new Exception("Function is not a member function");
+        
+        if (parameters.ZipFill(ParameterTypes).Any(x => !x.Left?.Type.Equals(x.Right) ?? false))
+            throw new Exception("Invalid parameters");
+
+        if (Function is null || Closure is null)
+            throw new Exception("Function was not build");
+
+        var functionScope = new Scope<ICppValueBase>(Closure);
+        
+        foreach (var (value, parameter) in parameters.Zip(Arguments)) 
+        {
+            functionScope.TryBindSymbol(parameter.Name, value);
+        }
+        
+        return Function.Invoke(functionScope);
+    }
+    
+    public AstStatement[] Body { get; }
+    
+    public Func<Scope<ICppValueBase>, ICppValueBase>? Function { get; private set; }
+    public Scope<ICppValueBase>? Closure { get; private set; }
+    
+    public void BuildBody(Scope<ICppValueBase> closure, Func<AstStatement[], Func<Scope<ICppValueBase>, ICppValueBase>> builder)
+    {
+        Closure = closure;
+        Function = builder(Body);
+    }
+}
+
 
 
 public interface ICppConstructor

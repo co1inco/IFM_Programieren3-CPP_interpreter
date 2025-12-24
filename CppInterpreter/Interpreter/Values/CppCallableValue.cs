@@ -17,7 +17,7 @@ public class CppCallableValue : ICppValue
     
     public string StringRep() => "<Callable>";
 
-    public ICollection<ICppFunction> Overloads => _overloads;
+    public IList<ICppFunction> Overloads => _overloads;
 
     public bool AddOverload(ICppFunction overload)
     {

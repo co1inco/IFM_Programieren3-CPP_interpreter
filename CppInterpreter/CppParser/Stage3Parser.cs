@@ -1,5 +1,6 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.CppParser;
@@ -20,11 +21,8 @@ public class Stage3Parser
                     var expr = ParseExpression(e);
                     return s => expr(s);
                 },
-                i =>
-                {
-                    var def = ParseVariableDefinition(i);
-                    return s => def(s);
-                }
+                ParseVariableDefinition,
+                x => BuildFunction(x, program.TypeScope)
             ));
 
         return s =>
@@ -39,6 +37,61 @@ public class Stage3Parser
         };
     }
 
+    public static InterpreterStatement BuildFunction(Stage2FuncDefinition definition, Scope<ICppType> typeScope)
+    {
+        definition.Function.BuildBody(definition.Closure, body =>
+        {
+            var statements = body.Select(x => ParseStatement(x, typeScope)).ToArray();
+
+            return s =>
+            {
+                foreach (var statement in statements)
+                {
+                    statement(s);
+                }
+                // TODO: Implement returns
+                return new CppVoidValue();
+            };
+        });
+        
+        return _ => new CppVoidValue();
+    }
+
+    public static InterpreterStatement ParseStatement(AstStatement statement, Scope<ICppType> typeScope)
+    {
+        return statement.Match<InterpreterStatement>(
+            e =>
+            {
+                var expr = ParseExpression(e);
+                return s => expr(s);
+            },
+            d => ParseVariableDefinition(d, typeScope),
+            f => throw new Exception("Functions can not be placed here")
+        );
+    }
+
+    public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppType> typeScope)
+    {
+        var initializer = definition.Initializer is null
+            ? null
+            : ParseAssignment(new AstAssignment(
+                new AstIdentifier(definition.Ident.Value), 
+                definition.Initializer));
+        
+        //TODO: Implement reference types
+        if (!typeScope.TryGetSymbol(definition.AstType.Ident, out var type))
+            throw new Exception($"Unknown type '{definition.AstType.Ident}'");
+        
+        return scope =>
+        {
+            var instance = type.Create();
+            if (!scope.TryBindSymbol(definition.Ident.Value, instance))
+                throw new Exception($"Variable '{definition.Ident.Value}' was already defined");
+
+            return initializer?.Invoke(scope);
+        };
+    }
+    
     public static InterpreterStatement ParseVariableDefinition(Stage2VarDefinition definition)
     {
         var initializer = definition.Initializer is null
@@ -47,6 +100,7 @@ public class Stage3Parser
                 new AstIdentifier(definition.Name), 
                 definition.Initializer));
         
+        // TODO: Stage2VarDefinition creation should happen in stage 2
         return scope =>
         {
             var instance = definition.Type.Create();

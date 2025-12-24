@@ -9,7 +9,10 @@ namespace CppInterpreter.CppParser;
 public record struct Default();
 
 [GenerateOneOf]
-public partial class Stage2Statement : OneOfBase<AstExpression, Stage2VarDefinition>
+public partial class Stage2Statement : OneOfBase<
+    AstExpression, 
+    Stage2VarDefinition,
+    Stage2FuncDefinition>
 {
     
 }
@@ -21,6 +24,14 @@ public partial class Stage2Statement : OneOfBase<AstExpression, Stage2VarDefinit
 // } 
 
 public record Stage2VarDefinition(ICppType Type, string Name, AstExpression? Initializer);
+public record Stage2FuncDefinition(
+    string Name, 
+    ICppType ReturnType, 
+    (string Name, ICppType Type)[] Arguments,
+    AstStatement[] Body,
+    CppUserFunction Function,
+    Scope<ICppValueBase> Closure
+);
 
 
 public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValueBase> Scope, Scope<ICppType> TypeScope);
@@ -64,7 +75,8 @@ public static class Stage2Parser
     {
         return statement.Match<Stage2Statement>(
             e => e,
-            v => ParseVarDefinition(v, scope, typeScope)
+            v => ParseVarDefinition(v, scope, typeScope),
+            f => ParseFuncDefinition(f, scope, typeScope)
         );
     }
 
@@ -83,5 +95,40 @@ public static class Stage2Parser
             throw new Exception($"'{definition.Ident.Value}' was already defined");
 
         return new Stage2VarDefinition(type, definition.Ident.Value, definition.Initializer);
+    }
+
+    public static Stage2FuncDefinition ParseFuncDefinition(
+        AstFuncDefinition definition,
+        Scope<ICppValueBase> scope,
+        Scope<ICppType> typeScope)
+    {
+        if (!typeScope.TryGetSymbol(definition.ReturnType.Ident, out var returnType))
+            throw new Exception($"Unknown return type '{definition.ReturnType.Ident}'");
+
+        if (definition.ReturnType.IsReference)
+            throw new Exception($"Return type '{definition.ReturnType.Ident}' is a reference type");
+        
+        List<(string, ICppType)> arguments = [];
+        foreach (var argument in definition.Arguments)
+        {
+            // TODO: implement reference types
+            if (!typeScope.TryGetSymbol(argument.Type.Ident, out var argumentType))
+                throw new Exception($"Unknown type '{argument.Type.Ident}'");
+            arguments.Add((argument.Name.Value, argumentType));
+        }
+
+        var function = new CppUserFunction(definition.Ident.Value, returnType, arguments.ToArray(), definition.Body);
+        
+        if (!scope.TryBindFunction(definition.Ident.Value, function))
+            throw new Exception($"Failed to bind function '{definition.Ident.Value}' to environment");
+        
+        return new Stage2FuncDefinition(
+            definition.Ident.Value,
+            returnType,
+            arguments.ToArray(),
+            definition.Body,
+            function,
+            scope
+        );
     }
 }
