@@ -207,7 +207,7 @@ public class Stage3Parser
         literal.Match<InterpreterExpression>(
             c => throw new NotImplementedException(),
             i => _ => new CppInt32Value(i),
-            s => throw new NotImplementedException(),
+            s => _ => new CppStringValue(s),
             b => _ => new CppBoolValue(b)
         );
 

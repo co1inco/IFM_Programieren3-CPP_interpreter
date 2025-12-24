@@ -36,6 +36,7 @@ public class CppTypes
     
     public static ICppType Void => field ??= new CppVoidType();
     public static ICppType Boolean => field ??= new CppBoolType();
+    public static ICppType String => field ??= new CppStringType();
     
     public static ICppType Callable => field ??= new CppCallableType();
     

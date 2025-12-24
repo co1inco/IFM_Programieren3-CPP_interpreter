@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string>
 // #include <iostream>
 
 int bar[10];
@@ -24,5 +25,7 @@ int main()
     {
         
     }
+    
+    std::string test;
     
 }

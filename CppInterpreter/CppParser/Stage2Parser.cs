@@ -54,6 +54,7 @@ public static class Stage2Parser
         print.AddOverload(new CppAction<CppInt32Value>("print", Console.WriteLine));
         print.AddOverload(new CppAction<CppInt64Value>("print", Console.WriteLine));
         print.AddOverload(new CppAction<CppBoolValue>("print", Console.WriteLine));
+        print.AddOverload(new CppAction<CppStringValue>("print", Console.WriteLine));
         
         return scope;
     }
