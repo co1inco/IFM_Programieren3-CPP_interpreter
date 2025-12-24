@@ -40,7 +40,7 @@ public class CppCallableValue : ICppValue
     public ICppValueBase Invoke(params ICppValueBase[] parameters)
     {
         if (GetOverload(parameters.Select(x => x.Type)) is not {} overload)
-            throw new Exception("Overload doesn't exist");
+            throw new Exception($"Overload for [{string.Join(", ", parameters.Select(x => x.Type))}] doesn't exist");
 
         return overload.Invoke(null, parameters);
     }
