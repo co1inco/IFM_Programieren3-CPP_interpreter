@@ -27,7 +27,7 @@ public record Stage2VarDefinition(ICppType Type, string Name, AstExpression? Ini
 public record Stage2FuncDefinition(
     string Name, 
     ICppType ReturnType, 
-    (string Name, ICppType Type)[] Arguments,
+    CppFunctionParameter[] Arguments,
     AstStatement[] Body,
     CppUserFunction Function,
     Scope<ICppValueBase> Closure
@@ -97,6 +97,7 @@ public static class Stage2Parser
 
         return new Stage2VarDefinition(type, definition.Ident.Value, definition.Initializer);
     }
+    
 
     public static Stage2FuncDefinition ParseFuncDefinition(
         AstFuncDefinition definition,
@@ -109,13 +110,13 @@ public static class Stage2Parser
         if (definition.ReturnType.IsReference)
             throw new Exception($"Return type '{definition.ReturnType.Ident}' is a reference type");
         
-        List<(string, ICppType)> arguments = [];
+        List<CppFunctionParameter> arguments = [];
         foreach (var argument in definition.Arguments)
         {
             // TODO: implement reference types
             if (!typeScope.TryGetSymbol(argument.Type.Ident, out var argumentType))
                 throw new Exception($"Unknown type '{argument.Type.Ident}'");
-            arguments.Add((argument.Name.Value, argumentType));
+            arguments.Add(new CppFunctionParameter(argument.Ident.Value, argumentType, argument.Type.IsReference));
         }
 
         var function = new CppUserFunction(definition.Ident.Value, returnType, arguments.ToArray(), definition.Body);

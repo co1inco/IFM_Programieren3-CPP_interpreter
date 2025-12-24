@@ -50,8 +50,8 @@ public class FunctionDefinitionTest
             new AstIdentifier("test"),
             new AstTypeIdentifier("void", false),
             [ 
-                ( new AstTypeIdentifier("int", false), new AstIdentifier("param1") ), 
-                ( new AstTypeIdentifier("long", false), new AstIdentifier("param2") ) 
+                new AstFunctionDefinitionParameter(new AstIdentifier("param1"), new AstTypeIdentifier("int", false) ), 
+                new AstFunctionDefinitionParameter(new AstIdentifier("param2"), new AstTypeIdentifier("long", false) ) 
             ],
             []
         );

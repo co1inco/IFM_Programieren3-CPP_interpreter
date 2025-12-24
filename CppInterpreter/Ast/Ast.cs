@@ -42,9 +42,11 @@ public record AstVarDefinition(AstTypeIdentifier AstType, AstIdentifier Ident, A
 public record AstFuncDefinition(
     AstIdentifier Ident,
     AstTypeIdentifier ReturnType,
-    (AstTypeIdentifier Type, AstIdentifier Name)[] Arguments,
+    AstFunctionDefinitionParameter[] Arguments,
     AstStatement[] Body
 );
+
+public record AstFunctionDefinitionParameter(AstIdentifier Ident, AstTypeIdentifier Type);
 
 public record struct AstTypeIdentifier(string Ident, bool IsReference);
 

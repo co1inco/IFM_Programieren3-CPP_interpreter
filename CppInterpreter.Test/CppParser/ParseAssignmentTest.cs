@@ -69,7 +69,7 @@ public class ParseAssignmentTest
         valueScope.TryBindSymbol("test", value);
         
         assignmentOperator.InstanceType.Returns(type);
-        assignmentOperator.ParameterTypes.Returns([new CppInt32Type()]);
+        assignmentOperator.ParameterTypes.Returns([new CppFunctionParameter("", new CppInt32Type(), false) ]);
         
         var scope = new CppStage1Scope()
         {

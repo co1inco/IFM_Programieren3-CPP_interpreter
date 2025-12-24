@@ -72,15 +72,33 @@ public class Stage3Parser
 
     public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppType> typeScope)
     {
+        if (!typeScope.TryGetSymbol(definition.AstType.Ident, out var type))
+            throw new Exception($"Unknown type '{definition.AstType.Ident}'");
+        
+        if (definition.AstType.IsReference)
+        {
+            if (definition.Initializer is null)
+                throw new Exception($"Declaration of reference variable '{definition.Ident.Value}' required an initializer");
+
+            //TODO: refValue should bind to temporary value (eg. return of function call
+            var refValue = ParseExpression(definition.Initializer);
+            
+            return s =>
+            {
+                var value = refValue(s);
+                
+                if (!s.TryBindSymbol(definition.Ident.Value, value))
+                    throw new Exception($"Variable '{definition.Ident.Value}' was already defined");
+
+                return value;
+            };
+        }
+     
         var initializer = definition.Initializer is null
             ? null
             : ParseAssignment(new AstAssignment(
                 new AstIdentifier(definition.Ident.Value), 
                 definition.Initializer));
-        
-        //TODO: Implement reference types
-        if (!typeScope.TryGetSymbol(definition.AstType.Ident, out var type))
-            throw new Exception($"Unknown type '{definition.AstType.Ident}'");
         
         return scope =>
         {

@@ -55,7 +55,7 @@ public static class CppTypeExtensions
                 if (parameters is [] && function.InstanceType is null && function.ParameterTypes.Length == 0)
                     return function;
 
-                if (parameters.ZipFill(function.ParameterTypes).All(x => x.Left?.Equals(x.Right) ?? false))
+                if (parameters.ZipFill(function.ParameterTypes).All(x => x.Left?.Equals(x.Right?.Type) ?? false))
                     return function;
                 
                 // if (parameters is [var instance, .. var param]
@@ -87,7 +87,7 @@ public static class CppTypeExtensions
             return ctor.Construct(parameters);
         }
         
-        public ICppValue Construct(params ICppValue[] parameters)
+        public ICppValue Construct(params ICppValueBase[] parameters)
         {
             var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.Type).ToArray();
             

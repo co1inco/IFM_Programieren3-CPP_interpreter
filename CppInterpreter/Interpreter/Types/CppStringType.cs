@@ -19,6 +19,11 @@ public sealed class CppStringType : CppPrimitiveType
             new MemberFunction<CppStringValue, CppInt32Value>("legnth", a => new CppInt32Value(a.Value.Length)),
         ];
 
+        Constructor =
+        [
+            new ConstructorFunction<CppStringValue>(() => new CppStringValue("")),
+            new ConstructorFunction<CppStringValue, CppStringValue>(s => new CppStringValue(s.Value))
+        ];
     }
 
     public override ICppValueBase Create() => new CppStringValue("");

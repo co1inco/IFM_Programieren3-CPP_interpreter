@@ -4,12 +4,14 @@ using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter;
 
+public record CppFunctionParameter(string Name, ICppType Type, bool IsReference);
+
 public interface ICppFunction
 {
     string Name { get; }
     ICppType ReturnType { get; }
     ICppType? InstanceType { get; } // TODO: remove instance type from ICppFunction
-    ICppType[] ParameterTypes { get; }
+    CppFunctionParameter[] ParameterTypes { get; }
 
     ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters);
 }
@@ -21,7 +23,7 @@ public sealed class MemberAction<TInstance>(string name, Action<TInstance> actio
     public string Name => name;
     public ICppType ReturnType => new CppVoidType();
     public ICppType? InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [];
+    public CppFunctionParameter[] ParameterTypes => [];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
@@ -40,7 +42,7 @@ public sealed class MemberAction<TInstance, TValue1>(string name, Action<TInstan
     public string Name => name;
     public ICppType ReturnType => new CppVoidType();
     public ICppType? InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [ TValue1.SType ];
+    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
@@ -63,7 +65,7 @@ public sealed class MemberFunction<TInstance, TReturn>(string name, Func<TInstan
     public string Name => name;
     public ICppType ReturnType => TReturn.SType;
     public ICppType? InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [];
+    public CppFunctionParameter[] ParameterTypes => [];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
@@ -82,7 +84,7 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
     public string Name => name;
     public ICppType ReturnType => TReturn.SType;
     public ICppType? InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [ TValue1.SType ];
+    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
@@ -103,7 +105,7 @@ public sealed class CppAction<TValue1>(string name, Action<TValue1> action) : IC
 
     public ICppType ReturnType => CppTypes.Void;
     public ICppType? InstanceType => null;
-    public ICppType[] ParameterTypes => [ TValue1.SType ];
+    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not null)
@@ -123,29 +125,27 @@ public sealed class CppUserFunction : ICppFunction
     public CppUserFunction(
         string name,
         ICppType returnType, 
-        (string Name, ICppType Type)[] arguments,
+        CppFunctionParameter[] arguments,
         AstStatement[] body)
     {
         Name = name;
         ReturnType = returnType;
-        ParameterTypes = arguments.Select(x => x.Type).ToArray();
-        Arguments = arguments;
+        ParameterTypes = arguments;
         Body = body;
     }
     
     public string Name { get; }
     public ICppType ReturnType { get; }
     public ICppType? InstanceType => null;
-    public ICppType[] ParameterTypes { get; }
+    public CppFunctionParameter[] ParameterTypes { get; }
     
-    public (string Name, ICppType)[] Arguments { get; }
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not null)
             throw new Exception("Function is not a member function");
         
-        if (parameters.ZipFill(ParameterTypes).Any(x => !x.Left?.Type.Equals(x.Right) ?? false))
+        if (parameters.ZipFill(ParameterTypes).Any(x => !x.Left?.Type.Equals(x.Right?.Type) ?? false))
             throw new Exception("Invalid parameters");
 
         if (Function is null || Closure is null)
@@ -153,9 +153,13 @@ public sealed class CppUserFunction : ICppFunction
 
         var functionScope = new Scope<ICppValueBase>(Closure);
         
-        foreach (var (value, parameter) in parameters.Zip(Arguments)) 
+        foreach (var (value, parameter) in parameters.Zip(ParameterTypes))
         {
-            functionScope.TryBindSymbol(parameter.Name, value);
+            var v = parameter.IsReference
+                ? value
+                : parameter.Type.Construct(value); // copy constructor
+            
+            functionScope.TryBindSymbol(parameter.Name, v);
         }
         
         return Function.Invoke(functionScope);
@@ -179,7 +183,7 @@ public interface ICppConstructor
 {
     ICppType InstanceType { get; }
     ICppType[] ParameterTypes { get; }
-    ICppValue Construct(ICppValue[] parameters);
+    ICppValue Construct(ICppValueBase[] parameters);
 };
 
 public sealed class ConstructorFunction<TInstance>(Func<TInstance> constructor) : ICppConstructor
@@ -188,16 +192,16 @@ public sealed class ConstructorFunction<TInstance>(Func<TInstance> constructor) 
     public ICppType InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [ ];
 
-    public ICppValue Construct(ICppValue[] parameters) => constructor();
+    public ICppValue Construct(ICppValueBase[] parameters) => constructor();
 }
 
-public sealed class ConstructorFunction<TInstance, TValue1>(Func<TValue1, TInstance> constructor)
+public sealed class ConstructorFunction<TInstance, TValue1>(Func<TValue1, TInstance> constructor, bool @explicit = false) : ICppConstructor
     where TInstance : ICppValue
     where TValue1 : ICppValue
 {
     public ICppType InstanceType => TInstance.SType;
     public ICppType[] ParameterTypes => [ TValue1.SType ];
-    public ICppValue Construct(ICppValue[] parameters)
+    public ICppValue Construct(ICppValueBase[] parameters)
     {
         if (parameters is not [ TValue1 v1 ])
             throw new InvalidParametersException("Invalid parameters");
@@ -205,6 +209,12 @@ public sealed class ConstructorFunction<TInstance, TValue1>(Func<TValue1, TInsta
         return constructor(v1);
     }
 
+    /// <summary>
+    /// Indicates that a function should not be used for implicit conversions.
+    /// Only relevant for single parameter constructors
+    /// (currently not used)
+    /// </summary>
+    public bool Explicit => @explicit;
 }
 
 // public static class CppFunctionExtensions

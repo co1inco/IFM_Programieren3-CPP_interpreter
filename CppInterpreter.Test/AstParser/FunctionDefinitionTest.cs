@@ -40,9 +40,9 @@ public class FunctionDefinitionTest
         
         ast.Arguments.ShouldHaveCount(2);
         ast.Arguments[0].Type.Ident.ShouldBe("int");
-        ast.Arguments[0].Name.Value.ShouldBe("foo");
+        ast.Arguments[0].Ident.Value.ShouldBe("foo");
         ast.Arguments[1].Type.Ident.ShouldBe("bool");
-        ast.Arguments[1].Name.Value.ShouldBe("bar");
+        ast.Arguments[1].Ident.Value.ShouldBe("bar");
     }
         
     [TestMethod]

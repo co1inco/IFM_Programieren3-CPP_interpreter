@@ -62,7 +62,7 @@ public class ParseAssignmentTest
         scope.TryBindSymbol("test", value);
         
         assignmentOperator.InstanceType.Returns(type);
-        assignmentOperator.ParameterTypes.Returns([new CppInt32Type()]);
+        assignmentOperator.ParameterTypes.Returns([ new CppFunctionParameter("", new CppInt32Type(), false) ]);
         
         var ast = new AstAssignment(
             new AstIdentifier("test"),

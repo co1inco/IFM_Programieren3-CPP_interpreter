@@ -128,7 +128,9 @@ public static class AstParser
                     ctx.parameterList()
                         .varIdentifier()
                         .Select(x => new AstIdentifier(x.ident.Text))
-                    ).ToArray(),
+                    )
+                    .Select(x => new AstFunctionDefinitionParameter(x.Second, x.First))
+                .ToArray(),
             ParseBlock(ctx.block())
         );
     }

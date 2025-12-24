@@ -35,7 +35,7 @@ public class CppCallableValue : ICppValue
         _overloads
             .SingleOrDefault(x => x.ParameterTypes
                 .ZipFill(parameters)
-                .All(y => y.Right?.Equals(y.Left) ?? false));
+                .All(y => y.Left?.Type.Equals(y.Right) ?? false));
 
     public ICppValueBase Invoke(params ICppValueBase[] parameters)
     {
