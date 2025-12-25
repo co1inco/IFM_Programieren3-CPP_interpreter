@@ -3,6 +3,7 @@ using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Values;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage3;
 
@@ -14,7 +15,7 @@ public class ParseAtomTest
     public void GetAtom()
     {
         //Arrange
-        var ast = new AstAtom("test");
+        var ast = AstAtom("test");
         var scope = new Scope<ICppValueBase>();
 
         var value = new CppInt32Value(42);
@@ -33,7 +34,7 @@ public class ParseAtomTest
     public void GetAtom_UnknownVariable()
     {
         //Arrange
-        var ast = new AstAtom("test");
+        var ast = AstAtom("test");
         var scope = new Scope<ICppValueBase>();
 
         var value = new CppInt32Value(42);

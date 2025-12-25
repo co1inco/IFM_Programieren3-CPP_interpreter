@@ -97,8 +97,9 @@ public class Stage3Parser
         var initializer = definition.Initializer is null
             ? null
             : ParseAssignment(new AstAssignment(
-                new AstIdentifier(definition.Ident.Value), 
-                definition.Initializer));
+                definition.Ident, 
+                definition.Initializer, 
+                AstMetadata.Generated()));
         
         return scope =>
         {
@@ -115,8 +116,9 @@ public class Stage3Parser
         var initializer = definition.Initializer is null
             ? null
             : ParseAssignment(new AstAssignment(
-                new AstIdentifier(definition.Name), 
-                definition.Initializer));
+                new AstIdentifier(definition.Name, AstMetadata.Generated()), 
+                definition.Initializer, 
+                AstMetadata.Generated()));
         
         // TODO: Stage2VarDefinition creation should happen in stage 2
         return scope =>
@@ -139,20 +141,20 @@ public class Stage3Parser
             func => ParseFunctionCall(func, null)
         );
 
-    public static InterpreterExpression ParseAtom(AstSymbol<AstAtom> atom) => s =>
+    public static InterpreterExpression ParseAtom(AstAtom atom) => s =>
         {
-            if (!s.TryGetSymbol(atom.Symbol.Value, out var variable))
-                throw new Exception($"Variable not found '{atom.Symbol.Value}'");
+            if (!s.TryGetSymbol(atom.Value, out var variable))
+                throw new Exception($"Variable not found '{atom.Value}'");
 
             return variable;
         };
 
-    public static InterpreterExpression ParseAssignment(AstSymbol<AstAssignment> assignment)
+    public static InterpreterExpression ParseAssignment(AstAssignment assignment)
     {
-        var inner = ParseExpression(assignment.Symbol.Value);
+        var inner = ParseExpression(assignment.Value);
         return scope =>
         {
-            var name = assignment.Symbol.Target.Value;
+            var name = assignment.Target.Value;
             
             if (!scope.TryGetSymbol(name, out var variable))
                 throw new Exception($"Variable not found '{name}'");
@@ -167,11 +169,11 @@ public class Stage3Parser
         
 
 
-    public static InterpreterExpression ParseBinOp(AstSymbol<AstBinOp> op)
+    public static InterpreterExpression ParseBinOp(AstBinOp op)
     {
-        var left = ParseExpression(op.Symbol.Left);
-        var right = ParseExpression(op.Symbol.Right);
-        var function = op.Symbol.Operator.Match(
+        var left = ParseExpression(op.Left);
+        var right = ParseExpression(op.Right);
+        var function = op.Operator.Match(
             e => e switch
             {
                 AstBinOpOperator.Equatable.Equal => "==",
@@ -220,8 +222,7 @@ public class Stage3Parser
             return f.Invoke(l, [r]);
         };
     }
-
-    public static InterpreterExpression ParseLiteral(AstSymbol<AstLiteral> literal) => ParseLiteral(literal); 
+    
     public static InterpreterExpression ParseLiteral(AstLiteral literal) => 
         literal.Match<InterpreterExpression>(
             c => throw new NotImplementedException(),

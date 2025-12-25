@@ -130,7 +130,7 @@ public static class Stage2Parser
             definition.Ident.Value, 
             returnType, 
             arguments.ToArray(), 
-            definition.Body.Select(x => x.Symbol).ToArray()
+            definition.Body
         );
         
         if (!scope.TryBindFunction(definition.Ident.Value, function))
@@ -140,7 +140,7 @@ public static class Stage2Parser
             definition.Ident.Value,
             returnType,
             arguments.ToArray(),
-            definition.Body.Select(x => x.Symbol).ToArray(),
+            definition.Body,
             function,
             scope
         );

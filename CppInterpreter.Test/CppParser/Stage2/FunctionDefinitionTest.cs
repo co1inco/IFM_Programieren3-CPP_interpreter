@@ -5,6 +5,7 @@ using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using CppInterpreter.Test.Helper;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage2;
 
@@ -16,11 +17,9 @@ public class FunctionDefinitionTest
     public void ParseFunction()
     {
         //Arrange
-        var ast = new AstFuncDefinition(
-            new AstIdentifier("test"),
-            new AstTypeIdentifier("void", false),
-            [],
-            []
+        var ast = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("void", false)
         );
 
         var stage1Scope = Stage1Parser.CreateBaseScope();
@@ -46,14 +45,13 @@ public class FunctionDefinitionTest
     public void ParseFunction_WithArguments()
     {
         //Arrange
-        var ast = new AstFuncDefinition(
-            new AstIdentifier("test"),
-            new AstTypeIdentifier("void", false),
+        var ast = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("void", false),
             [ 
-                new AstFunctionDefinitionParameter(new AstIdentifier("param1"), new AstTypeIdentifier("int", false) ), 
-                new AstFunctionDefinitionParameter(new AstIdentifier("param2"), new AstTypeIdentifier("long", false) ) 
-            ],
-            []
+                AstFunctionDefinitionParameter(AstIdentifier("param1"), AstTypeIdentifier("int", false) ), 
+                AstFunctionDefinitionParameter(AstIdentifier("param2"), AstTypeIdentifier("long", false) ) 
+            ]
         );
 
         var stage1Scope = Stage1Parser.CreateBaseScope();

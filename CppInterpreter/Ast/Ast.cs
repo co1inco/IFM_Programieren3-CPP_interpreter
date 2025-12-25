@@ -1,16 +1,28 @@
-﻿using OneOf;
+﻿using Antlr4.Runtime;
+using Antlr4.Runtime.Tree.Pattern;
+using OneOf;
 
 namespace CppInterpreter.Ast;
 
-public record AstSymbol<T>(T Symbol, SourceSymbol Source)
+// public record AstSymbol<T>(T Symbol, SourceSymbol Source)
+// {
+//     public static implicit operator T(AstSymbol<T> symbol) => symbol.Symbol; 
+//     public static implicit operator AstSymbol<T>(T symbol) => new AstSymbol<T>(symbol, new SourceSymbol("<unknown>", -1, -1)); 
+// };
+
+public record AstMetadata(SourceSymbol Source)
 {
-    public static implicit operator T(AstSymbol<T> symbol) => symbol.Symbol; 
-    public static implicit operator AstSymbol<T>(T symbol) => new AstSymbol<T>(symbol, new SourceSymbol("<unknown>", -1, -1)); 
-};
+    public static implicit operator AstMetadata(ParserRuleContext context) => new(SourceSymbol.Create(context));
+
+    public static AstMetadata FromToken(IToken token) => new(SourceSymbol.Create(token));
+
+    public static AstMetadata Generated() => new AstMetadata(new SourceSymbol("Generated", 0, 0));
+}
 
 
 public record AstProgram(
-    AstSymbol<AstStatement>[] Statements
+    AstStatement[] Statements,
+    AstMetadata Metadata
 );
 
 [GenerateOneOf]
@@ -27,13 +39,15 @@ public partial class AstStatement : OneOfBase<
 public record AstBinOp(
     AstExpression Left,
     AstExpression Right,
-    AstBinOpOperator Operator
+    AstBinOpOperator Operator,
+    AstMetadata Metadata
 );
 
 
 public record AstUnary(
     AstExpression Expression,
-    AstUnary.UnaryOperator Operator
+    AstUnary.UnaryOperator Operator,
+    AstMetadata Metadata
 )
 {
     public enum UnaryOperator
@@ -49,48 +63,55 @@ public record AstUnary(
     
 public record AstAssignment(
     AstIdentifier Target,
-    AstExpression Value
+    AstExpression Value,
+    AstMetadata Metadata
 );
     
 public record AstVarDefinition(
     AstTypeIdentifier AstType, 
     AstIdentifier Ident, 
-    AstExpression? Initializer
+    AstExpression? Initializer,
+    AstMetadata Metadata
 );
 
 public record AstFuncDefinition(
     AstIdentifier Ident,
     AstTypeIdentifier ReturnType,
     AstFunctionDefinitionParameter[] Arguments,
-    AstSymbol<AstStatement>[] Body
+    AstStatement[] Body,
+    AstMetadata Metadata
 );
 
 public record AstFunctionDefinitionParameter(
     AstIdentifier Ident, 
-    AstTypeIdentifier Type
+    AstTypeIdentifier Type,
+    AstMetadata Metadata
 );
 
 public record AstTypeIdentifier(
     string Ident,
-    bool IsReference
+    bool IsReference,
+    AstMetadata Metadata
 );
 
 public record AstIdentifier(
-    string Value
+    string Value,
+    AstMetadata Metadata
 );
 
 public record AstAtom(
-    string Value
+    string Value,
+    AstMetadata Metadata
 );
 
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<
-    AstSymbol<AstLiteral>, 
-    AstSymbol<AstAtom>, 
-    AstSymbol<AstAssignment>,
-    AstSymbol<AstBinOp>,
-    AstSymbol<AstUnary>,
-    AstSymbol<AstFunctionCall>>
+    AstLiteral, 
+    AstAtom, 
+    AstAssignment,
+    AstBinOp,
+    AstUnary,
+    AstFunctionCall>
 {
     
 }
@@ -149,4 +170,82 @@ public partial class AstLiteral : OneOfBase<char, int, string, bool>
         
 }
 
-public record AstFunctionCall(AstExpression Function, AstExpression[] Arguments);
+public record AstFunctionCall(
+    AstExpression Function,
+    AstExpression[] Arguments,
+    AstMetadata Metadata
+);
+
+
+public static class GeneratedAstTreeBuilder 
+{
+    public static AstIdentifier AstIdentifier(string name, AstMetadata? m = null) => 
+        new AstIdentifier(name, m ?? AstMetadata.Generated());
+    
+    public static AstTypeIdentifier AstTypeIdentifier(string name, bool isReference, AstMetadata? m = null) => 
+        new AstTypeIdentifier(name, isReference, m ?? AstMetadata.Generated());
+
+    public static AstFuncDefinition AstFuncDefinition(AstIdentifier ident, AstTypeIdentifier returnType, AstMetadata? m = null) =>
+        new AstFuncDefinition(
+            ident,
+            returnType,
+            [],
+            [],
+            m ?? AstMetadata.Generated()
+        );
+
+    public static AstFuncDefinition AstFuncDefinition(
+        AstIdentifier ident, 
+        AstTypeIdentifier returnType,
+        AstFunctionDefinitionParameter[] arguments,
+        AstMetadata? m = null) =>
+        new AstFuncDefinition(
+            ident,
+            returnType,
+            arguments,
+            [],
+            m ?? AstMetadata.Generated()
+        );
+    
+    public static AstFuncDefinition AstFuncDefinition(
+        AstIdentifier ident, 
+        AstTypeIdentifier returnType,
+        AstFunctionDefinitionParameter[] arguments,
+        AstStatement[] body,
+        AstMetadata? m = null) =>
+        new AstFuncDefinition(
+            ident,
+            returnType,
+            arguments,
+            body,
+            m ?? AstMetadata.Generated()
+        );
+
+    
+    public static AstFunctionDefinitionParameter AstFunctionDefinitionParameter(AstIdentifier ident, AstTypeIdentifier type, AstMetadata? m = null) => 
+        new(
+            ident, type, m ?? AstMetadata.Generated()
+        );
+    
+    public static AstVarDefinition AstVarDefinition(AstTypeIdentifier type, AstIdentifier ident, AstExpression? initializer, AstMetadata? m = null) => 
+        new (type, ident, initializer, m ?? AstMetadata.Generated());
+
+    public static AstLiteral AstLiteral(int value) => new AstLiteral(value);
+    public static AstLiteral AstLiteral(string value) => new AstLiteral(value);
+    public static AstAtom AstAtom(string name, AstMetadata? m = null) => new AstAtom(name, m ?? AstMetadata.Generated());
+    
+    public static AstExpression AstFunctionCallExpr(AstExpression expression, AstExpression[] parameters, AstMetadata? m = null) =>
+        AstFunctionCall(expression, parameters, m);
+    
+    public static AstFunctionCall AstFunctionCall(AstExpression expression, AstExpression[] parameters, AstMetadata? m = null) =>
+        new (expression, parameters, m ?? AstMetadata.Generated());
+    
+    
+    public static AstExpression AstAssignmentExpr(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
+        AstAssignment(ident, value, null);
+    public static AstAssignment AstAssignment(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
+        new AstAssignment(ident, value, m ?? AstMetadata.Generated());
+    
+    public static AstBinOp AstBinOp(AstExpression left, AstExpression right, AstBinOpOperator op, AstMetadata? m = null) => 
+        new(left, right, op, m ?? AstMetadata.Generated());
+}

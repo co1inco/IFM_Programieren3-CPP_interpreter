@@ -13,7 +13,7 @@ public partial class Stage1Symbol : OneOfBase<AstStatement>
     
 }
 
-public record Stage1SymbolTree(Scope<ICppType> Scope, AstSymbol<AstStatement>[] Statements);
+public record Stage1SymbolTree(Scope<ICppType> Scope, AstStatement[] Statements);
 
 
 /// <summary>
@@ -38,7 +38,7 @@ public class Stage1Parser
     public static Stage1SymbolTree ParseProgram(AstProgram program, Scope<ICppType> scope) => 
         ParseProgram(program.Statements, scope);
     
-    public static Stage1SymbolTree ParseProgram(IEnumerable<AstSymbol<AstStatement>> statements, Scope<ICppType> scope) => 
+    public static Stage1SymbolTree ParseProgram(IEnumerable<AstStatement> statements, Scope<ICppType> scope) => 
         new(scope, statements.ToArray());
 
 

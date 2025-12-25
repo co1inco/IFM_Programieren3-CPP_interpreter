@@ -5,6 +5,7 @@ using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using NSubstitute;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage3;
 
@@ -16,8 +17,8 @@ public class FunctionCallTest
     public void ParseFunctionCall_NoArguments()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
+        var ast = AstFunctionCall(
+            (AstExpression)AstAtom("test"),
             []);
 
         var scope = new Scope<ICppValueBase>();
@@ -48,9 +49,9 @@ public class FunctionCallTest
     public void ParseFunctionCall_WithArgument()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
-            [ new AstLiteral(42) ]);
+        var ast = AstFunctionCall(
+            AstAtom("test"),
+            [ AstLiteral(42) ]);
 
         var parameter = new CppInt32Value(42);
         
@@ -83,8 +84,8 @@ public class FunctionCallTest
     public void ParseFunctionCall_WithReturn()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
+        var ast = AstFunctionCall(
+            AstAtom("test"),
             []);
 
         var scope = new Scope<ICppValueBase>();
@@ -116,9 +117,9 @@ public class FunctionCallTest
     public void FunctionCall_RespectLocalScope_Internal()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
-            [ new AstAtom("value") ]);
+        var ast = AstFunctionCall(
+            AstAtom("test"),
+            [ AstAtom("value") ]);
 
         var scope = new Scope<ICppValueBase>();
         
@@ -159,9 +160,9 @@ public class FunctionCallTest
     public void FunctionCall_ReferenceParameter()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
-            [ new AstAtom("value") ]);
+        var ast = AstFunctionCall(
+            AstAtom("test"),
+            [ AstAtom("value") ]);
 
         var scope = new Scope<ICppValueBase>();
         
@@ -202,22 +203,22 @@ public class FunctionCallTest
     public void FunctionCall_RespectLocalScope()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
-            [ new AstAtom("value") ]);
+        var ast = AstFunctionCall(
+            AstAtom("test"),
+            [ AstAtom("value") ]);
 
-        var functionAst = new AstFuncDefinition(
-            new AstIdentifier("test"),
-            new AstTypeIdentifier("void", false),
+        var functionAst = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("void", false),
             [
-                new AstFunctionDefinitionParameter(
-                new AstIdentifier("x"),
-                new AstTypeIdentifier("int", false)),
+                AstFunctionDefinitionParameter(
+                AstIdentifier("x"),
+                AstTypeIdentifier("int", false)),
             ],
             [
-                new AstSymbol<AstStatement>(
-                    (AstExpression)new AstAssignment(new AstIdentifier("x"), (AstExpression)new AstLiteral(5)), 
-                    new SourceSymbol("", 0, 0))
+                AstAssignmentExpr(
+                    AstIdentifier("x"),
+                    AstLiteral(5))
             ]
         );
 
@@ -246,22 +247,20 @@ public class FunctionCallTest
     public void FunctionCall_PassCopyParameter()
     {
         //Arrange
-        var ast = new AstFunctionCall(
-            (AstExpression)new AstAtom("test"),
-            [ new AstAtom("value") ]);
+        var ast = AstFunctionCall(
+            AstAtom("test"),
+            [ AstAtom("value") ]);
 
-        var functionAst = new AstFuncDefinition(
-            new AstIdentifier("test"),
-            new AstTypeIdentifier("void", false),
+        var functionAst = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("void", false),
             [
-                new AstFunctionDefinitionParameter(
-                    new AstIdentifier("x"),
-                    new AstTypeIdentifier("int", false)),
+                AstFunctionDefinitionParameter(
+                    AstIdentifier("x"),
+                    AstTypeIdentifier("int", false)),
             ],
             [
-                new AstSymbol<AstStatement>(
-                    (AstExpression)new AstFunctionCall(new AstAtom("check"), [ new AstAtom("x") ]), 
-                    new SourceSymbol("", 0, 0))
+                (AstExpression)AstFunctionCall(AstAtom("check"), [ AstAtom("x") ])
             ]
         );
 

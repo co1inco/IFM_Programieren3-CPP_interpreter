@@ -45,37 +45,31 @@ public record SourceSymbol(string Text, int Line, int Column)
 public static class AstParser
 {
 
-    private static AstSymbol<T> Parse<T>(ParserRuleContext ctx, Func<T> func) =>
-        new(
-            func(),
-            SourceSymbol.Create(ctx)
-        );
-
-    public static AstSymbol<AstProgram> ParseProgram(ProgramContext ctx) => Parse(ctx, () => 
-        new AstProgram(
+    public static AstProgram ParseProgram(ProgramContext ctx) => new(
             ctx.topLevelStatement()
                 .Select(ParseTopLevelStatement)
-                .ToArray()
-        ));
+                .ToArray(),
+            ctx
+        );
 
-    public static AstSymbol<AstStatement> ParseTopLevelStatement(TopLevelStatementContext ctx) => Parse<AstStatement>(ctx, () =>
+    public static AstStatement ParseTopLevelStatement(TopLevelStatementContext ctx)
     {
         if (ctx.functionDefinition() is { } funcDef)
-            return ParseFunctionDefinition(funcDef).Symbol;
+            return ParseFunctionDefinition(funcDef);
         if (ctx.variableDefinition() is { } varDef)
-            return ParseVarDefinition(varDef).Symbol;
+            return ParseVarDefinition(varDef);
 
         throw new UnexpectedAntlrStateException(ctx, "Unknown top level statement variation");
-    });
+    }
 
-    public static AstSymbol<AstStatement> ParseStatement(StatementContext ctx) => Parse<AstStatement>(ctx, () =>
+    public static AstStatement ParseStatement(StatementContext ctx)
     {
         if (ctx.expression() is { } expr)
             return ParseExpression(expr); // TODO remove
         if (ctx.variableDefinition() is { } varDef)
-            return ParseVarDefinition(varDef).Symbol;
+            return ParseVarDefinition(varDef);
         if (ctx.functionDefinition() is { } funcDef)
-            return ParseFunctionDefinition(funcDef).Symbol;
+            return ParseFunctionDefinition(funcDef);
         if (ctx.ifStmt() is { } ifStmt)
             throw new NotImplementedException("If statement");
         if (ctx.whileStmt() is { } whileStmt)
@@ -84,7 +78,7 @@ public static class AstParser
             throw new NotImplementedException("doWhile statement");
 
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
-    });
+    }
     
     public static AstExpression ParseExpression(ExpressionContext ctx)
     {
@@ -94,10 +88,10 @@ public static class AstParser
         if (ctx.assignment() is { } assignment) return ParseAssignment(assignment);
         if (ctx is { left: { } left, right: { } right })
         {
-            if (ctx.logic is { } logic) return Parse(ctx, () => ParseLogicBinOp(left, right, logic));
-            if (ctx.bit is { } bit) return Parse(ctx, () => ParseBitBinOp(left, right, bit));
-            if (ctx.comp is { } comp) return Parse(ctx, () => ParseCompareBinOp(left, right, comp));
-            if (ctx.binop is { } ar) return Parse(ctx, () => ParseArithmeticBinOp(left, right, ar));
+            if (ctx.logic is { } logic) return ParseLogicBinOp(left, right, logic);
+            if (ctx.bit is { } bit) return ParseBitBinOp(left, right, bit);
+            if (ctx.comp is { } comp) return ParseCompareBinOp(left, right, comp);
+            if (ctx.binop is { } ar) return ParseArithmeticBinOp(left, right, ar);
             throw new UnexpectedAntlrStateException(ctx, "Got left and right but no supported operator");
         }
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
@@ -105,7 +99,7 @@ public static class AstParser
         throw new UnexpectedAntlrStateException(ctx, "Unknown expression variation");
     }
 
-    public static AstSymbol<AstAtom> ParseAtom(AtomContext ctx) => Parse(ctx, () => new AstAtom(ctx.GetText()));
+    public static AstAtom ParseAtom(AtomContext ctx) => new AstAtom(ctx.GetText(), ctx);
     
     public static AstBinOp ParseLogicBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
@@ -113,7 +107,7 @@ public static class AstParser
             "&&" => AstBinOpOperator.BoolOp.And,
             "||" => AstBinOpOperator.BoolOp.Or,
             _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid  logic operator")
-        });
+        }, AstMetadata.FromToken(logicOperator));
 
     public static AstBinOp ParseBitBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
@@ -122,7 +116,7 @@ public static class AstParser
             "&" => AstBinOpOperator.IntegerOp.BitAnd,
             "^" => AstBinOpOperator.IntegerOp.BitXor,
             _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid bit operator")
-        }); 
+        }, AstMetadata.FromToken(logicOperator)); 
 
     public static AstBinOp ParseCompareBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
@@ -134,7 +128,7 @@ public static class AstParser
             ">" => AstBinOpOperator.Comparable.GreaterThan,
             ">=" => AstBinOpOperator.Comparable.GreaterThanOrEqual,
             _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid comparison operator")
-        }); 
+        }, AstMetadata.FromToken(logicOperator)); 
     
     public static AstBinOp ParseArithmeticBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch
@@ -145,52 +139,55 @@ public static class AstParser
             "/" => AstBinOpOperator.Arithmetic.Divide,
             "%" => AstBinOpOperator.Arithmetic.Modulo,
             _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid arithmetic operator")
-        }); 
+        }, AstMetadata.FromToken(logicOperator)); 
     
-    public static AstSymbol<AstAssignment> ParseAssignment(AssignmentContext ctx) => Parse(ctx, () => 
-        new AstAssignment(
+    public static AstAssignment ParseAssignment(AssignmentContext ctx) => 
+        new(
             ParseVarIdentifier(ctx.varIdentifier()),
-            ParseExpression(ctx.expression())
-        ));
+            ParseExpression(ctx.expression()),
+            ctx
+        );
 
-    public static AstSymbol<AstFunctionCall> ParseFunctionCall(ExpressionContext function, FuncParametersContext? arguments) => Parse(function, () =>
-        new AstFunctionCall(
+    public static AstFunctionCall ParseFunctionCall(ExpressionContext function, FuncParametersContext? arguments) =>
+        new(
             ParseExpression(function),
-            arguments?.expression().Select(ParseExpression).ToArray() ?? []
-        ));
+            arguments?.expression().Select(ParseExpression).ToArray() ?? [],
+            function
+        );
 
-    public static AstSymbol<AstVarDefinition> ParseVarDefinition(VariableDefinitionContext ctx) => Parse(ctx, () =>
-        new AstVarDefinition(
+    public static AstVarDefinition ParseVarDefinition(VariableDefinitionContext ctx) =>
+        new(
             ParseTypeUsage(ctx.typeIdentifierUsage()),
             ParseVarIdentifier(ctx.varIdentifier()),
-            ctx.expression() is not null ? ParseExpression(ctx.expression()) : null
-        ));
+            ctx.expression() is not null ? ParseExpression(ctx.expression()) : null,
+            ctx
+        );
 
-    public static AstSymbol<AstFuncDefinition> ParseFunctionDefinition(FunctionDefinitionContext ctx) => Parse(ctx,
-        () =>
-        {
-            var returnType = ctx.TYPE_VOID() is not null
-                ? new AstTypeIdentifier("void", false)
-                : ParseTypeUsage(ctx.typeIdentifierUsage());
+    public static AstFuncDefinition ParseFunctionDefinition(FunctionDefinitionContext ctx) 
+    {
+        var returnType = ctx.TYPE_VOID() is not null
+            ? new AstTypeIdentifier("void", false, ctx)
+            : ParseTypeUsage(ctx.typeIdentifierUsage());
 
-            return new AstFuncDefinition(
-                new AstIdentifier(ctx.ident.Text),
-                returnType,
-                Enumerable.Zip(
-                        ctx.parameterList()
-                            .typeIdentifierUsage()
-                            .Select(ParseTypeUsage),
-                        ctx.parameterList()
-                            .varIdentifier()
-                            .Select(x => new AstIdentifier(x.ident.Text))
-                    )
-                    .Select(x => new AstFunctionDefinitionParameter(x.Second, x.First))
-                    .ToArray(),
-                ParseBlock(ctx.block())
-            );
-        });
+        return new AstFuncDefinition(
+            new AstIdentifier(ctx.ident.Text, ctx),
+            returnType,
+            Enumerable.Zip(
+                    ctx.parameterList()
+                        .typeIdentifierUsage()
+                        .Select(ParseTypeUsage),
+                    ctx.parameterList()
+                        .varIdentifier()
+                        .Select(x => new AstIdentifier(x.ident.Text,  AstMetadata.FromToken(x.ident)))
+                )
+                .Select(x => new AstFunctionDefinitionParameter(x.Second, x.First, ctx.parameterList()))
+                .ToArray(),
+            ParseBlock(ctx.block()),
+            ctx
+        );
+    }
 
-    public static AstSymbol<AstStatement>[] ParseBlock(BlockContext ctx) => 
+    public static AstStatement[] ParseBlock(BlockContext ctx) => 
         ctx.statement()
             .Select(ParseStatement)
             .ToArray();
@@ -202,21 +199,22 @@ public static class AstParser
                 
         return new AstTypeIdentifier(
             ctx.typeIdentifier().GetText(),
-            ctx.@ref is not null
+            ctx.@ref is not null,
+            ctx
         );
     }
 
     public static AstIdentifier ParseVarIdentifier(VarIdentifierContext ctx) =>
-        new AstIdentifier(ctx.ident.Text);
+        new AstIdentifier(ctx.ident.Text, ctx);
 
-    public static AstSymbol<AstLiteral> ParseLiteral(LiteralContext ctx) => Parse<AstLiteral>(ctx, () =>
+    public static AstLiteral ParseLiteral(LiteralContext ctx)
     {
         if (ctx.@char is { } c) return char.Parse(c.Text.Trim('\''));
         if (ctx.intLiteral() is { } i) return ParseIntLiteral(i);
         if (ctx.@bool is { } b) return bool.Parse(b.Text);
         if (ctx.str is { } s) return s.Text.Trim('"');
         throw new AstParserException(ctx, $"Invalid literal");
-    });
+    }
 
     public static int ParseIntLiteral(IntLiteralContext ctx)
     {

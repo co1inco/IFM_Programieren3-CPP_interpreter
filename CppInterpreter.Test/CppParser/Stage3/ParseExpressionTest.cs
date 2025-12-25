@@ -3,6 +3,7 @@ using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Values;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage3;
 
@@ -15,11 +16,11 @@ public class ParseExpressionTest
     public void BinOperation()
     {
         //Arrange
-        var ast = new AstExpression(new AstBinOp(
-            new AstExpression(new AstLiteral(5)),
-            new AstExpression(new AstLiteral(6)),
+        var ast = AstBinOp(
+             AstLiteral(5),
+             AstLiteral(6),
             AstBinOpOperator.Arithmetic.Add
-        ));
+        );
         var scope = new Scope<ICppValueBase>();
         
         //Act

@@ -5,6 +5,7 @@ using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using NSubstitute;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage3;
 
@@ -31,7 +32,9 @@ public class UserFunctionsTest
             "test",
             new CppVoidType(),
             [],
-            [new AstStatement((AstExpression)new AstFunctionCall(new AstAtom("foo"), []))]
+            [
+                AstFunctionCallExpr(AstAtom("foo"), [])
+            ]
         );
         
         var ast = new Stage2FuncDefinition(

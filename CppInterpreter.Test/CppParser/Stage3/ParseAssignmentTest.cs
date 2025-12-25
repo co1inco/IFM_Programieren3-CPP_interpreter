@@ -5,6 +5,7 @@ using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using NSubstitute;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage3;
 
@@ -22,9 +23,9 @@ public class ParseAssignmentTest
         var scope = new Scope<ICppValueBase>();
         scope.TryBindSymbol("test", value);
         
-        var ast = new AstAssignment(
-            new AstIdentifier("test"),
-            new AstLiteral(5)
+        var ast = AstAssignment(
+            AstIdentifier("test"),
+            AstLiteral(5)
         );
         
         //Act
@@ -64,9 +65,9 @@ public class ParseAssignmentTest
         assignmentOperator.InstanceType.Returns(type);
         assignmentOperator.ParameterTypes.Returns([ new CppFunctionParameter("", new CppInt32Type(), false) ]);
         
-        var ast = new AstAssignment(
-            new AstIdentifier("test"),
-            new AstLiteral(5)
+        var ast = AstAssignment(
+            AstIdentifier("test"),
+            AstLiteral(5)
         );
         
         //Act

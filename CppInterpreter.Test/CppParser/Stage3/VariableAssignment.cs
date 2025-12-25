@@ -4,6 +4,7 @@ using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage3;
 
@@ -29,9 +30,9 @@ public class VariableAssignment
         //Arrange
         var typeScope = Stage1Parser.CreateBaseScope();
         
-        var ast = new AstVarDefinition(
-            new AstTypeIdentifier("int", true),
-            new AstIdentifier("test"),
+        var ast = AstVarDefinition(
+            AstTypeIdentifier("int", true),
+            AstIdentifier("test"),
             null);
 
         //Act / Assert
@@ -46,10 +47,10 @@ public class VariableAssignment
         //Arrange
         var typeScope = Stage1Parser.CreateBaseScope();
         
-        var ast = new AstVarDefinition(
-            new AstTypeIdentifier("int", true),
-            new AstIdentifier("test"),
-            new AstAtom("baseVal"));
+        var ast = AstVarDefinition(
+            AstTypeIdentifier("int", true),
+            AstIdentifier("test"),
+            AstAtom("baseVal"));
 
         var baseVal = new CppInt32Value(42);
         

@@ -5,6 +5,7 @@ using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using Shouldly;
+using static CppInterpreter.Ast.GeneratedAstTreeBuilder;
 
 namespace CppInterpreter.Test.CppParser.Stage2;
 
@@ -16,9 +17,9 @@ public class VariableDefinitionTest
     public void ParseVariableDefinition()
     {
         //Arrange
-        var ast = new AstVarDefinition(
-            new AstTypeIdentifier("int", false), 
-            new AstIdentifier("test"),
+        var ast = AstVarDefinition(
+            AstTypeIdentifier("int", false), 
+            AstIdentifier("test"),
             null);
 
         var typeScope = new Scope<ICppType>();
@@ -41,10 +42,10 @@ public class VariableDefinitionTest
     {
         //Arrange
 
-        var initializer = new AstLiteral(5);
-        var ast = new AstVarDefinition(
-            new AstTypeIdentifier("int", false), 
-            new AstIdentifier("test"),
+        var initializer = AstLiteral(5);
+        var ast = AstVarDefinition(
+            AstTypeIdentifier("int", false), 
+            AstIdentifier("test"),
             new AstExpression(initializer));
 
         var typeScope = new Scope<ICppType>();
@@ -67,9 +68,9 @@ public class VariableDefinitionTest
     public void ParseVariableDefinition_UnknownType()
     {
         //Arrange
-        var ast = new AstVarDefinition(
-            new AstTypeIdentifier("dummy", false), 
-            new AstIdentifier("test"),
+        var ast = AstVarDefinition(
+            AstTypeIdentifier("dummy", false), 
+            AstIdentifier("test"),
             null);
 
         var typeScope = new Scope<ICppType>();
