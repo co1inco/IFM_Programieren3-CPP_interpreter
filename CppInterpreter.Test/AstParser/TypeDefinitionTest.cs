@@ -1,4 +1,5 @@
 ﻿using CppInterpreter.Ast;
+using CppInterpreter.CppParser;
 using CppInterpreter.Test.Helper;
 using Shouldly;
 
@@ -48,11 +49,12 @@ public class TypeDefinitionTest
     [TestMethod]
     public void ParseTypeUsage_Void()
     {
-        //Arrange
-        var tree = ParserHelper.GetTree($"void", t => t.typeIdentifierUsage());
-        
-        //Act Assert
-        Should.Throw<AstParserException>(() => Ast.AstParser.ParseTypeUsage(tree));
+        Should.Throw<ParserException>(() => ParserHelper.GetTree($"void", t => t.typeIdentifierUsage()));
+        // //Arrange
+        // var tree = ParserHelper.GetTree($"void", t => t.typeIdentifierUsage());
+        //
+        // //Act Assert
+        // Should.Throw<AstParserException>(() => Ast.AstParser.ParseTypeUsage(tree));
     }
 
 

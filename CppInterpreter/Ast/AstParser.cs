@@ -1,17 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using Antlr4.Runtime;
+using CppInterpreter.CppParser;
+using Language;
 using static Language.GrammarParser;
 
 
 namespace CppInterpreter.Ast;
 
-public class AstParserException(SourceSymbol symbol, string message) : Exception($"{message}: {symbol.Text}")
-{
-    public AstParserException(ParserRuleContext ctx, string message) : this(SourceSymbol.Create(ctx), message) { }
-    public AstParserException(IToken token, string message) : this(SourceSymbol.Create(token), message) { }
-
-}
 
 public sealed class UnexpectedAntlrStateException(SourceSymbol symbol, string message = "Unsupported Antlr context") 
     : Exception($"{message}: {symbol.Text}")
@@ -41,9 +37,24 @@ public record SourceSymbol(string Text, int Line, int Column)
     }
 };
 
+public class ParserErrorToExceptionListener : BaseErrorListener
+{
+    public override void SyntaxError(TextWriter output, IRecognizer recognizer, IToken offendingSymbol, int line, int charPositionInLine,
+        string msg, RecognitionException e)
+    {
+        throw new ParserException(msg, new AstMetadata(new SourceSymbol(offendingSymbol.Text, line, charPositionInLine)));
+    }
+}
+
 
 public static class AstParser
 {
+    public static void FailOnParserError(this GrammarParser parser)
+    {
+        parser.RemoveErrorListeners();
+        parser.AddErrorListener(new ParserErrorToExceptionListener());
+    }
+    
 
     public static AstProgram ParseProgram(ProgramContext ctx) => new(
             ctx.topLevelStatement()
@@ -76,7 +87,8 @@ public static class AstParser
             throw new NotImplementedException("while statement");
         if (ctx.doWhileStmt() is { } doWhileStmt)
             throw new NotImplementedException("doWhile statement");
-
+        if (ctx.returnStmt() is { } returnStmt)
+            throw new NotImplementedException("return statement");
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
     }
     
@@ -195,8 +207,8 @@ public static class AstParser
     public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)
     {
         if (ctx.typeIdentifier().GetText() == "void")
-            throw new AstParserException(ctx, $"Type can not be used here");
-                
+            throw new ParserException("'void' can not be used here", new AstMetadata(SourceSymbol.Create(ctx)));
+                        
         return new AstTypeIdentifier(
             ctx.typeIdentifier().GetText(),
             ctx.@ref is not null,
@@ -213,7 +225,7 @@ public static class AstParser
         if (ctx.intLiteral() is { } i) return ParseIntLiteral(i);
         if (ctx.@bool is { } b) return bool.Parse(b.Text);
         if (ctx.str is { } s) return s.Text.Trim('"');
-        throw new AstParserException(ctx, $"Invalid literal");
+        throw new UnexpectedAntlrStateException(ctx, $"Invalid literal");
     }
 
     public static int ParseIntLiteral(IntLiteralContext ctx)

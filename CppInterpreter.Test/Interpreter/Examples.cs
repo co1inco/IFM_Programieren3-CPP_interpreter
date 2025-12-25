@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using Antlr4.Runtime;
+using CppInterpreter.Ast;
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Test.Helper;
@@ -40,10 +41,7 @@ public class Examples
         //Arrange
         var lexer = new GrammarLexer(CharStreams.fromPath(filename));
         var parser = new GrammarParser(new CommonTokenStream(lexer));
-        parser.RemoveErrorListeners();
-
-        var errorListener = new ParserHelper.ErrorListener();
-        parser.AddErrorListener(errorListener);
+        parser.FailOnParserError();
 
         var stdOut = new StringWriter();
         

@@ -5,15 +5,17 @@ program : topLevelStatement*;
 topLevelStatement : functionDefinition
 		          | variableDefinition ';';
 
-statement : expression ';'
-		  | functionDefinition
+statement : returnStmt ';'
+ 		  | functionDefinition
 		  | variableDefinition ';'
 		  | ifStmt
 		  | whileStmt
 		  | forStmt
 		  | doWhileStmt
-		  | 'return' expression? ';';
+		  | expression ';'
+		  ;
 
+returnStmt : 'return' expression?;
 
 functionDefinition : (typeIdentifierUsage | void=TYPE_VOID) ident=IDENTIFIER '(' parameterList ')' block;
 

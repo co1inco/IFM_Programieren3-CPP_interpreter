@@ -1,4 +1,5 @@
 ﻿using Antlr4.Runtime;
+using CppInterpreter.Ast;
 using Language;
 
 namespace CppInterpreter.Test.Helper;
@@ -10,13 +11,7 @@ public static class ParserHelper
     {
         var lexer = new GrammarLexer(CharStreams.fromString(text));
         var parser = new GrammarParser(new CommonTokenStream(lexer));
-        
-        parser.RemoveErrorListeners();
-        var el = new ErrorListener();
-        parser.AddErrorListener(el);
-        
-        if (!string.IsNullOrEmpty(el.Error))
-            throw new Exception(el.Error);
+        parser.FailOnParserError();
         
         return selector(parser);
     }
