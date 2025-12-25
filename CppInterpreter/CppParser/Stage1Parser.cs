@@ -30,6 +30,7 @@ public class Stage1Parser
         s.TryBindSymbol("int", CppTypes.Int32);
         s.TryBindSymbol("long", CppTypes.Int64);
         s.TryBindSymbol("string", CppTypes.String);
+        s.TryBindSymbol("bool", CppTypes.Boolean);
         
         return s;
     }
