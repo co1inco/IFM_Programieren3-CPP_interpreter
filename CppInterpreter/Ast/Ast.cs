@@ -2,10 +2,7 @@
 
 namespace CppInterpreter.Ast;
 
-public class AstProgram
-{
-    
-}
+public record AstProgram(AstStatement[] Statements);
 
 [GenerateOneOf]
 public partial class AstStatement : OneOfBase<

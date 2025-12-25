@@ -34,11 +34,12 @@ public class Stage1Parser
         return s;
     }
 
-    public static Stage1SymbolTree ParseProgram(IEnumerable<AstStatement> statements, Scope<ICppType> scope)
-    {
-        return  new Stage1SymbolTree(scope, statements.ToArray());
-    }
+    public static Stage1SymbolTree ParseProgram(AstProgram program, Scope<ICppType> scope) => 
+        ParseProgram(program.Statements, scope);
     
+    public static Stage1SymbolTree ParseProgram(IEnumerable<AstStatement> statements, Scope<ICppType> scope) => 
+        new(scope, statements.ToArray());
+
 
     public static void ParseAssignment(AstAssignment assignment, Scope<ICppType> scope)
     {

@@ -1,0 +1,83 @@
+﻿using System.Text.RegularExpressions;
+using Antlr4.Runtime;
+using CppInterpreter.CppParser;
+using CppInterpreter.Interpreter;
+using CppInterpreter.Test.Helper;
+using Language;
+using Shouldly;
+
+namespace CppInterpreter.Test.Interpreter;
+
+[TestClass]
+public class Examples
+{
+    private static readonly Regex ExpectedParser = new(@"/\* EXPECT(?: \(Zeile für Zeile\))?:(?:\r\n|\r|\n)((?:(.*?)(?:\r\n|\r|\n))*?)\*/", RegexOptions.Multiline);
+    
+    public static string[] PositiveFiles { get; private set; }
+    public static string[] NegativeFiles { get; private set; }
+    
+    [ClassInitialize]
+    public static void ClassInitialize(TestContext context)
+    {
+
+        var posFiles = Directory.GetFiles("Examples/tests/pos");
+        if (posFiles.Length == 0)
+            throw new Exception("No positive examples found");
+        
+        var negFiles = Directory.GetFiles("Examples/tests/neg");
+        if (negFiles.Length == 0)
+            throw new Exception("No negative examples found");
+        
+        PositiveFiles = posFiles;
+        NegativeFiles = negFiles;
+    }
+ 
+    
+    [TestMethod]
+    [DynamicData(nameof(PositiveFiles))]
+    public void Positive(string filename)
+    {
+        //Arrange
+        var lexer = new GrammarLexer(CharStreams.fromPath(filename));
+        var parser = new GrammarParser(new CommonTokenStream(lexer));
+        parser.RemoveErrorListeners();
+
+        var errorListener = new ParserHelper.ErrorListener();
+        parser.AddErrorListener(errorListener);
+
+        var stdOut = new StringWriter();
+        
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var valueScope = Stage2Parser.CreateBaseScope(stdOut);
+        
+        var expected = GetExpectedOutput(filename).Replace("\r\n", "\n");
+        
+        //Act
+        var context = parser.program();
+        
+        var ast = Ast.AstParser.ParseProgram(context);
+        var s1 = Stage1Parser.ParseProgram(ast, typeScope);
+        var s2 = Stage2Parser.ParseProgram(s1, valueScope);
+        var s3= Stage3Parser.ParseProgram(s2);
+
+        var _ = s3(valueScope);
+
+        var result = valueScope.ExecuteFunction("main");
+        
+        //Assert
+
+        var output = stdOut.GetStringBuilder().ToString();
+        
+        output.Replace("\r\n", "\n") .ShouldBe(expected);
+    }
+
+    private string GetExpectedOutput(string source)
+    {
+        var text = File.ReadAllText(source);
+        var match = ExpectedParser.Match(text);
+
+        if (!match.Success)
+            throw new Exception($"Failed to parse expected output for file: {source}");
+        return match.Groups[1].Value;
+    }
+}

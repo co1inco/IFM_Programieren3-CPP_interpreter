@@ -24,6 +24,22 @@ public sealed class AntlrMissMatchException(string message) : Exception(message)
 public static class AstParser
 {
 
+    public static AstProgram ParseProgram(ProgramContext ctx) => 
+        new (
+            ctx.topLevelStatement()
+                .Select(ParseTopLevelStatement)
+                .ToArray()
+        );
+
+    public static AstStatement ParseTopLevelStatement(TopLevelStatementContext ctx)
+    {
+        if (ctx.functionDefinition() is { } funcDef)
+            return ParseFunctionDefinition(funcDef);
+        if (ctx.variableDefinition() is { } varDef)
+            return ParseVarDefinition(varDef);
+        throw new Exception("Unsupported top level statement");
+    }
+    
     public static AstStatement ParseStatement(StatementContext ctx)
     {
         if (ctx.expression() is {} expr)

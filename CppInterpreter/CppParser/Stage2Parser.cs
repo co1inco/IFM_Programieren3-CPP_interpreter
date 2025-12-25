@@ -44,17 +44,24 @@ public static class Stage2Parser
 {
 
 
-    public static Scope<ICppValueBase> CreateBaseScope()
+    public static Scope<ICppValueBase> CreateBaseScope(TextWriter? stdOut = null)
     {
+        stdOut ??= Console.Out;
+        
         var scope = new Scope<ICppValueBase>();
 
         var print = new CppCallableValue(scope);
         scope.TryBindSymbol("print", print);
         
-        print.AddOverload(new CppAction<CppInt32Value>("print", Console.WriteLine));
-        print.AddOverload(new CppAction<CppInt64Value>("print", Console.WriteLine));
-        print.AddOverload(new CppAction<CppBoolValue>("print", Console.WriteLine));
-        print.AddOverload(new CppAction<CppStringValue>("print", Console.WriteLine));
+        print.AddOverload(new CppAction<CppInt32Value>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppInt64Value>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppBoolValue>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppStringValue>("print", stdOut.WriteLine));
+        
+        scope.BindFunction(new CppAction<CppInt32Value>("print_int", stdOut.WriteLine));
+        scope.BindFunction(new CppAction<CppInt64Value>("print_long", stdOut.WriteLine));
+        scope.BindFunction(new CppAction<CppBoolValue>("print_bool", stdOut.WriteLine));
+        scope.BindFunction(new CppAction<CppStringValue>("print_string", stdOut.WriteLine));
         
         return scope;
     }
