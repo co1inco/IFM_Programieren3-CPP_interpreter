@@ -2,7 +2,16 @@
 
 namespace CppInterpreter.Ast;
 
-public record AstProgram(AstStatement[] Statements);
+public record AstSymbol<T>(T Symbol, SourceSymbol Source)
+{
+    public static implicit operator T(AstSymbol<T> symbol) => symbol.Symbol; 
+    public static implicit operator AstSymbol<T>(T symbol) => new AstSymbol<T>(symbol, new SourceSymbol("<unknown>", -1, -1)); 
+};
+
+
+public record AstProgram(
+    AstSymbol<AstStatement>[] Statements
+);
 
 [GenerateOneOf]
 public partial class AstStatement : OneOfBase<
@@ -16,10 +25,17 @@ public partial class AstStatement : OneOfBase<
 }
 
 
-public record AstBinOp(AstExpression Left, AstExpression Right, AstBinOpOperator Operator);
+public record AstBinOp(
+    AstExpression Left,
+    AstExpression Right,
+    AstBinOpOperator Operator
+);
 
 
-public record AstUnary(AstExpression Expression, AstUnary.UnaryOperator Operator)
+public record AstUnary(
+    AstExpression Expression,
+    AstUnary.UnaryOperator Operator
+)
 {
     public enum UnaryOperator
     {
@@ -32,9 +48,16 @@ public record AstUnary(AstExpression Expression, AstUnary.UnaryOperator Operator
     }
 }
     
-public record AstAssignment(AstIdentifier Target, AstExpression Value);
+public record AstAssignment(
+    AstIdentifier Target,
+    AstExpression Value
+);
     
-public record AstVarDefinition(AstTypeIdentifier AstType, AstIdentifier Ident, AstExpression? Initializer);
+public record AstVarDefinition(
+    AstTypeIdentifier AstType, 
+    AstIdentifier Ident, 
+    AstExpression? Initializer
+);
 
 public record AstFuncDefinition(
     AstIdentifier Ident,
@@ -43,13 +66,23 @@ public record AstFuncDefinition(
     AstStatement[] Body
 );
 
-public record AstFunctionDefinitionParameter(AstIdentifier Ident, AstTypeIdentifier Type);
+public record AstFunctionDefinitionParameter(
+    AstIdentifier Ident, 
+    AstTypeIdentifier Type
+);
 
-public record struct AstTypeIdentifier(string Ident, bool IsReference);
+public record AstTypeIdentifier(
+    string Ident,
+    bool IsReference
+);
 
-public record struct AstIdentifier(string Value);
+public record AstIdentifier(
+    string Value
+);
 
-public record struct AstAtom(string Value);
+public record AstAtom(
+    string Value
+);
 
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<

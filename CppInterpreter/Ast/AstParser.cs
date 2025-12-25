@@ -3,42 +3,70 @@ using System.Globalization;
 using Antlr4.Runtime;
 using static Language.GrammarParser;
 
+
 namespace CppInterpreter.Ast;
 
-public class ParserException : Exception
+public class AstParserException(SourceSymbol symbol, string message) : Exception($"{message}: {symbol.Text}")
 {
-    public ParserException(string message) : base(message)
-    {
-        
-    }
+    public AstParserException(ParserRuleContext ctx, string message) : this(SourceSymbol.Create(ctx), message) { }
+    public AstParserException(IToken token, string message) : this(SourceSymbol.Create(token), message) { }
 
-    public ParserException(string message, IToken token) : base(message)
-    {
-        
-    }
 }
 
-public sealed class AntlrMissMatchException(string message) : Exception(message); 
+public sealed class UnexpectedAntlrStateException(SourceSymbol symbol, string message = "Unsupported Antlr context") 
+    : Exception($"{message}: {symbol.Text}")
+{
+    public UnexpectedAntlrStateException(ParserRuleContext context, string message = "Unsupported Antlr context") 
+        : this(SourceSymbol.Create(context), message) { }
+    
+    public UnexpectedAntlrStateException(IToken token, string message = "Unsupported Antlr context") 
+        : this(SourceSymbol.Create(token), message) { }
+    
+    
+    public SourceSymbol Symbol { get; } = symbol;
+
+    public string ContextText => Symbol.Text;
+}
+
+public record SourceSymbol(string Text, int Line, int Column)
+{
+    public static SourceSymbol Create(ParserRuleContext ctx)
+    {
+        return new SourceSymbol(ctx.GetText(), ctx.Start.Line, ctx.Start.Column);
+    }
+    
+    public static SourceSymbol Create(IToken token)
+    {
+        return new SourceSymbol(token.Text, token.Line, token.Column);
+    }
+};
 
 
 public static class AstParser
 {
 
-    public static AstProgram ParseProgram(ProgramContext ctx) => 
-        new (
+    private static AstSymbol<T> Parse<T>(ParserRuleContext ctx, Func<T> func) =>
+        new(
+            func(),
+            SourceSymbol.Create(ctx)
+        );
+
+    public static AstSymbol<AstProgram> ParseProgram(ProgramContext ctx) => Parse(ctx, () => 
+        new AstProgram(
             ctx.topLevelStatement()
                 .Select(ParseTopLevelStatement)
                 .ToArray()
-        );
+        ));
 
-    public static AstStatement ParseTopLevelStatement(TopLevelStatementContext ctx)
+    public static AstSymbol<AstStatement> ParseTopLevelStatement(TopLevelStatementContext ctx) => Parse<AstStatement>(ctx, () =>
     {
         if (ctx.functionDefinition() is { } funcDef)
             return ParseFunctionDefinition(funcDef);
         if (ctx.variableDefinition() is { } varDef)
             return ParseVarDefinition(varDef);
-        throw new Exception("Unsupported top level statement");
-    }
+
+        throw new UnexpectedAntlrStateException(ctx, "Unknown top level statement variation");
+    });
     
     public static AstStatement ParseStatement(StatementContext ctx)
     {
@@ -48,7 +76,14 @@ public static class AstParser
             return ParseVarDefinition(varDef);
         if (ctx.functionDefinition() is {} funcDef)
             return ParseFunctionDefinition(funcDef);
-        throw new NotImplementedException();
+        if (ctx.ifStmt() is {} ifStmt)
+            throw new NotImplementedException("If statement");
+        if (ctx.whileStmt() is {} whileStmt)
+            throw new NotImplementedException("while statement");
+        if (ctx.doWhileStmt() is {} doWhileStmt)
+            throw new NotImplementedException("doWhile statement");
+
+        throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
     }
     
     public static AstExpression ParseExpression(ExpressionContext ctx)
@@ -63,10 +98,11 @@ public static class AstParser
             if (ctx.bit is { } bit) return ParseBitBinOp(left, right, bit);
             if (ctx.comp is { } comp) return ParseCompareBinOp(left, right, comp);
             if (ctx.binop is { } ar) return ParseArithmeticBinOp(left, right, ar);
-            throw new AntlrMissMatchException("Got left and right but no supported operator");
+            throw new UnexpectedAntlrStateException(ctx, "Got left and right but no supported operator");
         }
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
-        throw new NotImplementedException();
+
+        throw new UnexpectedAntlrStateException(ctx, "Unknown expression variation");
     }
 
     public static AstBinOp ParseLogicBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
@@ -74,7 +110,7 @@ public static class AstParser
         {
             "&&" => AstBinOpOperator.BoolOp.And,
             "||" => AstBinOpOperator.BoolOp.Or,
-            _ => throw new AntlrMissMatchException($"Invalid  logic operator '{logicOperator.Text}'")
+            _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid  logic operator")
         });
 
     public static AstBinOp ParseBitBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
@@ -83,7 +119,7 @@ public static class AstParser
             "|" => AstBinOpOperator.IntegerOp.BitOr,
             "&" => AstBinOpOperator.IntegerOp.BitAnd,
             "^" => AstBinOpOperator.IntegerOp.BitXor,
-            _ => throw new AntlrMissMatchException($"Invalid bit operator '{logicOperator.Text}'")
+            _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid bit operator")
         }); 
 
     public static AstBinOp ParseCompareBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
@@ -95,7 +131,7 @@ public static class AstParser
             "<=" => AstBinOpOperator.Comparable.LessThanOrEqual,
             ">" => AstBinOpOperator.Comparable.GreaterThan,
             ">=" => AstBinOpOperator.Comparable.GreaterThanOrEqual,
-            _ => throw new AntlrMissMatchException($"Invalid comparison operator '{logicOperator.Text}'")
+            _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid comparison operator")
         }); 
     
     public static AstBinOp ParseArithmeticBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
@@ -106,7 +142,7 @@ public static class AstParser
             "*" => AstBinOpOperator.Arithmetic.Multiply,
             "/" => AstBinOpOperator.Arithmetic.Divide,
             "%" => AstBinOpOperator.Arithmetic.Modulo,
-            _ => throw new AntlrMissMatchException($"Invalid arithmetic operator '{logicOperator.Text}'")
+            _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid arithmetic operator")
         }); 
     
     public static AstAssignment ParseAssignment(AssignmentContext ctx) =>
@@ -159,7 +195,7 @@ public static class AstParser
     public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)
     {
         if (ctx.typeIdentifier().GetText() == "void")
-            throw new ParserException($"'void' can not be used as a variable type");
+            throw new AstParserException(ctx, $"Type can not be used here");
                 
         return new AstTypeIdentifier(
             ctx.typeIdentifier().GetText(),
@@ -176,7 +212,7 @@ public static class AstParser
         if (ctx.intLiteral() is { } i) return ParseIntLiteral(i);
         if (ctx.@bool is { } b) return bool.Parse(b.Text);
         if (ctx.str is { } s) return s.Text.Trim('"');
-        throw new ParserException($"'{ctx.str}' can not be used as a literal");
+        throw new AstParserException(ctx, $"Invalid literal");
     }
 
     public static int ParseIntLiteral(IntLiteralContext ctx)

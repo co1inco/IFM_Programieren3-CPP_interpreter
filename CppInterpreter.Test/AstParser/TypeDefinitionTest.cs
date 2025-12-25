@@ -52,7 +52,7 @@ public class TypeDefinitionTest
         var tree = ParserHelper.GetTree($"void", t => t.typeIdentifierUsage());
         
         //Act Assert
-        Should.Throw<ParserException>(() => Ast.AstParser.ParseTypeUsage(tree));
+        Should.Throw<AstParserException>(() => Ast.AstParser.ParseTypeUsage(tree));
     }
 
 
