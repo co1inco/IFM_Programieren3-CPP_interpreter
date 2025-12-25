@@ -126,7 +126,12 @@ public static class Stage2Parser
             arguments.Add(new CppFunctionParameter(argument.Ident.Value, argumentType, argument.Type.IsReference));
         }
 
-        var function = new CppUserFunction(definition.Ident.Value, returnType, arguments.ToArray(), definition.Body);
+        var function = new CppUserFunction(
+            definition.Ident.Value, 
+            returnType, 
+            arguments.ToArray(), 
+            definition.Body.Select(x => x.Symbol).ToArray()
+        );
         
         if (!scope.TryBindFunction(definition.Ident.Value, function))
             throw new Exception($"Failed to bind function '{definition.Ident.Value}' to environment");
@@ -135,7 +140,7 @@ public static class Stage2Parser
             definition.Ident.Value,
             returnType,
             arguments.ToArray(),
-            definition.Body,
+            definition.Body.Select(x => x.Symbol).ToArray(),
             function,
             scope
         );

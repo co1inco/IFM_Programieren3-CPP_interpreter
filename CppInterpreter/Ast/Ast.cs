@@ -18,7 +18,6 @@ public partial class AstStatement : OneOfBase<
     AstExpression,
     AstVarDefinition,
     AstFuncDefinition
-    // TODO: function definition
 >
 {
     
@@ -63,7 +62,7 @@ public record AstFuncDefinition(
     AstIdentifier Ident,
     AstTypeIdentifier ReturnType,
     AstFunctionDefinitionParameter[] Arguments,
-    AstStatement[] Body
+    AstSymbol<AstStatement>[] Body
 );
 
 public record AstFunctionDefinitionParameter(
@@ -86,12 +85,12 @@ public record AstAtom(
 
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<
-    AstLiteral, 
-    AstAtom, 
-    AstAssignment,
-    AstBinOp,
-    AstUnary,
-    AstFunctionCall>
+    AstSymbol<AstLiteral>, 
+    AstSymbol<AstAtom>, 
+    AstSymbol<AstAssignment>,
+    AstSymbol<AstBinOp>,
+    AstSymbol<AstUnary>,
+    AstSymbol<AstFunctionCall>>
 {
     
 }

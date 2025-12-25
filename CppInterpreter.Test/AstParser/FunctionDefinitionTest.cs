@@ -18,10 +18,10 @@ public class FunctionDefinitionTest
         var ast = Ast.AstParser.ParseFunctionDefinition(tree);
 
         //Assert
-        ast.Ident.Value.ShouldBe("test");
-        ast.ReturnType.Ident.ShouldBe("void");
-        ast.Arguments.ShouldBeEmpty();
-        ast.Body.ShouldBeEmpty();
+        ast.Symbol.Ident.Value.ShouldBe("test");
+        ast.Symbol.ReturnType.Ident.ShouldBe("void");
+        ast.Symbol.Arguments.ShouldBeEmpty();
+        ast.Symbol.Body.ShouldBeEmpty();
     }
     
     [TestMethod]
@@ -34,15 +34,15 @@ public class FunctionDefinitionTest
         var ast = Ast.AstParser.ParseFunctionDefinition(tree);
 
         //Assert
-        ast.Ident.Value.ShouldBe("test");
-        ast.ReturnType.Ident.ShouldBe("void");
-        ast.Body.ShouldBeEmpty();
+        ast.Symbol.Ident.Value.ShouldBe("test");
+        ast.Symbol.ReturnType.Ident.ShouldBe("void");
+        ast.Symbol.Body.ShouldBeEmpty();
         
-        ast.Arguments.ShouldHaveCount(2);
-        ast.Arguments[0].Type.Ident.ShouldBe("int");
-        ast.Arguments[0].Ident.Value.ShouldBe("foo");
-        ast.Arguments[1].Type.Ident.ShouldBe("bool");
-        ast.Arguments[1].Ident.Value.ShouldBe("bar");
+        ast.Symbol.Arguments.ShouldHaveCount(2);
+        ast.Symbol.Arguments[0].Type.Ident.ShouldBe("int");
+        ast.Symbol.Arguments[0].Ident.Value.ShouldBe("foo");
+        ast.Symbol.Arguments[1].Type.Ident.ShouldBe("bool");
+        ast.Symbol.Arguments[1].Ident.Value.ShouldBe("bar");
     }
         
     [TestMethod]
@@ -55,10 +55,10 @@ public class FunctionDefinitionTest
         var ast = Ast.AstParser.ParseFunctionDefinition(tree);
 
         //Assert
-        ast.Ident.Value.ShouldBe("test");
-        ast.ReturnType.Ident.ShouldBe("int");
-        ast.Body.ShouldBeEmpty();
-        ast.Arguments.ShouldBeEmpty();
+        ast.Symbol.Ident.Value.ShouldBe("test");
+        ast.Symbol.ReturnType.Ident.ShouldBe("int");
+        ast.Symbol.Body.ShouldBeEmpty();
+        ast.Symbol.Arguments.ShouldBeEmpty();
     }
     
 }

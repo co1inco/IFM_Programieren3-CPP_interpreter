@@ -139,20 +139,20 @@ public class Stage3Parser
             func => ParseFunctionCall(func, null)
         );
 
-    public static InterpreterExpression ParseAtom(AstAtom atom) => s =>
+    public static InterpreterExpression ParseAtom(AstSymbol<AstAtom> atom) => s =>
         {
-            if (!s.TryGetSymbol(atom.Value, out var variable))
-                throw new Exception($"Variable not found '{atom.Value}'");
+            if (!s.TryGetSymbol(atom.Symbol.Value, out var variable))
+                throw new Exception($"Variable not found '{atom.Symbol.Value}'");
 
             return variable;
         };
 
-    public static InterpreterExpression ParseAssignment(AstAssignment assignment)
+    public static InterpreterExpression ParseAssignment(AstSymbol<AstAssignment> assignment)
     {
-        var inner = ParseExpression(assignment.Value);
+        var inner = ParseExpression(assignment.Symbol.Value);
         return scope =>
         {
-            var name = assignment.Target.Value;
+            var name = assignment.Symbol.Target.Value;
             
             if (!scope.TryGetSymbol(name, out var variable))
                 throw new Exception($"Variable not found '{name}'");
@@ -167,11 +167,11 @@ public class Stage3Parser
         
 
 
-    public static InterpreterExpression ParseBinOp(AstBinOp op)
+    public static InterpreterExpression ParseBinOp(AstSymbol<AstBinOp> op)
     {
-        var left = ParseExpression(op.Left);
-        var right = ParseExpression(op.Right);
-        var function = op.Operator.Match(
+        var left = ParseExpression(op.Symbol.Left);
+        var right = ParseExpression(op.Symbol.Right);
+        var function = op.Symbol.Operator.Match(
             e => e switch
             {
                 AstBinOpOperator.Equatable.Equal => "==",
@@ -220,7 +220,8 @@ public class Stage3Parser
             return f.Invoke(l, [r]);
         };
     }
-    
+
+    public static InterpreterExpression ParseLiteral(AstSymbol<AstLiteral> literal) => ParseLiteral(literal); 
     public static InterpreterExpression ParseLiteral(AstLiteral literal) => 
         literal.Match<InterpreterExpression>(
             c => throw new NotImplementedException(),

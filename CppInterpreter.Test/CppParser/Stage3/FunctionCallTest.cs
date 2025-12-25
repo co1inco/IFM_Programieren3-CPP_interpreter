@@ -215,7 +215,9 @@ public class FunctionCallTest
                 new AstTypeIdentifier("int", false)),
             ],
             [
-                (AstExpression)new AstAssignment(new AstIdentifier("x"), (AstExpression)new AstLiteral(5))
+                new AstSymbol<AstStatement>(
+                    (AstExpression)new AstAssignment(new AstIdentifier("x"), (AstExpression)new AstLiteral(5)), 
+                    new SourceSymbol("", 0, 0))
             ]
         );
 
@@ -257,7 +259,9 @@ public class FunctionCallTest
                     new AstTypeIdentifier("int", false)),
             ],
             [
-                (AstExpression)new AstFunctionCall(new AstAtom("check"), [ new AstAtom("x") ])
+                new AstSymbol<AstStatement>(
+                    (AstExpression)new AstFunctionCall(new AstAtom("check"), [ new AstAtom("x") ]), 
+                    new SourceSymbol("", 0, 0))
             ]
         );
 
