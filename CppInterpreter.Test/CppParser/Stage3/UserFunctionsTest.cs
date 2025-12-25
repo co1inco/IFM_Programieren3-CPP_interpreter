@@ -32,16 +32,16 @@ public class UserFunctionsTest
             "test",
             new CppVoidType(),
             [],
-            [
-                AstFunctionCallExpr(AstAtom("foo"), [])
-            ]
+            AstBlock([
+                    AstFunctionCallExpr(AstAtom("foo"), [])
+            ])
         );
         
         var ast = new Stage2FuncDefinition(
             "test",
             new CppVoidType(),
             [], 
-            [], 
+            AstBlock([]), 
             userFunction, 
             scope);
 

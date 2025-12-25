@@ -34,12 +34,17 @@ public record AstProgram(
 public partial class AstStatement : OneOfBase<
     AstExpression,
     AstVarDefinition,
-    AstFuncDefinition
+    AstFuncDefinition,
+    AstBlock
 >
 {
     
 }
 
+public record AstBlock(
+    AstStatement[] Statements,
+    AstMetadata Metadata
+);
 
 public record AstBinOp(
     AstExpression Left,
@@ -83,7 +88,7 @@ public record AstFuncDefinition(
     AstIdentifier Ident,
     AstTypeIdentifier ReturnType,
     AstFunctionDefinitionParameter[] Arguments,
-    AstStatement[] Body,
+    AstBlock Body,
     AstMetadata Metadata
 ) : IAstNode;
 
@@ -195,7 +200,7 @@ public static class GeneratedAstTreeBuilder
             ident,
             returnType,
             [],
-            [],
+            new AstBlock([], AstMetadata.Generated()),
             m ?? AstMetadata.Generated()
         );
 
@@ -208,7 +213,7 @@ public static class GeneratedAstTreeBuilder
             ident,
             returnType,
             arguments,
-            [],
+            new AstBlock([], AstMetadata.Generated()),
             m ?? AstMetadata.Generated()
         );
     
@@ -216,7 +221,7 @@ public static class GeneratedAstTreeBuilder
         AstIdentifier ident, 
         AstTypeIdentifier returnType,
         AstFunctionDefinitionParameter[] arguments,
-        AstStatement[] body,
+        AstBlock body,
         AstMetadata? m = null) =>
         new AstFuncDefinition(
             ident,
@@ -226,6 +231,8 @@ public static class GeneratedAstTreeBuilder
             m ?? AstMetadata.Generated()
         );
 
+    public static AstBlock AstBlock(AstStatement[] statements, AstMetadata? m = null) => 
+        new(statements, m ?? AstMetadata.Generated());
     
     public static AstFunctionDefinitionParameter AstFunctionDefinitionParameter(AstIdentifier ident, AstTypeIdentifier type, AstMetadata? m = null) => 
         new(

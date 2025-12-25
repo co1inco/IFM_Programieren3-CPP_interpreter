@@ -28,7 +28,7 @@ public record Stage2FuncDefinition(
     string Name, 
     ICppType ReturnType, 
     CppFunctionParameter[] Arguments,
-    AstStatement[] Body,
+    AstBlock Body,
     CppUserFunction Function,
     Scope<ICppValueBase> Closure
 );
@@ -84,7 +84,8 @@ public static class Stage2Parser
         return statement.Match<Stage2Statement>(
             e => e,
             v => ParseVarDefinition(v, scope, typeScope),
-            f => ParseFuncDefinition(f, scope, typeScope)
+            f => ParseFuncDefinition(f, scope, typeScope),
+            b => throw new NotImplementedException("block")
         );
     }
 
@@ -130,7 +131,7 @@ public static class Stage2Parser
         var function = new CppUserFunction(
             definition.Ident.Value, 
             returnType, 
-            arguments.ToArray(), 
+            arguments.ToArray(),
             definition.Body
         );
         

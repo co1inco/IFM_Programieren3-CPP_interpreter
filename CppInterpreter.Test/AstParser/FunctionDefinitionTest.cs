@@ -21,7 +21,7 @@ public class FunctionDefinitionTest
         ast.Ident.Value.ShouldBe("test");
         ast.ReturnType.Ident.ShouldBe("void");
         ast.Arguments.ShouldBeEmpty();
-        ast.Body.ShouldBeEmpty();
+        ast.Body.Statements.ShouldBeEmpty();
     }
     
     [TestMethod]
@@ -36,7 +36,7 @@ public class FunctionDefinitionTest
         //Assert
         ast.Ident.Value.ShouldBe("test");
         ast.ReturnType.Ident.ShouldBe("void");
-        ast.Body.ShouldBeEmpty();
+        ast.Body.Statements.ShouldBeEmpty();
         
         ast.Arguments.ShouldHaveCount(2);
         ast.Arguments[0].Type.Ident.ShouldBe("int");
@@ -57,7 +57,7 @@ public class FunctionDefinitionTest
         //Assert
         ast.Ident.Value.ShouldBe("test");
         ast.ReturnType.Ident.ShouldBe("int");
-        ast.Body.ShouldBeEmpty();
+        ast.Body.Statements.ShouldBeEmpty();
         ast.Arguments.ShouldBeEmpty();
     }
     

@@ -12,6 +12,7 @@ statement : returnStmt ';'
 		  | whileStmt
 		  | forStmt
 		  | doWhileStmt
+		  | block
 		  | expression ';'
 		  ;
 

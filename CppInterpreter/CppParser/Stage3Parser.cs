@@ -41,7 +41,7 @@ public class Stage3Parser
     {
         definition.Function.BuildBody(definition.Closure, body =>
         {
-            var statements = body.Select(x => ParseStatement(x, typeScope)).ToArray();
+            var statements = body.Statements.Select(x => ParseStatement(x, typeScope)).ToArray();
 
             return s =>
             {
@@ -66,7 +66,8 @@ public class Stage3Parser
                 return s => expr(s);
             },
             d => ParseVariableDefinition(d, typeScope),
-            f => throw f.CreateException("Functions can not be placed here")
+            f => throw f.CreateException("Functions can not be placed here"),
+            b => throw new NotImplementedException()
         );
     }
 

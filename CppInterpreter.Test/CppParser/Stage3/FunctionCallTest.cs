@@ -215,11 +215,11 @@ public class FunctionCallTest
                 AstIdentifier("x"),
                 AstTypeIdentifier("int", false)),
             ],
-            [
+            AstBlock([
                 AstAssignmentExpr(
                     AstIdentifier("x"),
                     AstLiteral(5))
-            ]
+            ])
         );
 
         var typeScope = Stage1Parser.CreateBaseScope();
@@ -259,9 +259,9 @@ public class FunctionCallTest
                     AstIdentifier("x"),
                     AstTypeIdentifier("int", false)),
             ],
-            [
+            AstBlock([
                 (AstExpression)AstFunctionCall(AstAtom("check"), [ AstAtom("x") ])
-            ]
+            ])
         );
 
         var function = Substitute.For<ICppFunction>();

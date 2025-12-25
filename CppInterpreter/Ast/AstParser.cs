@@ -89,6 +89,8 @@ public static class AstParser
             throw new NotImplementedException("doWhile statement");
         if (ctx.returnStmt() is { } returnStmt)
             throw new NotImplementedException("return statement");
+        if (ctx.block() is { } block)
+            return ParseBlock(block);
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
     }
     
@@ -199,10 +201,13 @@ public static class AstParser
         );
     }
 
-    public static AstStatement[] ParseBlock(BlockContext ctx) => 
-        ctx.statement()
-            .Select(ParseStatement)
-            .ToArray();
+    public static AstBlock ParseBlock(BlockContext ctx) => 
+        new AstBlock(
+            ctx.statement()
+                .Select(ParseStatement)
+                .ToArray(),
+            ctx
+        );
     
     public static AstTypeIdentifier ParseTypeUsage(TypeIdentifierUsageContext ctx)
     {

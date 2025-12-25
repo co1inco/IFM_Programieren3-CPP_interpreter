@@ -126,7 +126,7 @@ public sealed class CppUserFunction : ICppFunction
         string name,
         ICppType returnType, 
         CppFunctionParameter[] arguments,
-        AstStatement[] body)
+        AstBlock body)
     {
         Name = name;
         ReturnType = returnType;
@@ -165,12 +165,12 @@ public sealed class CppUserFunction : ICppFunction
         return Function.Invoke(functionScope);
     }
     
-    public AstStatement[] Body { get; }
+    public AstBlock Body { get; }
     
     public Func<Scope<ICppValueBase>, ICppValueBase>? Function { get; private set; }
     public Scope<ICppValueBase>? Closure { get; private set; }
     
-    public void BuildBody(Scope<ICppValueBase> closure, Func<AstStatement[], Func<Scope<ICppValueBase>, ICppValueBase>> builder)
+    public void BuildBody(Scope<ICppValueBase> closure, Func<AstBlock, Func<Scope<ICppValueBase>, ICppValueBase>> builder)
     {
         Closure = closure;
         Function = builder(Body);
