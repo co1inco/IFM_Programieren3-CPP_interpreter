@@ -66,19 +66,19 @@ public class Stage3Parser
                 return s => expr(s);
             },
             d => ParseVariableDefinition(d, typeScope),
-            f => throw new Exception("Functions can not be placed here")
+            f => throw f.CreateException("Functions can not be placed here")
         );
     }
 
     public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
-            throw new Exception($"Unknown type '{definition.Type.Ident}'");
+            definition.Type.ThrowNotFound();
         
         if (definition.Type.IsReference)
         {
             if (definition.Initializer is null)
-                throw new Exception($"Declaration of reference variable '{definition.Ident.Value}' required an initializer");
+                definition.Throw($"Declaration of reference variable '{definition.Ident.Value}' required an initializer");
 
             //TODO: refValue should bind to temporary value (eg. return of function call
             var refValue = ParseExpression(definition.Initializer);
@@ -88,7 +88,7 @@ public class Stage3Parser
                 var value = refValue(s);
                 
                 if (!s.TryBindSymbol(definition.Ident.Value, value))
-                    throw new Exception($"Variable '{definition.Ident.Value}' was already defined");
+                    definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
 
                 return value;
             };
@@ -105,7 +105,7 @@ public class Stage3Parser
         {
             var instance = type.Create();
             if (!scope.TryBindSymbol(definition.Ident.Value, instance))
-                throw new Exception($"Variable '{definition.Ident.Value}' was already defined");
+                definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
 
             return initializer?.Invoke(scope);
         };
@@ -144,7 +144,7 @@ public class Stage3Parser
     public static InterpreterExpression ParseAtom(AstAtom atom) => s =>
         {
             if (!s.TryGetSymbol(atom.Value, out var variable))
-                throw new Exception($"Variable not found '{atom.Value}'");
+                atom.Throw($"Variable not found '{atom.Value}'");
 
             return variable;
         };
@@ -157,7 +157,7 @@ public class Stage3Parser
             var name = assignment.Target.Value;
             
             if (!scope.TryGetSymbol(name, out var variable))
-                throw new Exception($"Variable not found '{name}'");
+                assignment.Throw($"Variable not found '{name}'");
 
             var exprValue = inner(scope);
             var function = variable.Type.GetFunction("operator=", [exprValue.Type]);
@@ -238,16 +238,30 @@ public class Stage3Parser
         var arguments = functionCall.Arguments.Select(ParseExpression).ToArray();
         
         //TODO: already have the type of the callable here and validate parameters / get overload
+        // ParseExpression should return a dummy value or a type (callables should already know their functions)
         
         return s =>
         {
             var c = callable(s);
-            var a = arguments.Select(x => x(s)).ToArray();
+            var a = arguments
+                .Select(x => x(s))
+                .ToArray();
 
             if (c is not CppCallableValue callableValue)
-                throw new Exception($"Expected callable symbol, got '{c.Type}'");
+                throw new InterpreterException($"Expected callable symbol, got '{c.Type}'", functionCall.Metadata);
 
-            return callableValue.Invoke(a);
+            try
+            {
+                return callableValue.Invoke(a);
+            }
+            catch (ParserException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw new InterpreterException(e.Message, e, functionCall.Metadata);
+            }
         };
     }
 }

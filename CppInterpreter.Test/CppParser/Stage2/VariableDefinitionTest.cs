@@ -81,7 +81,6 @@ public class VariableDefinitionTest
         //Act
         
         //Assert
-        Should.Throw<ParserException>(() => Stage2Parser.ParseVarDefinition(ast, scope, typeScope))
-            .BaseMessage.ShouldBe($"Unknown type 'dummy'");
+        Should.Throw<TypeNotFoundException>(() => Stage2Parser.ParseVarDefinition(ast, scope, typeScope));
     }
 }

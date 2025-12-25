@@ -8,6 +8,8 @@ public class ParserException(string message, AstMetadata metadata)
     : Exception($":{metadata.Source.Line}:\n{message}\n{metadata.Source.Text} ")
 {
     public string BaseMessage => message;
+    
+    public AstMetadata Metadata => metadata;
 }
 
 public class TypeNotFoundException(AstTypeIdentifier type) : ParserException($"Type '{type.Ident}' does not exist", type.Metadata);

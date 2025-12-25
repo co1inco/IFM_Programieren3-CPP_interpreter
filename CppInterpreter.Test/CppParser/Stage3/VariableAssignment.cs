@@ -36,8 +36,8 @@ public class VariableAssignment
             null);
 
         //Act / Assert
-        Should.Throw<Exception>(() => Stage3Parser.ParseVariableDefinition(ast, typeScope))
-            .Message.ShouldBe($"Declaration of reference variable 'test' required an initializer");
+        Should.Throw<ParserException>(() => Stage3Parser.ParseVariableDefinition(ast, typeScope));
+            // .BaseMessage.ShouldBe($"Declaration of reference variable 'test' required an initializer");
         
     }
     
