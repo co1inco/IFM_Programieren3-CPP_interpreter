@@ -93,14 +93,14 @@ public static class Stage2Parser
         Scope<ICppValueBase> scope,
         Scope<ICppType> typeScope)
     {
-        if (!typeScope.TryGetSymbol(definition.AstType.Ident, out var type))
-            throw new Exception($"Unknown type '{definition.AstType.Ident}'");
+        if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
+            definition.Type.ThrowNotFound();
 
         // Maybe don't use the values here but instead add a ValueReference type?
         var value = type.Create();
-        
+
         if (!scope.TryBindSymbol(definition.Ident.Value, value))
-            throw new Exception($"'{definition.Ident.Value}' was already defined");
+            definition.Ident.Throw($"'{definition.Ident.Value}' was already defined");
 
         return new Stage2VarDefinition(type, definition.Ident.Value, definition.Initializer);
     }
@@ -112,17 +112,18 @@ public static class Stage2Parser
         Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.ReturnType.Ident, out var returnType))
-            throw new Exception($"Unknown return type '{definition.ReturnType.Ident}'");
+            definition.ReturnType.ThrowNotFound();
 
         if (definition.ReturnType.IsReference)
-            throw new Exception($"Return type '{definition.ReturnType.Ident}' is a reference type");
+            definition.ReturnType.Throw($"Return type '{definition.ReturnType.Ident}' is a reference type");
         
         List<CppFunctionParameter> arguments = [];
         foreach (var argument in definition.Arguments)
         {
             // TODO: implement reference types
             if (!typeScope.TryGetSymbol(argument.Type.Ident, out var argumentType))
-                throw new Exception($"Unknown type '{argument.Type.Ident}'");
+                argument.Type.ThrowNotFound();
+                
             arguments.Add(new CppFunctionParameter(argument.Ident.Value, argumentType, argument.Type.IsReference));
         }
 
@@ -134,7 +135,7 @@ public static class Stage2Parser
         );
         
         if (!scope.TryBindFunction(definition.Ident.Value, function))
-            throw new Exception($"Failed to bind function '{definition.Ident.Value}' to environment");
+            definition.Ident.Throw($"Failed to bind function '{definition.Ident.Value}' to environment");
         
         return new Stage2FuncDefinition(
             definition.Ident.Value,

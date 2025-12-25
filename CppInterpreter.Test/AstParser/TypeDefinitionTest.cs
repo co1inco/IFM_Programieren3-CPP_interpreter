@@ -66,7 +66,7 @@ public class TypeDefinitionTest
         var ast = Ast.AstParser.ParseVarDefinition(tree);
         
         //Assert
-        ast.AstType.Ident.ShouldBe("int");
+        ast.Type.Ident.ShouldBe("int");
         ast.Ident.Value.ShouldBe("test");
     }
 }

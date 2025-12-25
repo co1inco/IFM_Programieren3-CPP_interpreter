@@ -10,6 +10,11 @@ namespace CppInterpreter.Ast;
 //     public static implicit operator AstSymbol<T>(T symbol) => new AstSymbol<T>(symbol, new SourceSymbol("<unknown>", -1, -1)); 
 // };
 
+public interface IAstNode
+{
+    public AstMetadata Metadata { get; }
+}
+
 public record AstMetadata(SourceSymbol Source)
 {
     public static implicit operator AstMetadata(ParserRuleContext context) => new(SourceSymbol.Create(context));
@@ -23,7 +28,7 @@ public record AstMetadata(SourceSymbol Source)
 public record AstProgram(
     AstStatement[] Statements,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 [GenerateOneOf]
 public partial class AstStatement : OneOfBase<
@@ -41,14 +46,14 @@ public record AstBinOp(
     AstExpression Right,
     AstBinOpOperator Operator,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 
 public record AstUnary(
     AstExpression Expression,
     AstUnary.UnaryOperator Operator,
     AstMetadata Metadata
-)
+) : IAstNode
 {
     public enum UnaryOperator
     {
@@ -65,14 +70,14 @@ public record AstAssignment(
     AstIdentifier Target,
     AstExpression Value,
     AstMetadata Metadata
-);
+) : IAstNode;
     
 public record AstVarDefinition(
-    AstTypeIdentifier AstType, 
+    AstTypeIdentifier Type, 
     AstIdentifier Ident, 
     AstExpression? Initializer,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 public record AstFuncDefinition(
     AstIdentifier Ident,
@@ -80,29 +85,29 @@ public record AstFuncDefinition(
     AstFunctionDefinitionParameter[] Arguments,
     AstStatement[] Body,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 public record AstFunctionDefinitionParameter(
     AstIdentifier Ident, 
     AstTypeIdentifier Type,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 public record AstTypeIdentifier(
     string Ident,
     bool IsReference,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 public record AstIdentifier(
     string Value,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 public record AstAtom(
     string Value,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<
@@ -174,7 +179,7 @@ public record AstFunctionCall(
     AstExpression Function,
     AstExpression[] Arguments,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 
 public static class GeneratedAstTreeBuilder 

@@ -72,10 +72,10 @@ public class Stage3Parser
 
     public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppType> typeScope)
     {
-        if (!typeScope.TryGetSymbol(definition.AstType.Ident, out var type))
-            throw new Exception($"Unknown type '{definition.AstType.Ident}'");
+        if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
+            throw new Exception($"Unknown type '{definition.Type.Ident}'");
         
-        if (definition.AstType.IsReference)
+        if (definition.Type.IsReference)
         {
             if (definition.Initializer is null)
                 throw new Exception($"Declaration of reference variable '{definition.Ident.Value}' required an initializer");

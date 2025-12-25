@@ -6,7 +6,6 @@ using OneOf;
 namespace CppInterpreter.CppParser;
 
 
-
 [GenerateOneOf]
 public partial class Stage1Symbol : OneOfBase<AstStatement>
 {
