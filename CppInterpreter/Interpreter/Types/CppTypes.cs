@@ -99,7 +99,11 @@ public sealed class CppBoolType : CppPrimitiveType
         Functions =
         [
             ..CppCommonOperators.EquatorOperators<CppBoolValue, bool>(),
-            CppCommonOperators.PrimitiveAssignment<CppBoolValue, bool>()
+            CppCommonOperators.PrimitiveAssignment<CppBoolValue, bool>(),
+            // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator&&", 
+            //     (a, b) => new CppBoolValue(a.Value && b.Value)),
+            // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator||", 
+            //     (a, b) => new CppBoolValue(a.Value || b.Value))
         ];
     }
 

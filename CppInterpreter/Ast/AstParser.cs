@@ -110,7 +110,7 @@ public static class AstParser
             throw new UnexpectedAntlrStateException(ctx, "Got left and right but no supported operator");
         }
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
-
+        if (ctx.unary is { } unary) throw new NotImplementedException("ast parser unary");
         throw new UnexpectedAntlrStateException(ctx, "Unknown expression variation");
     }
 

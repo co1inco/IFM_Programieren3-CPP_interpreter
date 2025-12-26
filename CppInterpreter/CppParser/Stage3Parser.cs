@@ -29,6 +29,7 @@ public record ExpressionResult(
     }, []);
 }
 
+// TODO: instead of maybe returning a result, return an option that can also take continue and break
 public delegate Maybe<ICppValueBase> InterpreterStatement(Scope<ICppValueBase> scope);
 public delegate ICppValueBase InterpreterExpression(Scope<ICppValueBase> scope);
 
