@@ -42,7 +42,8 @@ public class Stage3Parser
                 e => ParseExpression(e, scope).ToStatement(),
                 v => ParseVariableDefinition(v, scope),
                 f => BuildFunction(f, scope, program.TypeScope)
-            ));
+            ))
+            .ToArray();
 
         return new StatementResult(s =>
         {
@@ -60,7 +61,7 @@ public class Stage3Parser
     {
         definition.Function.BuildBody(definition.Closure, (body, scope) =>
         {
-            var bodyStatement = ParseBlock(body, scope, typeScope);
+            var bodyStatement = ParseBlock(body, scope, typeScope, suppressBlockScope: true);
 
             foreach (var returnValue in bodyStatement.ReturnValues)
             {
@@ -104,8 +105,10 @@ public class Stage3Parser
 
     public static StatementResult ParseBlock(AstBlock block, Scope<ICppValueBase> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
+        var parseScope = suppressBlockScope ? scope : new Scope<ICppValueBase>(scope);
+            
         var stmt = block.Statements
-            .Select(x => ParseStatement(x, new Scope<ICppValueBase>(scope), typeScope))
+            .Select(x => ParseStatement(x, parseScope, typeScope))
             .ToArray();
 
         var returns = stmt.SelectMany(x => x.ReturnValues).ToArray();

@@ -69,6 +69,43 @@ public class Examples
         output.Replace("\r\n", "\n") .ShouldBe(expected);
     }
 
+    [TestMethod]
+    [DataRow("P02_expr.cpp")]
+    public void Positive_Manual(string filename)
+    {
+        //Arrange
+        filename = "Examples/tests/pos/" + filename;
+        var lexer = new GrammarLexer(CharStreams.fromPath(filename));
+        var parser = new GrammarParser(new CommonTokenStream(lexer));
+        parser.FailOnParserError();
+
+        var stdOut = new StringWriter();
+        
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var valueScope = Stage2Parser.CreateBaseScope(stdOut);
+        
+        var expected = GetExpectedOutput(filename).Replace("\r\n", "\n");
+        
+        //Act
+        var context = parser.program();
+        
+        var ast = Ast.AstParser.ParseProgram(context);
+        var s1 = Stage1Parser.ParseProgram(ast, typeScope);
+        var s2 = Stage2Parser.ParseProgram(s1, valueScope);
+        var s3= Stage3Parser.ParseProgram(s2, valueScope);
+
+        var _ = s3.Eval(valueScope);
+
+        var result = valueScope.ExecuteFunction("main");
+        
+        //Assert
+
+        var output = stdOut.GetStringBuilder().ToString();
+        
+        output.Replace("\r\n", "\n") .ShouldBe(expected);
+    }
+
+    
     private string GetExpectedOutput(string source)
     {
         var text = File.ReadAllText(source);
