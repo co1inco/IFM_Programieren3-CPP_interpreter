@@ -16,6 +16,7 @@ public class CppCallableValue : ICppValue
     }
     
     public string StringRep() => "<Callable>";
+    public bool ToBool() => true;
 
     public IList<ICppFunction> Overloads => _overloads;
 
@@ -44,4 +45,6 @@ public class CppCallableValue : ICppValue
 
         return overload.Invoke(null, parameters);
     }
+    
+    
 }

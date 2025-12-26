@@ -8,6 +8,8 @@ public interface ICppValueBase
 {
     ICppType Type { get; }
     string StringRep();
+    
+    bool ToBool();
 }
 
 public interface ICppValue : ICppValueBase
@@ -59,6 +61,7 @@ public struct CppVoidValue : ICppValue
     public ICppType Type => SType;
 
     public string StringRep() => "(void)";
+    public bool ToBool() => false;
 }
 
 
@@ -86,5 +89,6 @@ public sealed class CppBoolValue(bool value)
 {
     public static ICppType SType => CppTypes.Boolean;
     public static CppBoolValue Create(bool value) => new CppBoolValue(value);
+    public bool ToBool() => Value;
 }
 

@@ -79,12 +79,4 @@ public class ParseAssignmentTest
         assignmentOperator.Received(1).Invoke(Arg.Any<ICppValueBase>(), Arg.Any<ICppValueBase[]>());
     }
 
-    public abstract class DummyValue : ICppValue
-    {
-        public abstract ICppType Type { get; }
-
-        public abstract string StringRep();
-
-        public static ICppType SType { get; }
-    }
 }
