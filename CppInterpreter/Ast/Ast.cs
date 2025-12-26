@@ -1,5 +1,6 @@
 ﻿using Antlr4.Runtime;
 using Antlr4.Runtime.Tree.Pattern;
+using CSharpFunctionalExtensions;
 using OneOf;
 
 namespace CppInterpreter.Ast;
@@ -39,7 +40,8 @@ public partial class AstStatement : OneOfBase<
     AstVarDefinition,
     AstFuncDefinition,
     AstBlock,
-    AstReturn
+    AstReturn,
+    AstIf
 >
 {
     
@@ -115,6 +117,12 @@ public record AstIdentifier(
 
 public record AstAtom(
     string Value,
+    AstMetadata Metadata
+) : IAstNode;
+
+public record AstIf(
+    (AstExpression Condition, AstBlock Body)[] Branches, 
+    AstBlock Else,
     AstMetadata Metadata
 ) : IAstNode;
 
@@ -250,6 +258,8 @@ public static class GeneratedAstTreeBuilder
 
     public static AstLiteral AstLiteral(int value) => new AstLiteral(value);
     public static AstLiteral AstLiteral(string value) => new AstLiteral(value);
+    public static AstLiteral AstLiteral(bool value) => new AstLiteral(value);
+    
     public static AstAtom AstAtom(string name, AstMetadata? m = null) => 
         new AstAtom(name, m ?? AstMetadata.Generated($"Atom: {name}"));
     
@@ -259,6 +269,8 @@ public static class GeneratedAstTreeBuilder
     public static AstFunctionCall AstFunctionCall(AstExpression expression, AstExpression[] parameters, AstMetadata? m = null) =>
         new (expression, parameters, m ?? AstMetadata.Generated());
     
+    public static AstFunctionCall AstFunctionCall(string name, AstExpression[] parameters, AstMetadata? m = null) =>
+        new (AstAtom(name), parameters, m ?? AstMetadata.Generated());
     
     public static AstExpression AstAssignmentExpr(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
         AstAssignment(ident, value, null);
@@ -267,4 +279,18 @@ public static class GeneratedAstTreeBuilder
     
     public static AstBinOp AstBinOp(AstExpression left, AstExpression right, AstBinOpOperator op, AstMetadata? m = null) => 
         new(left, right, op, m ?? AstMetadata.Generated());
+    
+    
+    public static AstIf AstIf((AstExpression, AstBlock)[] branches, AstBlock? elseBranch, AstMetadata? m = null) =>
+        new AstIf(
+            branches,
+            elseBranch ?? new AstBlock([], AstMetadata.Generated()),
+            AstMetadata.Generated()
+        );
+    
+    public static (AstExpression, AstBlock) AstIfBranch(AstExpression expression, AstBlock block) =>
+        (expression, block);
+    
+    public static (AstExpression, AstBlock) AstIfBranch(AstExpression expression, params AstStatement[] block) =>
+        (expression, AstBlock(block));
 }

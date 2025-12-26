@@ -2,6 +2,7 @@
 using System.Globalization;
 using Antlr4.Runtime;
 using CppInterpreter.CppParser;
+using CSharpFunctionalExtensions;
 using Language;
 using static Language.GrammarParser;
 
@@ -82,7 +83,7 @@ public static class AstParser
         if (ctx.functionDefinition() is { } funcDef)
             return ParseFunctionDefinition(funcDef);
         if (ctx.ifStmt() is { } ifStmt)
-            throw new NotImplementedException("If statement");
+            return ParseIf(ifStmt);
         if (ctx.whileStmt() is { } whileStmt)
             throw new NotImplementedException("while statement");
         if (ctx.doWhileStmt() is { } doWhileStmt)
@@ -201,6 +202,33 @@ public static class AstParser
         );
     }
 
+    public static AstIf ParseIf(IfStmtContext ctx)
+    {
+        List<(AstExpression, AstBlock)> branches = [];
+
+        branches.Add((
+            ParseExpression(ctx.cond),
+            ParseInnerBlock(ctx.innerBlock())
+        ));
+        
+        ElseStmtContext? context = ctx.elseStmt();
+        while (context?.ifStmt() is not null)
+        {
+            branches.Add((
+                ParseExpression(context.ifStmt().cond), 
+                ParseInnerBlock(context.ifStmt().innerBlock())
+            ));
+
+            context = context.ifStmt().elseStmt();
+        }
+
+        var elseBlock = context?.innerBlock() is null
+            ? new AstBlock([], ctx)
+            : ParseInnerBlock(context?.innerBlock()!);
+
+        return new AstIf(branches.ToArray(), elseBlock, ctx);
+    }
+    
     public static AstBlock ParseBlock(BlockContext ctx) => 
         new AstBlock(
             ctx.statement()
@@ -209,6 +237,15 @@ public static class AstParser
             ctx
         );
 
+    public static AstBlock ParseInnerBlock(InnerBlockContext ctx)
+    {
+        if (ctx.block() is {} block)
+            return ParseBlock(block);
+        if (ctx.statement() is { } statement)
+            return new AstBlock([ ParseStatement(statement) ], ctx);
+        return new AstBlock([], ctx);
+    }
+    
     public static AstReturn ParseReturn(ReturnStmtContext ctx) => 
         new (
             ctx.expression() is null ? null : ParseExpression(ctx.expression()),
@@ -247,5 +284,5 @@ public static class AstParser
         throw new UnreachableException("Unsupported number style");
     }
 
-    
+
 }

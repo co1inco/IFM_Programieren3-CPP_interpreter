@@ -99,10 +99,42 @@ public class Stage3Parser
             d => ParseVariableDefinition(d, scope, typeScope),
             f => throw f.CreateException("Functions must be placed at top level"),
             b => ParseBlock(b, scope, typeScope),
-            r => ParseReturn(r, scope)
+            r => ParseReturn(r, scope),
+            i => ParseIf(i, scope, typeScope)
         );
     }
 
+    public static StatementResult ParseIf(AstIf ifStmt, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    {
+        var branches = ifStmt.Branches
+            .Select(x => (
+                ParseExpression(x.Condition, scope),
+                ParseBlock(x.Body, scope, typeScope)))
+            .ToArray();
+        
+        var elseBlock = ParseBlock(ifStmt.Else,  scope, typeScope);
+
+        var returnValues = branches
+            .Select(x => x.Item2)
+            .Append(elseBlock)
+            .SelectMany(x => x.ReturnValues)
+            .ToImmutableArray();
+
+        return new StatementResult(
+            s =>
+            {
+                foreach (var (condition, body) in branches)
+                {
+                    var result = condition.Eval(s);
+                    if (result.ToBool()) 
+                        return body.Eval(s);
+                }
+
+                return elseBlock.Eval(s);
+            }, 
+            returnValues);
+    }
+    
     public static StatementResult ParseBlock(AstBlock block, Scope<ICppValueBase> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
         var parseScope = suppressBlockScope ? scope : new Scope<ICppValueBase>(scope);
@@ -213,6 +245,8 @@ public class Stage3Parser
             return Maybe<ICppValueBase>.None;
         }, []);
     }
+    
+    
     
     public static ExpressionResult ParseExpression(AstExpression expression, Scope<ICppValueBase> scope) =>
         expression.Match<ExpressionResult>(
