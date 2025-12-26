@@ -87,9 +87,10 @@ public static class Stage2Parser
             e => e,
             v => ParseVarDefinition(v, scope, typeScope),
             f => ParseFuncDefinition(f, scope, typeScope),
-            b => throw new NotImplementedException("block"),
-            r => throw new NotImplementedException("return"),
-            i => throw new NotImplementedException("if")
+            b => throw b.CreateException("Unsupported top level statement"),
+            r => throw r.CreateException("Unsupported top level statement"),
+            i => throw i.CreateException("Unsupported top level statement"),
+            w => throw w.CreateException("Unsupported top level statement")
         );
     }
 

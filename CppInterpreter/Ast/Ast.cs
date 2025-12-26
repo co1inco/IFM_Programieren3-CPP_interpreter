@@ -41,7 +41,8 @@ public partial class AstStatement : OneOfBase<
     AstFuncDefinition,
     AstBlock,
     AstReturn,
-    AstIf
+    AstIf,
+    AstWhile
 >
 {
     
@@ -50,7 +51,7 @@ public partial class AstStatement : OneOfBase<
 public record AstBlock(
     AstStatement[] Statements,
     AstMetadata Metadata
-);
+) : IAstNode;
 
 public record AstBinOp(
     AstExpression Left,
@@ -126,7 +127,18 @@ public record AstIf(
     AstMetadata Metadata
 ) : IAstNode;
 
-public record AstReturn(AstExpression? ReturnValue, AstMetadata Metadata) : IAstNode;
+public record AstWhile(
+    AstExpression Condition,
+    AstBlock Body,
+    bool DoWhile,
+    AstMetadata Metadata
+) : IAstNode;
+
+
+public record AstReturn(
+    AstExpression? ReturnValue, 
+    AstMetadata Metadata
+) : IAstNode;
 
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<

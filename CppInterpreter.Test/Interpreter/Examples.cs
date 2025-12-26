@@ -38,37 +38,22 @@ public class Examples
     [DynamicData(nameof(PositiveFiles))]
     public void Positive(string filename)
     {
-        //Arrange
-        var lexer = new GrammarLexer(CharStreams.fromPath(filename));
-        var parser = new GrammarParser(new CommonTokenStream(lexer));
-        parser.FailOnParserError();
-
-        var stdOut = new StringWriter();
-        
-        var typeScope = Stage1Parser.CreateBaseScope();
-        var valueScope = Stage2Parser.CreateBaseScope(stdOut);
-        
-        var expected = GetExpectedOutput(filename).Replace("\r\n", "\n");
-        
-        //Act
-        var context = parser.program();
-        
-        var ast = Ast.AstParser.ParseProgram(context);
-        var s1 = Stage1Parser.ParseProgram(ast, typeScope);
-        var s2 = Stage2Parser.ParseProgram(s1, valueScope);
-        var s3= Stage3Parser.ParseProgram(s2, valueScope);
-
-        var _ = s3.Eval(valueScope);
-
-        var result = valueScope.ExecuteFunction("main");
-        
-        //Assert
-
-        var output = stdOut.GetStringBuilder().ToString();
+        var expected = GetExpectedOutput(filename);
+        var output = EvaluateFile(filename);
         
         output.Replace("\r\n", "\n") .ShouldBe(expected);
     }
 
+    [TestMethod]
+    public void Check_Negative()
+    {
+        var filename = "Examples/tests/Check_01.cpp";
+        var expected = GetExpectedOutput(filename);
+        var output = EvaluateFile(filename);
+        
+        output.ShouldNotBe(expected);
+    }
+    
     [TestMethod]
     [DataRow("P01_vars.cpp")]
     [DataRow("P02_expr.cpp")]
@@ -106,6 +91,38 @@ public class Examples
         output.Replace("\r\n", "\n") .ShouldBe(expected);
     }
 
+    private string EvaluateFile(string filename)
+    {
+        var lexer = new GrammarLexer(CharStreams.fromPath(filename));
+        var parser = new GrammarParser(new CommonTokenStream(lexer));
+        parser.FailOnParserError();
+
+        var stdOut = new StringWriter();
+        
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var valueScope = Stage2Parser.CreateBaseScope(stdOut);
+        
+        //Act
+        var context = parser.program();
+        
+        var ast = Ast.AstParser.ParseProgram(context);
+        var s1 = Stage1Parser.ParseProgram(ast, typeScope);
+        var s2 = Stage2Parser.ParseProgram(s1, valueScope);
+        var s3= Stage3Parser.ParseProgram(s2, valueScope);
+
+        var _ = s3.Eval(valueScope);
+
+        var result = valueScope.ExecuteFunction("main");
+        
+        //Assert
+
+        return stdOut.GetStringBuilder().ToString();
+    }
+
+    public string ExpectedOutput(string filename)
+    {
+        return GetExpectedOutput(filename).Replace("\r\n", "\n");
+    }
     
     private string GetExpectedOutput(string source)
     {

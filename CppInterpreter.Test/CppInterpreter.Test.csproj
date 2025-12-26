@@ -33,4 +33,9 @@
       <Folder Include="Examples\" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ClCompile Include="Examples\tests\Check_01.cpp" />
+      <ClCompile Include="Examples\tests\pos\C01_WhileBreak.cpp" />
+    </ItemGroup>
+
 </Project>

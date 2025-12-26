@@ -77,7 +77,7 @@ public static class AstParser
     public static AstStatement ParseStatement(StatementContext ctx)
     {
         if (ctx.expression() is { } expr)
-            return ParseExpression(expr); // TODO remove
+            return ParseExpression(expr);
         if (ctx.variableDefinition() is { } varDef)
             return ParseVarDefinition(varDef);
         if (ctx.functionDefinition() is { } funcDef)
@@ -85,9 +85,9 @@ public static class AstParser
         if (ctx.ifStmt() is { } ifStmt)
             return ParseIf(ifStmt);
         if (ctx.whileStmt() is { } whileStmt)
-            throw new NotImplementedException("while statement");
+            return ParseWhile(whileStmt);
         if (ctx.doWhileStmt() is { } doWhileStmt)
-            throw new NotImplementedException("doWhile statement");
+            return ParseDoWhile(doWhileStmt);
         if (ctx.returnStmt() is { } returnStmt)
             return ParseReturn(returnStmt);
         if (ctx.block() is { } block)
@@ -228,6 +228,18 @@ public static class AstParser
 
         return new AstIf(branches.ToArray(), elseBlock, ctx);
     }
+
+    public static AstWhile ParseWhile(WhileStmtContext ctx) => new AstWhile(
+        ParseExpression(ctx.cond),
+        ParseInnerBlock(ctx.innerBlock()),
+        false,
+        ctx);
+
+    public static AstWhile ParseDoWhile(DoWhileStmtContext ctx) => new AstWhile(
+        ParseExpression(ctx.cond),
+        ParseBlock(ctx.block()),
+        true,
+        ctx);
     
     public static AstBlock ParseBlock(BlockContext ctx) => 
         new AstBlock(

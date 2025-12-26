@@ -101,7 +101,8 @@ public class Stage3Parser
             f => throw f.CreateException("Functions must be placed at top level"),
             b => ParseBlock(b, scope, typeScope),
             r => ParseReturn(r, scope),
-            i => ParseIf(i, scope, typeScope)
+            i => ParseIf(i, scope, typeScope),
+            w => ParseWhile(w, scope, typeScope)
         );
     }
 
@@ -134,6 +135,39 @@ public class Stage3Parser
                 return elseBlock.Eval(s);
             }, 
             returnValues);
+    }
+
+    public static StatementResult ParseWhile(AstWhile whileStatement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    {
+        var condition = ParseExpression(whileStatement.Condition, scope);
+        var body = ParseBlock(whileStatement.Body, scope, typeScope);
+
+        return body with { 
+            Eval = s =>
+            {
+                if (whileStatement.DoWhile)
+                {
+                    do
+                    {
+                        var result = body.Eval(s);
+                        if (result.TryGetValue(out var r))
+                            return Maybe.From(r);
+                            
+                    } while (condition.Eval(s).ToBool());
+                }
+                else
+                {
+                    while (condition.Eval(s).ToBool())
+                    {
+                        var result = body.Eval(s);
+                        if (result.TryGetValue(out var r))
+                            return Maybe.From(r);
+                    }  
+                }
+
+                return Maybe<ICppValueBase>.None;
+            } 
+        };
     }
     
     public static StatementResult ParseBlock(AstBlock block, Scope<ICppValueBase> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
