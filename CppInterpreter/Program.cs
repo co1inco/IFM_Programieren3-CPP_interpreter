@@ -37,16 +37,27 @@ var scope = new Scope<ICppValueBase>(stage2Scope);
 while (true)
 {
     var ast = ReadUserInput();
-    if (ast is null)
+    if (ast.TryPickT2(out var _, out var statement))
         break;
-    var s1 = Stage1Parser.ParseProgram([ ast ], stage1Scope);
-    var s2 = Stage2Parser.ParseProgram(s1, stage2Scope);
-
+    
     try
     {
-        var stmt = Stage3Parser.ParseProgram(s2, scope);
+        statement.Switch(
+            stmt =>
+            {
+                var s1 = Stage1Parser.ParseProgram([ stmt ], stage1Scope);
+                var s2 = Stage2Parser.ParseProgram(s1, stage2Scope);
+                var s3 = Stage3Parser.ParseProgram(s2, new Scope<ICppValueBase>(scope));
 
-        // Console.WriteLine($"<<< {stmt.Eval(scope)?.StringRep() ?? "<void>"}");
+                s3.Eval(scope);
+            },
+            expr =>
+            {
+                var s3 = Stage3Parser.ParseExpression(expr, new Scope<ICppValueBase>(scope));
+                var result = s3.Eval(scope);
+                Console.WriteLine($"<   {result.StringRep()}");
+            }
+        );
     }
     catch (NotImplementedException)
     {
@@ -62,7 +73,7 @@ while (true)
     // Console.WriteLine(cpp.Evaluate().StringRep());
 }
 
-AstStatement? ReadUserInput()
+OneOf.OneOf<AstStatement, AstExpression, Quit> ReadUserInput()
 {
     Console.Write(">>> ");
 
@@ -72,7 +83,7 @@ AstStatement? ReadUserInput()
         line += Console.ReadLine();
 
         if (line == "quit")
-            return null;
+            return new Quit();
         
         if (string.IsNullOrWhiteSpace(line))
             continue;
@@ -82,9 +93,17 @@ AstStatement? ReadUserInput()
         aParser.RemoveErrorListeners();
         aParser.AddErrorListener(new AntlrErrorListener());
         
-        try 
+        try
         {
-            return AstParser.ParseStatement(aParser.statement());
+            var stmt = aParser.replStatement();
+            if (stmt.expression() is { } expr)
+                return AstParser.ParseExpression(expr);
+            if (stmt.statement() is { } statement)
+                return AstParser.ParseStatement(statement);
+            
+            Console.WriteLine("Invalid input");
+            line = "";
+            Console.Write(">>> ");
         } catch (EndOfFileException) {
             Console.Write("... ");
         }
@@ -108,3 +127,5 @@ public class EndOfFileException : Exception
 {
     
 }
+
+public record struct Quit();

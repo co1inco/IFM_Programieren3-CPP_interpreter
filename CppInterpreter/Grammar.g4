@@ -2,6 +2,8 @@
 
 program : topLevelStatement*;
 
+replStatement : statement | expression;
+
 topLevelStatement : functionDefinition
 		          | variableDefinition ';';
 

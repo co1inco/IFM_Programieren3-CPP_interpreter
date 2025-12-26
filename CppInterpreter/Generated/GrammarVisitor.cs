@@ -39,6 +39,12 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitProgram([NotNull] GrammarParser.ProgramContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.replStatement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitReplStatement([NotNull] GrammarParser.ReplStatementContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.topLevelStatement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
