@@ -31,6 +31,7 @@ public class CppTypes
         return t;
     }
 
+    public static ICppType Char => field ??= new CppCharType();
     public static ICppType Int32 => field ??= new CppInt32Type();
     public static ICppType Int64 => field ??= new CppInt64Type();
     

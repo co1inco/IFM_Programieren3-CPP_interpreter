@@ -26,6 +26,7 @@ public class Stage1Parser
         var s = new Scope<ICppType>();
 
         s.TryBindSymbol("void", CppTypes.Void);
+        s.TryBindSymbol("char", CppTypes.Char);
         s.TryBindSymbol("int", CppTypes.Int32);
         s.TryBindSymbol("long", CppTypes.Int64);
         s.TryBindSymbol("string", CppTypes.String);

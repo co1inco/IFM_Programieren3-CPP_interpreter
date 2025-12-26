@@ -257,7 +257,7 @@ public class Stage3Parser
             assignment.Throw("Can not assign to callable");
 
         if (!target.Type.Equals(inner.Result))
-            assignment.Throw("Incompatible types");
+            assignment.Throw($"Incompatible types. Expected '{target.Type}' got '{inner.Result}'");
         
         return new ExpressionResult(
             s =>
@@ -343,7 +343,7 @@ public class Stage3Parser
     
     public static ExpressionResult ParseLiteral(AstLiteral literal) => 
         literal.Match(
-            c => throw new NotImplementedException(),
+            c => new ExpressionResult(_ => new CppCharValue(c), CppTypes.Char),
             i => new ExpressionResult(_ => new CppInt32Value(i), CppTypes.Int32),
             s => new ExpressionResult(_ => new CppStringValue(s),  CppTypes.String) ,
             b => new ExpressionResult(_ => new CppBoolValue(b),  CppTypes.Boolean) 

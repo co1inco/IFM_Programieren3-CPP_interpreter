@@ -35,3 +35,21 @@ public sealed class CppInt64Type : CppPrimitiveType
     
     public override ICppValueBase Create() => new CppInt64Value(0);
 }
+
+
+public sealed class CppCharType : CppPrimitiveType
+{
+    public CppCharType() : base("char")
+    {
+        Constructor = [ 
+            new ConstructorFunction<CppCharValue>(() => new CppCharValue('\0') ),
+            new ConstructorFunction<CppCharValue, CppCharValue>(i => new CppCharValue(i.Value) ),
+        ];
+        Functions =
+        [
+            ..CppCommonOperators.IntegerOperators<CppCharValue, char>()
+        ];
+    }
+
+    public override ICppValueBase Create() => new CppCharValue('\0');
+}
