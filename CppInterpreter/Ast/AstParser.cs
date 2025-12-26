@@ -92,6 +92,10 @@ public static class AstParser
             return ParseReturn(returnStmt);
         if (ctx.block() is { } block)
             return ParseBlock(block);
+        if (ctx.breakStmt() is { } breakStmt)
+            return ParseBreak(breakStmt);
+        if (ctx.continueStmt() is { } continueStmt)
+            return ParseContinue(continueStmt);
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
     }
     
@@ -240,6 +244,9 @@ public static class AstParser
         ParseBlock(ctx.block()),
         true,
         ctx);
+
+    public static AstBreak ParseBreak(BreakStmtContext ctx) => new AstBreak(ctx);
+    public static AstContinue ParseContinue(ContinueStmtContext ctx) => new AstContinue(ctx);
     
     public static AstBlock ParseBlock(BlockContext ctx) => 
         new AstBlock(

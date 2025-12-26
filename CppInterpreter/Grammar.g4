@@ -8,6 +8,8 @@ topLevelStatement : functionDefinition
 		          | variableDefinition ';';
 
 statement : returnStmt ';'
+		  | breakStmt ';'
+		  | continueStmt ';'
  		  | functionDefinition
 		  | variableDefinition ';'
 		  | ifStmt
@@ -37,6 +39,9 @@ forStmt : 'for' '(' setup=statement? ';' cond=expression? ';' incr=expression? '
 
 doWhileStmt : 'do' block 'while' '(' cond=expression ')' ';';
 
+breakStmt : 'break';
+
+continueStmt : 'continue';
 
 expression : '(' brace=expression ')'
  		   | func=expression '(' funcParameters? ')' 
@@ -80,7 +85,9 @@ typeIdentifier : int=TYPE_INT
 //			   | void=TYPE_VOID
 			   | ident=IDENTIFIER;
 
-innerBlock : block | statement ';' | ';';
+innerBlock : block | statement | ';';
+//innerBlock : block | statement;
+//innerBlock : block;
 
 block : '{' statement* '}';
 

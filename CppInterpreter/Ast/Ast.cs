@@ -42,7 +42,9 @@ public partial class AstStatement : OneOfBase<
     AstBlock,
     AstReturn,
     AstIf,
-    AstWhile
+    AstWhile,
+    AstBreak,
+    AstContinue
 >
 {
     
@@ -134,6 +136,9 @@ public record AstWhile(
     AstMetadata Metadata
 ) : IAstNode;
 
+public record AstBreak(AstMetadata Metadata) : IAstNode;
+
+public record AstContinue(AstMetadata Metadata) : IAstNode;
 
 public record AstReturn(
     AstExpression? ReturnValue, 

@@ -111,6 +111,18 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitDoWhileStmt([NotNull] GrammarParser.DoWhileStmtContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.breakStmt"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitBreakStmt([NotNull] GrammarParser.BreakStmtContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.continueStmt"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitContinueStmt([NotNull] GrammarParser.ContinueStmtContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.expression"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

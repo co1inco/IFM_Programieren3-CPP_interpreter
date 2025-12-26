@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ClCompile Include="Examples\test.cpp" />
+      <Folder Include="Examples\" />
     </ItemGroup>
     
 </Project>

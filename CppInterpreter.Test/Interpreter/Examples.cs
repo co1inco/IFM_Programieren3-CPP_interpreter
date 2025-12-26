@@ -21,7 +21,9 @@ public class Examples
     public static void ClassInitialize(TestContext context)
     {
 
-        var posFiles = Directory.GetFiles("Examples/tests/pos");
+        var posFiles = Directory.GetFiles("Examples/tests/pos")
+            .Where(x => x.EndsWith(".cpp"))
+            .ToArray();
         if (posFiles.Length == 0)
             throw new Exception("No positive examples found");
         
@@ -116,13 +118,9 @@ public class Examples
         
         //Assert
 
-        return stdOut.GetStringBuilder().ToString();
+        return stdOut.GetStringBuilder().ToString().Replace("\r\n", "\n");
     }
 
-    public string ExpectedOutput(string filename)
-    {
-        return GetExpectedOutput(filename).Replace("\r\n", "\n");
-    }
     
     private string GetExpectedOutput(string source)
     {
@@ -131,6 +129,6 @@ public class Examples
 
         if (!match.Success)
             throw new Exception($"Failed to parse expected output for file: {source}");
-        return match.Groups[1].Value;
+        return match.Groups[1].Value.Replace("\r\n", "\n");
     }
 }

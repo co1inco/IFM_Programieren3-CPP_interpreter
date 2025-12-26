@@ -90,6 +90,8 @@ public static class Stage2Parser
             b => throw b.CreateException("Unsupported top level statement"),
             r => throw r.CreateException("Unsupported top level statement"),
             i => throw i.CreateException("Unsupported top level statement"),
+            w => throw w.CreateException("Unsupported top level statement"),
+            w => throw w.CreateException("Unsupported top level statement"),
             w => throw w.CreateException("Unsupported top level statement")
         );
     }

@@ -166,6 +166,26 @@ public partial class GrammarBaseVisitor<Result> : AbstractParseTreeVisitor<Resul
 	/// <return>The visitor result.</return>
 	public virtual Result VisitDoWhileStmt([NotNull] GrammarParser.DoWhileStmtContext context) { return VisitChildren(context); }
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.breakStmt"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitBreakStmt([NotNull] GrammarParser.BreakStmtContext context) { return VisitChildren(context); }
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.continueStmt"/>.
+	/// <para>
+	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>
+	/// on <paramref name="context"/>.
+	/// </para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	public virtual Result VisitContinueStmt([NotNull] GrammarParser.ContinueStmtContext context) { return VisitChildren(context); }
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.expression"/>.
 	/// <para>
 	/// The default implementation returns the result of calling <see cref="AbstractParseTreeVisitor{Result}.VisitChildren(IRuleNode)"/>

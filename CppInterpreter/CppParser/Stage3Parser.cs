@@ -133,7 +133,9 @@ public class Stage3Parser
             b => ParseBlock(b, scope, typeScope),
             r => ParseReturn(r, scope),
             i => ParseIf(i, scope, typeScope),
-            w => ParseWhile(w, scope, typeScope)
+            w => ParseWhile(w, scope, typeScope),
+            b => ParseBreak(b, scope),
+            c => ParseContinue(c, scope)
         );
     }
 
@@ -204,7 +206,19 @@ public class Stage3Parser
             } 
         };
     }
-    
+
+    public static StatementResult ParseBreak(AstBreak breakStatement, Scope<ICppValueBase> scope)
+    {
+        return new StatementResult(_ =>  new StatementEvalResult.Break(), []);
+    }
+
+    public static StatementResult ParseContinue(AstContinue continueStatement, Scope<ICppValueBase> scope)
+    {
+        return new StatementResult(_ =>  new StatementEvalResult.Continue(), []);
+    }
+
+
+
     public static StatementResult ParseBlock(AstBlock block, Scope<ICppValueBase> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
         var parseScope = suppressBlockScope ? scope : new Scope<ICppValueBase>(scope);
