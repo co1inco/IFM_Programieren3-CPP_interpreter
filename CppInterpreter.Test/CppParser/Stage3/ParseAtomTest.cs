@@ -23,8 +23,8 @@ public class ParseAtomTest
         scope.TryBindSymbol("test", value);
 
         //Act
-        var expr = Stage3Parser.ParseAtom(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseAtom(ast, scope);
+        var result = expr.Eval(scope);
         
         //Assert
         result.ShouldBe(value);
@@ -41,10 +41,8 @@ public class ParseAtomTest
 
         scope.TryBindSymbol("dummy", value);
 
-        //Act
-        var expr = Stage3Parser.ParseAtom(ast);
-        
-        //Assert
-        Should.Throw<Exception>(() => expr(scope));
+        //Act //Assert
+        Should.Throw<ParserException>(() => Stage3Parser.ParseAtom(ast, scope))
+            .BaseMessage.ShouldBe("Undefined value");
     }
 }

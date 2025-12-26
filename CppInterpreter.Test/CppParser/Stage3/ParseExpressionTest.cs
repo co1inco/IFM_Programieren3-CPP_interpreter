@@ -24,8 +24,8 @@ public class ParseExpressionTest
         var scope = new Scope<ICppValueBase>();
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseExpression(ast, scope);
+        var result = expr.Eval(scope);
         
         //Assert
         result.ShouldBeOfType<CppInt32Value>().Value.ShouldBe(11);

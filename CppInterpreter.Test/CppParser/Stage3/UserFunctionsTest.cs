@@ -46,10 +46,10 @@ public class UserFunctionsTest
             scope);
 
         //Act
-        var stmt = Stage3Parser.BuildFunction(ast, typeScope);
+        var stmt = Stage3Parser.BuildFunction(ast, scope, typeScope);
         
         //Assert
-        stmt.Invoke(scope).ShouldBeOfType<CppVoidValue>();
+        stmt.Eval(scope).HasValue.ShouldBeFalse();
         userFunction.Invoke(null, []);
 
         dummyFunction.Received(1).Invoke(null, []);

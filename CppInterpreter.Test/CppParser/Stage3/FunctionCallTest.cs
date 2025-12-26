@@ -37,8 +37,8 @@ public class FunctionCallTest
 
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseExpression(ast, scope);
+        var result = expr.Eval(scope);
 
         //Assert
         result.ShouldBeOfType<CppVoidValue>();
@@ -71,8 +71,8 @@ public class FunctionCallTest
 
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseExpression(ast, scope);
+        var result = expr.Eval(scope);
 
         //Assert
         result.ShouldBeOfType<CppVoidValue>();
@@ -104,8 +104,8 @@ public class FunctionCallTest
 
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseExpression(ast, scope);
+        var result = expr.Eval(scope);
 
         //Assert
         result.ShouldBeOfType<CppInt32Value>().Value.ShouldBe(42);
@@ -149,8 +149,8 @@ public class FunctionCallTest
         callingScope.TryBindSymbol("value", value);
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(callingScope);
+        var expr = Stage3Parser.ParseExpression(ast, scope);
+        var result = expr.Eval(callingScope);
 
         //Assert
         value.Value.ShouldBe(42);
@@ -192,8 +192,8 @@ public class FunctionCallTest
         callingScope.TryBindSymbol("value", value);
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(callingScope);
+        var expr = Stage3Parser.ParseExpression(ast, callingScope);
+        var result = expr.Eval(callingScope);
 
         //Assert
         value.Value.ShouldBe(5);
@@ -226,7 +226,7 @@ public class FunctionCallTest
         var scope = new Scope<ICppValueBase>();
         
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
-        Stage3Parser.BuildFunction(fnDef, typeScope);
+        Stage3Parser.BuildFunction(fnDef, scope, typeScope);
         
         var callingScope = new Scope<ICppValueBase>(scope);
         var value = new CppInt32Value(42);
@@ -236,8 +236,8 @@ public class FunctionCallTest
         
         
         
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(callingScope);
+        var expr = Stage3Parser.ParseExpression(ast, callingScope);
+        var result = expr.Eval(callingScope);
 
         //Assert
         value.Value.ShouldBe(42);
@@ -279,7 +279,7 @@ public class FunctionCallTest
         scope.TryBindSymbol("check", callable);
         
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
-        Stage3Parser.BuildFunction(fnDef, typeScope);
+        Stage3Parser.BuildFunction(fnDef, scope, typeScope);
         
         var callingScope = new Scope<ICppValueBase>(scope);
         var value = new CppInt32Value(42);
@@ -289,8 +289,8 @@ public class FunctionCallTest
         
         
         
-        var expr = Stage3Parser.ParseExpression(ast);
-        var result = expr(callingScope);
+        var expr = Stage3Parser.ParseExpression(ast, callingScope);
+        var result = expr.Eval(callingScope);
 
         //Assert
         value.Value.ShouldBe(42);

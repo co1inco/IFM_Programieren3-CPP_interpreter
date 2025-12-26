@@ -85,7 +85,8 @@ public static class Stage2Parser
             e => e,
             v => ParseVarDefinition(v, scope, typeScope),
             f => ParseFuncDefinition(f, scope, typeScope),
-            b => throw new NotImplementedException("block")
+            b => throw new NotImplementedException("block"),
+            r => throw new NotImplementedException("return")
         );
     }
 

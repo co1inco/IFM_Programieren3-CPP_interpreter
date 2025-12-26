@@ -164,16 +164,29 @@ public sealed class CppUserFunction : ICppFunction
         
         return Function.Invoke(functionScope);
     }
+
+    public Scope<ICppValueBase> BuildParserScope(Scope<ICppValueBase> scope)
+    {
+        scope = new Scope<ICppValueBase>(scope);
+
+        foreach (var parameter in ParameterTypes)
+        {
+            if (!scope.TryBindSymbol(parameter.Name, parameter.Type.Create()))
+                throw new Exception("Duplicate parameter name");
+        }
+        
+        return scope;
+    }
     
     public AstBlock Body { get; }
     
     public Func<Scope<ICppValueBase>, ICppValueBase>? Function { get; private set; }
     public Scope<ICppValueBase>? Closure { get; private set; }
     
-    public void BuildBody(Scope<ICppValueBase> closure, Func<AstBlock, Func<Scope<ICppValueBase>, ICppValueBase>> builder)
+    public void BuildBody(Scope<ICppValueBase> closure, Func<AstBlock, Scope<ICppValueBase>, Func<Scope<ICppValueBase>, ICppValueBase>> builder)
     {
         Closure = closure;
-        Function = builder(Body);
+        Function = builder(Body, BuildParserScope(Closure));
     }
 }
 

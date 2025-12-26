@@ -26,10 +26,10 @@ public class BlockScope
         var value = new CppInt32Value(5);
         scope.TryBindSymbol("test", value);
         
-        var statement = Stage3Parser.ParseBlock(ast, typeScope);
+        var statement = Stage3Parser.ParseBlock(ast, scope, typeScope);
         
         //Act
-        var result = statement.Invoke(scope);
+        var result = statement.Eval(scope);
 
         //Assert
         value.Value.ShouldBe(5);
@@ -52,10 +52,10 @@ public class BlockScope
         var value = new CppBoolValue(true);
         scope.TryBindSymbol("test", value);
         
-        var statement = Stage3Parser.ParseBlock(ast, typeScope);
+        var statement = Stage3Parser.ParseBlock(ast, scope, typeScope);
         
         //Act
-        var result = statement.Invoke(scope);
+        var result = statement.Eval(scope);
 
         //Assert
         value.Value.ShouldBe(true);

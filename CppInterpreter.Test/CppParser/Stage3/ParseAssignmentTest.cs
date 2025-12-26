@@ -29,8 +29,8 @@ public class ParseAssignmentTest
         );
         
         //Act
-        var expr = Stage3Parser.ParseAssignment(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseAssignment(ast, scope);
+        var result = expr.Eval(scope);
         
         //Assert
         result.ShouldBe(value);
@@ -52,6 +52,7 @@ public class ParseAssignmentTest
         var type = Substitute.For<ICppType>();
         type.Name.Returns("dummy");
         type.Equals(type).Returns(true);
+        type.Equals(CppTypes.Int32).Returns(true);
         type.Functions.Returns([
             assignmentOperator
         ]);
@@ -71,8 +72,8 @@ public class ParseAssignmentTest
         );
         
         //Act
-        var expr = Stage3Parser.ParseAssignment(ast);
-        var result = expr(scope);
+        var expr = Stage3Parser.ParseAssignment(ast, scope);
+        var result = expr.Eval(scope);
         
         //Assert
         assignmentOperator.Received(1).Invoke(Arg.Any<ICppValueBase>(), Arg.Any<ICppValueBase[]>());

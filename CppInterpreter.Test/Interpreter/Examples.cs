@@ -56,9 +56,9 @@ public class Examples
         var ast = Ast.AstParser.ParseProgram(context);
         var s1 = Stage1Parser.ParseProgram(ast, typeScope);
         var s2 = Stage2Parser.ParseProgram(s1, valueScope);
-        var s3= Stage3Parser.ParseProgram(s2);
+        var s3= Stage3Parser.ParseProgram(s2, valueScope);
 
-        var _ = s3(valueScope);
+        var _ = s3.Eval(valueScope);
 
         var result = valueScope.ExecuteFunction("main");
         

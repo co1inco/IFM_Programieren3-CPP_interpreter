@@ -88,7 +88,7 @@ public static class AstParser
         if (ctx.doWhileStmt() is { } doWhileStmt)
             throw new NotImplementedException("doWhile statement");
         if (ctx.returnStmt() is { } returnStmt)
-            throw new NotImplementedException("return statement");
+            return ParseReturn(returnStmt);
         if (ctx.block() is { } block)
             return ParseBlock(block);
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
@@ -206,6 +206,12 @@ public static class AstParser
             ctx.statement()
                 .Select(ParseStatement)
                 .ToArray(),
+            ctx
+        );
+
+    public static AstReturn ParseReturn(ReturnStmtContext ctx) => 
+        new (
+            ctx.expression() is null ? null : ParseExpression(ctx.expression()),
             ctx
         );
     

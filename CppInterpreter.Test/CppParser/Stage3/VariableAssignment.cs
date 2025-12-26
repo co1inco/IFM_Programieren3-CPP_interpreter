@@ -29,6 +29,7 @@ public class VariableAssignment
     {
         //Arrange
         var typeScope = Stage1Parser.CreateBaseScope();
+        var scope = Stage2Parser.CreateBaseScope();
         
         var ast = AstVarDefinition(
             AstTypeIdentifier("int", true),
@@ -36,7 +37,7 @@ public class VariableAssignment
             null);
 
         //Act / Assert
-        Should.Throw<ParserException>(() => Stage3Parser.ParseVariableDefinition(ast, typeScope));
+        Should.Throw<ParserException>(() => Stage3Parser.ParseVariableDefinition(ast, scope, typeScope));
             // .BaseMessage.ShouldBe($"Declaration of reference variable 'test' required an initializer");
         
     }
@@ -57,9 +58,11 @@ public class VariableAssignment
         var scope = new Scope<ICppValueBase>();
         scope.TryBindSymbol("baseVal", baseVal);
 
+        var parseScope = new Scope<ICppValueBase>(scope);
+        
         //Act / Assert 
-        var expr =  Stage3Parser.ParseVariableDefinition(ast, typeScope);
-        expr(scope);
+        var expr =  Stage3Parser.ParseVariableDefinition(ast, parseScope, typeScope);
+        expr.Eval(scope);
 
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();
         var testVal = test.ShouldBeOfType<CppInt32Value>();

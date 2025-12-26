@@ -1,116 +1,168 @@
-﻿using CppInterpreter.Ast;
+﻿using System.Collections.Immutable;
+using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
+using CSharpFunctionalExtensions;
 
 namespace CppInterpreter.CppParser;
 
 
-public delegate ICppValueBase? InterpreterStatement(Scope<ICppValueBase> scope);
+public record StatementResult(
+    InterpreterStatement Eval,
+    ImmutableArray<(ICppType Type, AstMetadata Return)> ReturnValues
+)
+{
+    public static implicit operator StatementResult(InterpreterStatement statement) =>
+        new StatementResult(statement, []);
+};
+
+public record ExpressionResult(
+    InterpreterExpression Eval,
+    ICppType Result,
+    ICppFunction[]? Functions = null)
+{
+    public StatementResult ToStatement() => new StatementResult(s =>
+    {
+        _ = Eval(s);
+        return Maybe<ICppValueBase>.None;
+    }, []);
+}
+
+public delegate Maybe<ICppValueBase> InterpreterStatement(Scope<ICppValueBase> scope);
 public delegate ICppValueBase InterpreterExpression(Scope<ICppValueBase> scope);
 
 public class Stage3Parser
 {
 
-    public static InterpreterStatement ParseProgram(Stage2SymbolTree program)
+    public static StatementResult ParseProgram(Stage2SymbolTree program, Scope<ICppValueBase> scope)
     {
         var statements = program.Statement
-            .Select(x => x.Match<InterpreterStatement>(
-                e =>
-                {
-                    var expr = ParseExpression(e);
-                    return s => expr(s);
-                },
-                ParseVariableDefinition,
-                x => BuildFunction(x, program.TypeScope)
+            .Select(x => x.Match(
+                e => ParseExpression(e, scope).ToStatement(),
+                v => ParseVariableDefinition(v, scope),
+                f => BuildFunction(f, scope, program.TypeScope)
             ));
 
-        return s =>
+        return new StatementResult(s =>
         {
-            ICppValueBase? last = null;
             foreach (var statement in statements)
             {
-                last = statement(s);
+                statement.Eval(s);
             }
 
-            return last;
-        };
+            return Maybe<ICppValueBase>.None;
+        }, []);
     }
 
-    public static InterpreterStatement BuildFunction(Stage2FuncDefinition definition, Scope<ICppType> typeScope)
+    
+    public static StatementResult BuildFunction(Stage2FuncDefinition definition, Scope<ICppValueBase> sc, Scope<ICppType> typeScope)
     {
-        definition.Function.BuildBody(definition.Closure, body =>
+        definition.Function.BuildBody(definition.Closure, (body, scope) =>
         {
-            var statements = body.Statements.Select(x => ParseStatement(x, typeScope)).ToArray();
+            var bodyStatement = ParseBlock(body, scope, typeScope);
+
+            foreach (var returnValue in bodyStatement.ReturnValues)
+            {
+                // TODO: for inheritance this must check if the type is assignable
+                if (definition.ReturnType != returnValue.Type)
+                    throw new ParserException($"Return type is '{definition.ReturnType}'", returnValue.Return);
+            }
+            
+            // TODO: somehow detect if all paths have a return
+            if (!definition.ReturnType.Equals(CppTypes.Void)  && bodyStatement.ReturnValues.Length == 0)
+                throw new ParserException("Return statement is missing", body.Metadata);
 
             return s =>
             {
-                foreach (var statement in statements)
+                if (bodyStatement.Eval(s).TryGetValue(out var returnValue))
                 {
-                    statement(s);
+                    return returnValue;
                 }
-                // TODO: Implement returns
+                
+                // missing return is currently undetected if the function has at least one return
+                if (!definition.ReturnType.Equals(CppTypes.Void))
+                    throw new ParserException("Return statement missing", body.Metadata);
+
                 return new CppVoidValue();
             };
         });
-        
-        return _ => new CppVoidValue();
+
+        return new StatementResult(_ => Maybe<ICppValueBase>.None, []);
     }
 
-    public static InterpreterStatement ParseStatement(AstStatement statement, Scope<ICppType> typeScope)
+    public static StatementResult ParseStatement(AstStatement statement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
     {
-        return statement.Match<InterpreterStatement>(
-            e =>
-            {
-                var expr = ParseExpression(e);
-                return s => expr(s);
-            },
-            d => ParseVariableDefinition(d, typeScope),
-            f => throw f.CreateException("Functions can not be placed here"),
-            b => ParseBlock(b, typeScope)
+        return statement.Match<StatementResult>(
+            e => ParseExpression(e, scope).ToStatement(),
+            d => ParseVariableDefinition(d, scope, typeScope),
+            f => throw f.CreateException("Functions must be placed at top level"),
+            b => ParseBlock(b, scope, typeScope),
+            r => ParseReturn(r, scope)
         );
     }
 
-    public static InterpreterStatement ParseBlock(AstBlock block, Scope<ICppType> typeScope, bool suppressBlockScope = false)
+    public static StatementResult ParseBlock(AstBlock block, Scope<ICppValueBase> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
-        var stmt = block.Statements.Select(x => ParseStatement(x, typeScope));
+        var stmt = block.Statements
+            .Select(x => ParseStatement(x, new Scope<ICppValueBase>(scope), typeScope))
+            .ToArray();
 
-        return s =>
-        {
-            var blockScope = suppressBlockScope ? s : new Scope<ICppValueBase>(s);
-            
-            ICppValueBase? last = new CppVoidValue();
-            foreach (var statement in stmt)
+        var returns = stmt.SelectMany(x => x.ReturnValues).ToArray();
+
+        return new StatementResult(s =>
             {
-                last = statement(blockScope);
-            }
+                var blockScope = suppressBlockScope ? s : new Scope<ICppValueBase>(s);
 
-            return last;
-        };
+                foreach (var statement in stmt)
+                {
+                    if (statement.Eval(blockScope).TryGetValue(out var r))
+                        return Maybe.From(r);
+                }
+
+                return Maybe<ICppValueBase>.None;
+            }, 
+            [..returns]);
+
+    }
+
+    public static StatementResult ParseReturn(AstReturn returnStmt, Scope<ICppValueBase> scope)
+    {
+        var expression = returnStmt.ReturnValue is null
+            ? new ExpressionResult(_ => new CppVoidValue(), new CppVoidType())
+            : ParseExpression(returnStmt.ReturnValue, scope);
+
+        return new StatementResult(
+            s => Maybe<ICppValueBase>.From(expression.Eval(s)),
+            [ (expression.Result, returnStmt.Metadata) ]
+        );
     }
     
-    public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppType> typeScope)
+    public static StatementResult ParseVariableDefinition(AstVarDefinition definition, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
             definition.Type.ThrowNotFound();
+        
+        if (!scope.TryBindSymbol(definition.Ident.Value,type.Create()))
+            throw new Exception($"Variable '{definition.Ident.Value}' was already defined");
         
         if (definition.Type.IsReference)
         {
             if (definition.Initializer is null)
                 definition.Throw($"Declaration of reference variable '{definition.Ident.Value}' required an initializer");
 
-            //TODO: refValue should bind to temporary value (eg. return of function call
-            var refValue = ParseExpression(definition.Initializer);
+            //TODO: refValue should not bind to temporary value (eg. return of function call
+            var refValue = ParseExpression(definition.Initializer, scope);
             
-            return s =>
-            {
-                var value = refValue(s);
+            return new StatementResult(s =>
+                {
+                    var value = refValue.Eval(s);
                 
-                if (!s.TryBindSymbol(definition.Ident.Value, value))
-                    definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
+                    if (!s.TryBindSymbol(definition.Ident.Value, value))
+                        definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
 
-                return value;
-            };
+                    return Maybe<ICppValueBase>.None;
+                }, []);
         }
      
         var initializer = definition.Initializer is null
@@ -118,80 +170,117 @@ public class Stage3Parser
             : ParseAssignment(new AstAssignment(
                 definition.Ident, 
                 definition.Initializer, 
-                AstMetadata.Generated()));
+                AstMetadata.Generated()),
+                scope);
         
-        return scope =>
-        {
-            var instance = type.Create();
-            if (!scope.TryBindSymbol(definition.Ident.Value, instance))
-                definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
+        return new StatementResult(s =>
+            {
+                var instance = type.Create();
+                if (!s.TryBindSymbol(definition.Ident.Value, instance))
+                    definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
 
-            return initializer?.Invoke(scope);
-        };
+                initializer?.Eval(s);
+                
+                return Maybe<ICppValueBase>.None;
+            }, []);
     }
     
-    public static InterpreterStatement ParseVariableDefinition(Stage2VarDefinition definition)
+    public static StatementResult ParseVariableDefinition(Stage2VarDefinition definition, Scope<ICppValueBase> scope)
     {
         var initializer = definition.Initializer is null
             ? null
             : ParseAssignment(new AstAssignment(
                 new AstIdentifier(definition.Name, AstMetadata.Generated()), 
                 definition.Initializer, 
-                AstMetadata.Generated()));
+                AstMetadata.Generated())
+                , scope);
+        
+        if (!scope.TryBindSymbol(definition.Name, definition.Type.Create()))
+            throw new Exception($"Variable '{definition.Name}' was already defined");
         
         // TODO: Stage2VarDefinition creation should happen in stage 2
-        return scope =>
+        return new StatementResult(s =>
         {
             var instance = definition.Type.Create();
-            if (!scope.TryBindSymbol(definition.Name, instance))
+            if (!s.TryBindSymbol(definition.Name, instance))
                 throw new Exception($"Variable '{definition.Name}' was already defined");
 
-            return initializer?.Invoke(scope);
-        };
+            _ = initializer?.Eval(s);
+            
+            return Maybe<ICppValueBase>.None;
+        }, []);
     }
     
-    public static InterpreterExpression ParseExpression(AstExpression expression) =>
-        expression.Match(
+    public static ExpressionResult ParseExpression(AstExpression expression, Scope<ICppValueBase> scope) =>
+        expression.Match<ExpressionResult>(
             ParseLiteral,
-            ParseAtom,
-            ParseAssignment,
-            ParseBinOp,
+            a => ParseAtom(a, scope),
+            a => ParseAssignment(a, scope),
+            b => ParseBinOp(b, scope),
             unary => throw new NotImplementedException(),
-            func => ParseFunctionCall(func, null)
+            func => ParseFunctionCall(func, scope)
         );
 
-    public static InterpreterExpression ParseAtom(AstAtom atom) => s =>
-        {
-            if (!s.TryGetSymbol(atom.Value, out var variable))
-                atom.Throw($"Variable not found '{atom.Value}'");
-
-            return variable;
-        };
-
-    public static InterpreterExpression ParseAssignment(AstAssignment assignment)
+    public static ExpressionResult ParseAtom(AstAtom atom, Scope<ICppValueBase> scope)
     {
-        var inner = ParseExpression(assignment.Value);
-        return scope =>
-        {
-            var name = assignment.Target.Value;
-            
-            if (!scope.TryGetSymbol(name, out var variable))
-                assignment.Throw($"Variable not found '{name}'");
+        if (!scope.TryGetSymbol(atom.Value, out var symbol))
+            atom.Throw("Undefined value");
 
-            var exprValue = inner(scope);
-            var function = variable.Type.GetFunction("operator=", [exprValue.Type]);
+        var functions = symbol is CppCallableValue callable
+            ? callable.Overloads.ToArray()
+            : null;
+        
+        return new ExpressionResult(
+            s =>
+            {
+                // Should not happen
+                if (!s.TryGetSymbol(atom.Value, out var variable))
+                    atom.Throw($"Variable not found '{atom.Value}'");
 
-            function.Invoke(variable, [exprValue]);
-            return variable;
-        };
+                return variable;
+            }, 
+            symbol.Type, 
+            functions);
+    }
+
+    public static ExpressionResult ParseAssignment(AstAssignment assignment, Scope<ICppValueBase> scope)
+    {
+        var inner = ParseExpression(assignment.Value, scope);
+        
+        if (!scope.TryGetSymbol(assignment.Target.Value, out var target))
+            assignment.Throw("Variable is not defined");
+        
+        if (target.Type.Equals(CppTypes.Callable))
+            assignment.Throw("Can not assign to callable");
+
+        if (!target.Type.Equals(inner.Result))
+            assignment.Throw("Incompatible types");
+        
+        return new ExpressionResult(
+            s =>
+            {
+                var name = assignment.Target.Value;
+
+                if (!s.TryGetSymbol(name, out var variable))
+                    assignment.Throw($"Variable is not defined");
+
+                var exprValue = inner.Eval(s);
+                var function = variable.Type.GetFunction("operator=", [exprValue.Type]);
+
+                function.Invoke(variable, [exprValue]);
+                return variable;
+            },
+            target.Type
+        );
+
     }
         
 
 
-    public static InterpreterExpression ParseBinOp(AstBinOp op)
+    public static ExpressionResult ParseBinOp(AstBinOp op, Scope<ICppValueBase> scope)
     {
-        var left = ParseExpression(op.Left);
-        var right = ParseExpression(op.Right);
+        var left = ParseExpression(op.Left, scope);
+        var right = ParseExpression(op.Right, scope);
         var function = op.Operator.Match(
             e => e switch
             {
@@ -231,56 +320,79 @@ public class Stage3Parser
             }
         );
         
-        return scope =>
-        {
-            var l = left(scope);
-            var r = right(scope) ;
-            
-            var f = l.Type.GetFunction($"operator{function}", r.Type);
-        
-            return f.Invoke(l, [r]);
-        };
-    }
-    
-    public static InterpreterExpression ParseLiteral(AstLiteral literal) => 
-        literal.Match<InterpreterExpression>(
-            c => throw new NotImplementedException(),
-            i => _ => new CppInt32Value(i),
-            s => _ => new CppStringValue(s),
-            b => _ => new CppBoolValue(b)
+        // TODO: check if overloads exist
+
+        return new ExpressionResult(
+            s =>
+            {
+                var l = left.Eval(s);
+                var r = right.Eval(s);
+
+                var f = l.Type.GetFunction($"operator{function}", r.Type);
+
+                return f.Invoke(l, [r]);
+            },
+            left.Result
         );
 
-    public static InterpreterExpression ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValueBase> scope)
+
+    }
+    
+    public static ExpressionResult ParseLiteral(AstLiteral literal) => 
+        literal.Match(
+            c => throw new NotImplementedException(),
+            i => new ExpressionResult(_ => new CppInt32Value(i), CppTypes.Int32),
+            s => new ExpressionResult(_ => new CppStringValue(s),  CppTypes.String) ,
+            b => new ExpressionResult(_ => new CppBoolValue(b),  CppTypes.Boolean) 
+        );
+
+    public static ExpressionResult ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValueBase> scope)
     {
         // TODO: check functionCall type here
-        var callable = ParseExpression(functionCall.Function);
-        var arguments = functionCall.Arguments.Select(ParseExpression).ToArray();
+        var callable = ParseExpression(functionCall.Function, scope);
+        var arguments = functionCall.Arguments
+            .Select(x => ParseExpression(x, scope))
+            .ToArray();
+        
+        if (!callable.Result.Equals(CppTypes.Callable))
+            functionCall.Throw("Symbol is not a function");
+        
+        if (callable.Functions is not {} functions)
+            throw functionCall.CreateException("Symbol is not a function");
+
+        var function = functions.FirstOrDefault(x => x.ParameterTypes
+            .ZipFill(arguments)
+            .All(y => y.Left?.Type.Equals(y.Right?.Result) ?? false));
+        
+        if (function is null)
+            functionCall.Throw($"No matching overload: [{string.Join(", ", arguments.Select(x => x.Result.Name))}]");
         
         //TODO: already have the type of the callable here and validate parameters / get overload
         // ParseExpression should return a dummy value or a type (callables should already know their functions)
-        
-        return s =>
-        {
-            var c = callable(s);
-            var a = arguments
-                .Select(x => x(s))
-                .ToArray();
 
-            if (c is not CppCallableValue callableValue)
-                throw new InterpreterException($"Expected callable symbol, got '{c.Type}'", functionCall.Metadata);
+        return new ExpressionResult(
+            s =>
+            {
+                var c = callable.Eval(s);
+                var a = arguments
+                    .Select(x => x.Eval(s))
+                    .ToArray();
 
-            try
-            {
-                return callableValue.Invoke(a);
-            }
-            catch (ParserException e)
-            {
-                throw;
-            }
-            catch (Exception e)
-            {
-                throw new InterpreterException(e.Message, e, functionCall.Metadata);
-            }
-        };
+                if (c is not CppCallableValue callableValue)
+                    throw new InterpreterException($"Expected callable symbol, got '{c.Type}'", functionCall.Metadata);
+
+                try
+                {
+                    return callableValue.Invoke(a);
+                }
+                catch (ParserException e)
+                {
+                    throw;
+                }
+                catch (Exception e)
+                {
+                    throw new InterpreterException(e.Message, e, functionCall.Metadata);
+                }
+            }, function.ReturnType);
     }
 }

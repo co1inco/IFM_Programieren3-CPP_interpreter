@@ -19,7 +19,7 @@ public class ParseLiteralTest
         
         //Act
         var expression = Stage3Parser.ParseLiteral(astInt);
-        var result = expression(scope);
+        var result = expression.Eval(scope);
 
         //Assert
         result.ShouldBeOfType<CppInt32Value>().Value.ShouldBe(5);

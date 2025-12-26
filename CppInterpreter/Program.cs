@@ -44,9 +44,9 @@ while (true)
 
     try
     {
-        var stmt = Stage3Parser.ParseProgram(s2);
+        var stmt = Stage3Parser.ParseProgram(s2, scope);
 
-        Console.WriteLine($"<<< {stmt(scope)?.StringRep() ?? "<void>"}");
+        // Console.WriteLine($"<<< {stmt.Eval(scope)?.StringRep() ?? "<void>"}");
     }
     catch (NotImplementedException)
     {

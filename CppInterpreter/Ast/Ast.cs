@@ -21,7 +21,10 @@ public record AstMetadata(SourceSymbol Source)
 
     public static AstMetadata FromToken(IToken token) => new(SourceSymbol.Create(token));
 
-    public static AstMetadata Generated() => new AstMetadata(new SourceSymbol("Generated", 0, 0));
+    public static AstMetadata Generated() => 
+        new AstMetadata(new SourceSymbol("Generated", 0, 0));
+    public static AstMetadata Generated(string message) => 
+        new AstMetadata(new SourceSymbol(message, 0, 0));
 }
 
 
@@ -35,7 +38,8 @@ public partial class AstStatement : OneOfBase<
     AstExpression,
     AstVarDefinition,
     AstFuncDefinition,
-    AstBlock
+    AstBlock,
+    AstReturn
 >
 {
     
@@ -113,6 +117,8 @@ public record AstAtom(
     string Value,
     AstMetadata Metadata
 ) : IAstNode;
+
+public record AstReturn(AstExpression? ReturnValue, AstMetadata Metadata) : IAstNode;
 
 [GenerateOneOf]
 public partial class AstExpression : OneOfBase<
@@ -244,7 +250,8 @@ public static class GeneratedAstTreeBuilder
 
     public static AstLiteral AstLiteral(int value) => new AstLiteral(value);
     public static AstLiteral AstLiteral(string value) => new AstLiteral(value);
-    public static AstAtom AstAtom(string name, AstMetadata? m = null) => new AstAtom(name, m ?? AstMetadata.Generated());
+    public static AstAtom AstAtom(string name, AstMetadata? m = null) => 
+        new AstAtom(name, m ?? AstMetadata.Generated($"Atom: {name}"));
     
     public static AstExpression AstFunctionCallExpr(AstExpression expression, AstExpression[] parameters, AstMetadata? m = null) =>
         AstFunctionCall(expression, parameters, m);
@@ -256,7 +263,7 @@ public static class GeneratedAstTreeBuilder
     public static AstExpression AstAssignmentExpr(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
         AstAssignment(ident, value, null);
     public static AstAssignment AstAssignment(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
-        new AstAssignment(ident, value, m ?? AstMetadata.Generated());
+        new AstAssignment(ident, value, m ?? AstMetadata.Generated($"Assignment: {ident.Value}"));
     
     public static AstBinOp AstBinOp(AstExpression left, AstExpression right, AstBinOpOperator op, AstMetadata? m = null) => 
         new(left, right, op, m ?? AstMetadata.Generated());
