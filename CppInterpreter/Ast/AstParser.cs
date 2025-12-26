@@ -104,13 +104,14 @@ public static class AstParser
         if (ctx.brace is {} expr) return ParseExpression(expr);
         if (ctx.literal() is { } literal) return ParseLiteral(literal);
         if (ctx.atom() is { } atom) return ParseAtom(atom);
-        if (ctx.assignment() is { } assignment) return ParseAssignment(assignment);
+        // if (ctx.assignment() is { } assignment) return ParseAssignment(assignment);
         if (ctx is { left: { } left, right: { } right })
         {
             if (ctx.logic is { } logic) return ParseLogicBinOp(left, right, logic);
             if (ctx.bit is { } bit) return ParseBitBinOp(left, right, bit);
             if (ctx.comp is { } comp) return ParseCompareBinOp(left, right, comp);
             if (ctx.binop is { } ar) return ParseArithmeticBinOp(left, right, ar);
+            if (ctx.assign is { } assign) return ParseAssignment(left, right); 
             throw new UnexpectedAntlrStateException(ctx, "Got left and right but no supported operator");
         }
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
@@ -158,14 +159,20 @@ public static class AstParser
             "/" => AstBinOpOperator.Arithmetic.Divide,
             "%" => AstBinOpOperator.Arithmetic.Modulo,
             _ => throw new UnexpectedAntlrStateException(logicOperator, $"Invalid arithmetic operator")
-        }, AstMetadata.FromToken(logicOperator)); 
+        }, AstMetadata.FromToken(logicOperator));
+
+    public static AstAssignment ParseAssignment(ExpressionContext left, ExpressionContext right) => new(
+        ParseExpression(left),
+        ParseExpression(right),
+        left
+    );
     
-    public static AstAssignment ParseAssignment(AssignmentContext ctx) => 
-        new(
-            ParseVarIdentifier(ctx.varIdentifier()),
-            ParseExpression(ctx.expression()),
-            ctx
-        );
+    // public static AstAssignment ParseAssignment(AssignmentContext ctx) => 
+    //     new(
+    //         ParseVarIdentifier(ctx.varIdentifier()),
+    //         ParseExpression(ctx.expression()),
+    //         ctx
+    //     );
 
     public static AstFunctionCall ParseFunctionCall(ExpressionContext function, FuncParametersContext? arguments) =>
         new(

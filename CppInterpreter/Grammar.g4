@@ -5,8 +5,26 @@ program : topLevelStatement*;
 replStatement : statement | expression;
 
 topLevelStatement : functionDefinition
-		          | variableDefinition ';';
+		          | variableDefinition ';'
+		          | class;
 
+// classes
+class : defaultVis=(CLASS | STRUCT) typeIdentifier classInheritance? classBlock ';'; 
+
+classBlock: '{' classBlockStatement* '}';
+
+classBlockStatement : classMemberMod functionDefinition 
+					| classMemberMod variableDefinition ';'
+					| pub=PUBLIC ':' 
+					| prv=PRIVATE ':';
+
+classMemberMod : virtual=VIRTUAL?;
+
+classInheritance : ':' classInheitanceIdent (',' classInheitanceIdent)*;  
+
+classInheitanceIdent : vis=(PRIVATE|PUBLIC)? typeIdentifierUsage;
+
+// Statements
 statement : returnStmt ';'
 		  | breakStmt ';'
 		  | continueStmt ';'
@@ -32,7 +50,6 @@ ifStmt : 'if' '(' cond=expression ')' innerBlock elseStmt?;
 
 elseStmt : 'else' (ifStmt | innerBlock);
 
-
 whileStmt : 'while' '(' cond=expression ')' innerBlock;
 
 forStmt : 'for' '(' setup=statement? ';' cond=expression? ';' incr=expression? ')' innerBlock;
@@ -43,10 +60,16 @@ breakStmt : 'break';
 
 continueStmt : 'continue';
 
+innerBlock : block | statement | ';';
+
+block : '{' statement* '}';
+
+// Expressions
 expression : '(' brace=expression ')'
  		   | func=expression '(' funcParameters? ')' 
 		   | subscript=expression '[' param=expression ']'
 		   // TODO: Member access
+		   | memberExpr=expression '.' memberAtom=atom 
 		   | unary=('++' | '--') expression 
            | unary=('+' | '-' | '!' | '~' ) expression 
 		   | left=expression binop=('*' | '/' | '%') right=expression
@@ -57,13 +80,10 @@ expression : '(' brace=expression ')'
 		   | left=expression bit='^' right=expression 
 		   | left=expression bit='|' right=expression 
 		   | left=expression logic=('&&' | '||') right=expression 
-		   | assignment
+		   | left=expression assign='=' right=expression
 		   | atom
 		   | literal; //TODO
 
-assignment : varIdentifier '=' expression;
-
-funcParameters : expression (',' expression)*;
 
 atom : IDENTIFIER;
 
@@ -76,7 +96,10 @@ intLiteral :  int=INTEGER
            |  hex=INTEGER_HEX 
            |  bin=INTEGER_BIN; 
 
+// Utility
 varIdentifier : ident=IDENTIFIER;
+
+funcParameters : expression (',' expression)*;
 
 typeIdentifierUsage : typeIdentifier ref='&'?; // & should actually be part of name?
 typeIdentifier : int=TYPE_INT
@@ -85,11 +108,6 @@ typeIdentifier : int=TYPE_INT
 //			   | void=TYPE_VOID
 			   | ident=IDENTIFIER;
 
-innerBlock : block | statement | ';';
-//innerBlock : block | statement;
-//innerBlock : block;
-
-block : '{' statement* '}';
 
 //include : '#include' '<' file=.*? '>'
 //		| '#include' '"' file=.*? '"';
@@ -107,6 +125,13 @@ INTEGER_BIN: '0b'[0-1_]+;
 STRING: '"'(~('"')|(' '|'\b'|'\f'|'r'|'\n'|'\t'|'\\"'|'\\'|'\\0'))*'"';
 CHAR: '\''(~('\'')|(' '|'\b'|'\f'|'r'|'\n'|'\t'|'\\\''|'\\'|'\\0'))'\'';
 BOOL: 'true' | 'false';
+
+CLASS: 'class';
+STRUCT: 'struct';
+PUBLIC: 'public';
+PRIVATE: 'private';
+VIRTUAL : 'virtual';
+ABSTRACT : 'abstract';
 
 //CONST : 'const';
 //IF : 'if';

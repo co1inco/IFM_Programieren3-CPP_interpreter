@@ -81,7 +81,7 @@ public record AstUnary(
 }
     
 public record AstAssignment(
-    AstIdentifier Target,
+    AstExpression Target,
     AstExpression Value,
     AstMetadata Metadata
 ) : IAstNode;
@@ -152,9 +152,16 @@ public partial class AstExpression : OneOfBase<
     AstAssignment,
     AstBinOp,
     AstUnary,
-    AstFunctionCall>
+    AstFunctionCall>, IAstNode
 {
-    
+    public AstMetadata Metadata => Match(
+        x => new AstMetadata(new SourceSymbol("<unknown literal>", 0, 0)),
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata
+    );
 }
 
 // TODO: The operator is only used to create the the name for the function (eg. operator+) so storing it here as a simple string should be enough
@@ -292,7 +299,9 @@ public static class GeneratedAstTreeBuilder
     public static AstExpression AstAssignmentExpr(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
         AstAssignment(ident, value, null);
     public static AstAssignment AstAssignment(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
-        new AstAssignment(ident, value, m ?? AstMetadata.Generated($"Assignment: {ident.Value}"));
+        new AstAssignment(new AstAtom(ident.Value, ident.Metadata), value, m ?? AstMetadata.Generated($"Assignment: {ident.Value}"));
+    public static AstAssignment AstAssignment(AstExpression expr, AstExpression value, AstMetadata? m = null) => 
+        new AstAssignment(expr, value, m ?? AstMetadata.Generated($"Assignment: {expr.Value}"));
     
     public static AstBinOp AstBinOp(AstExpression left, AstExpression right, AstBinOpOperator op, AstMetadata? m = null) => 
         new(left, right, op, m ?? AstMetadata.Generated());

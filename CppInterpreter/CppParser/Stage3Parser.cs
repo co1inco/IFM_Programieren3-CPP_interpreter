@@ -23,7 +23,7 @@ public record StatementResult(
 
 public record ExpressionResult(
     InterpreterExpression Eval,
-    ICppType Result,
+    ICppType ResultType,
     ICppFunction[]? Functions = null)
 {
     public StatementResult ToStatement() => new StatementResult(s =>
@@ -254,7 +254,7 @@ public class Stage3Parser
 
         return new StatementResult(
             s => new StatementEvalResult.Return(expression.Eval(s)),
-            [ (expression.Result, returnStmt.Metadata) ]
+            [ (expression.ResultType, returnStmt.Metadata) ]
         );
     }
     
@@ -288,7 +288,7 @@ public class Stage3Parser
         var initializer = definition.Initializer is null
             ? null
             : ParseAssignment(new AstAssignment(
-                definition.Ident, 
+                new AstAtom(definition.Ident.Value, definition.Ident.Metadata), 
                 definition.Initializer, 
                 AstMetadata.Generated()),
                 scope);
@@ -309,11 +309,12 @@ public class Stage3Parser
     {
         var initializer = definition.Initializer is null
             ? null
-            : ParseAssignment(new AstAssignment(
-                new AstIdentifier(definition.Name, AstMetadata.Generated()), 
-                definition.Initializer, 
-                AstMetadata.Generated())
-                , scope);
+            : ParseAssignment(
+                new AstAssignment(
+                    new AstAtom(definition.Name, AstMetadata.Generated()), 
+                    definition.Initializer, 
+                    AstMetadata.Generated()), 
+                scope);
         
         if (!scope.TryBindSymbol(definition.Name, definition.Type.Create()))
             throw new Exception($"Variable '{definition.Name}' was already defined");
@@ -330,7 +331,15 @@ public class Stage3Parser
             return new None();
         }, []);
     }
-    
+
+    public static ExpressionResult ParseAssignmentTargetExpression(AstExpression expression, Scope<ICppValueBase> scope)
+    {
+        if (expression.TryPickT1(out var atom, out var rem1))
+            return ParseAtom(atom, scope);
+        //TODO: member access
+        
+        throw expression.CreateException("Target of an assignment must be an identifier ior a member accessor");
+    }
     
     
     public static ExpressionResult ParseExpression(AstExpression expression, Scope<ICppValueBase> scope) =>
@@ -368,31 +377,28 @@ public class Stage3Parser
     public static ExpressionResult ParseAssignment(AstAssignment assignment, Scope<ICppValueBase> scope)
     {
         var inner = ParseExpression(assignment.Value, scope);
+        var target = ParseAssignmentTargetExpression(assignment.Target, scope);
+        // if (!scope.TryGetSymbol(assignment.Target.Value, out var target))
+        //     assignment.Throw("Variable is not defined");
         
-        if (!scope.TryGetSymbol(assignment.Target.Value, out var target))
-            assignment.Throw("Variable is not defined");
-        
-        if (target.Type.Equals(CppTypes.Callable))
+        if (target.ResultType.Equals(CppTypes.Callable))
             assignment.Throw("Can not assign to callable");
 
-        if (!target.Type.Equals(inner.Result))
-            assignment.Throw($"Incompatible types. Expected '{target.Type}' got '{inner.Result}'");
+        if (!target.ResultType.Equals(inner.ResultType))
+            assignment.Throw($"Incompatible types. Expected '{target.ResultType}' got '{inner.ResultType}'");
         
         return new ExpressionResult(
             s =>
             {
-                var name = assignment.Target.Value;
-
-                if (!s.TryGetSymbol(name, out var variable))
-                    assignment.Throw($"Variable is not defined");
-
+                var targetValue = target.Eval(s);
+                
                 var exprValue = inner.Eval(s);
-                var function = variable.Type.GetMemberFunction("operator=", [exprValue.Type]);
+                var function = targetValue.Type.GetMemberFunction("operator=", [exprValue.Type]);
 
-                function.Invoke(variable, [exprValue]);
-                return variable;
+                function.Invoke(targetValue, [exprValue]);
+                return exprValue;
             },
-            target.Type
+            target.ResultType
         );
 
     }
@@ -409,7 +415,7 @@ public class Stage3Parser
         {
             // check if type has an overload for the operator. short-circuit is not supported for custom operators 
             var functionName = $"operator{BoolOpString(boolOp)}";
-            if (!left.Result.TryGetMemberFunction(functionName, out _, [ right.Result ]) )
+            if (!left.ResultType.TryGetMemberFunction(functionName, out _, [ right.ResultType ]) )
             {
 
                 return new ExpressionResult(s =>
@@ -484,7 +490,7 @@ public class Stage3Parser
 
                 return f.Invoke(l, [r]);
             },
-            left.Result
+            left.ResultType
         );
 
         string BoolOpString(AstBinOpOperator.BoolOp b) => b switch
@@ -511,7 +517,7 @@ public class Stage3Parser
             .Select(x => ParseExpression(x, scope))
             .ToArray();
         
-        if (!callable.Result.Equals(CppTypes.Callable))
+        if (!callable.ResultType.Equals(CppTypes.Callable))
             functionCall.Throw("Symbol is not a function");
         
         if (callable.Functions is not {} functions)
@@ -519,10 +525,10 @@ public class Stage3Parser
 
         var function = functions.FirstOrDefault(x => x.ParameterTypes
             .ZipFill(arguments)
-            .All(y => y.Left?.Type.Equals(y.Right?.Result) ?? false));
+            .All(y => y.Left?.Type.Equals(y.Right?.ResultType) ?? false));
         
         if (function is null)
-            functionCall.Throw($"No matching overload: [{string.Join(", ", arguments.Select(x => x.Result.Name))}]");
+            functionCall.Throw($"No matching overload: [{string.Join(", ", arguments.Select(x => x.ResultType.Name))}]");
         
         //TODO: already have the type of the callable here and validate parameters / get overload
         // ParseExpression should return a dummy value or a type (callables should already know their functions)
