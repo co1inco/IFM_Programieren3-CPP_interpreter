@@ -16,7 +16,7 @@ public sealed class CppStringType : CppPrimitiveType
                 "operator=", (a, b) => { a.Value = b.Value; }),
             
             new MemberFunction<CppStringValue, CppInt32Value>("size", a => new CppInt32Value(a.Value.Length)),
-            new MemberFunction<CppStringValue, CppInt32Value>("legnth", a => new CppInt32Value(a.Value.Length)),
+            new MemberFunction<CppStringValue, CppInt32Value>("length", a => new CppInt32Value(a.Value.Length)),
         ];
 
         Constructor =

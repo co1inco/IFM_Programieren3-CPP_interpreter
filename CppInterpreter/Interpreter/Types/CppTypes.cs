@@ -97,7 +97,8 @@ public sealed class CppBoolType : CppPrimitiveType
     {
         Functions =
         [
-            ..CppCommonOperators.EquatorOperators<CppBoolValue, bool>()
+            ..CppCommonOperators.EquatorOperators<CppBoolValue, bool>(),
+            CppCommonOperators.PrimitiveAssignment<CppBoolValue, bool>()
         ];
     }
 

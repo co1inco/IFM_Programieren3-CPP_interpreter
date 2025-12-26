@@ -67,10 +67,28 @@ public class Stage3Parser
             },
             d => ParseVariableDefinition(d, typeScope),
             f => throw f.CreateException("Functions can not be placed here"),
-            b => throw new NotImplementedException()
+            b => ParseBlock(b, typeScope)
         );
     }
 
+    public static InterpreterStatement ParseBlock(AstBlock block, Scope<ICppType> typeScope, bool suppressBlockScope = false)
+    {
+        var stmt = block.Statements.Select(x => ParseStatement(x, typeScope));
+
+        return s =>
+        {
+            var blockScope = suppressBlockScope ? s : new Scope<ICppValueBase>(s);
+            
+            ICppValueBase? last = new CppVoidValue();
+            foreach (var statement in stmt)
+            {
+                last = statement(blockScope);
+            }
+
+            return last;
+        };
+    }
+    
     public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
