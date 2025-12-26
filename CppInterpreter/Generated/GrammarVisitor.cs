@@ -87,6 +87,18 @@ public interface IGrammarVisitor<Result> : IParseTreeVisitor<Result> {
 	/// <return>The visitor result.</return>
 	Result VisitClassInheitanceIdent([NotNull] GrammarParser.ClassInheitanceIdentContext context);
 	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.classConstructor"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitClassConstructor([NotNull] GrammarParser.ClassConstructorContext context);
+	/// <summary>
+	/// Visit a parse tree produced by <see cref="GrammarParser.classDestructor"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	/// <return>The visitor result.</return>
+	Result VisitClassDestructor([NotNull] GrammarParser.ClassDestructorContext context);
+	/// <summary>
 	/// Visit a parse tree produced by <see cref="GrammarParser.statement"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

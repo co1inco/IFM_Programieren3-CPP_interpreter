@@ -15,6 +15,8 @@ classBlock: '{' classBlockStatement* '}';
 
 classBlockStatement : classMemberMod functionDefinition 
 					| classMemberMod variableDefinition ';'
+					| classConstructor
+					| classDestructor
 					| pub=PUBLIC ':' 
 					| prv=PRIVATE ':';
 
@@ -23,6 +25,10 @@ classMemberMod : virtual=VIRTUAL?;
 classInheritance : ':' classInheitanceIdent (',' classInheitanceIdent)*;  
 
 classInheitanceIdent : vis=(PRIVATE|PUBLIC)? typeIdentifierUsage;
+
+classConstructor : ident=IDENTIFIER '(' parameterList ')' block;
+
+classDestructor : '~' ident=IDENTIFIER '(' ')' block;
 
 // Statements
 statement : returnStmt ';'
