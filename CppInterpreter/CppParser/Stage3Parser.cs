@@ -303,7 +303,7 @@ public class Stage3Parser
                     assignment.Throw($"Variable is not defined");
 
                 var exprValue = inner.Eval(s);
-                var function = variable.Type.GetFunction("operator=", [exprValue.Type]);
+                var function = variable.Type.GetMemberFunction("operator=", [exprValue.Type]);
 
                 function.Invoke(variable, [exprValue]);
                 return variable;
@@ -319,6 +319,41 @@ public class Stage3Parser
     {
         var left = ParseExpression(op.Left, scope);
         var right = ParseExpression(op.Right, scope);
+
+        // Special handler for short-circuiting && and || (don't evaluate unnecessary)
+        if (op.Operator.TryPickT3(out var boolOp, out var remaining))
+        {
+            // check if type has an overload for the operator. short-circuit is not supported for custom operators 
+            var functionName = $"operator{BoolOpString(boolOp)}";
+            if (!left.Result.TryGetMemberFunction(functionName, out _, [ right.Result ]) )
+            {
+
+                return new ExpressionResult(s =>
+                {
+                    if (boolOp == AstBinOpOperator.BoolOp.And)
+                    {
+                        var l = left.Eval(s);
+                        if (!l.ToBool())
+                            return new CppBoolValue(false);
+                        return right.Eval(s);
+                    }
+
+                    if (boolOp == AstBinOpOperator.BoolOp.Or)
+                    {
+                        var l = left.Eval(s);
+                        if (l.ToBool())
+                            return new CppBoolValue(true);
+                        return right.Eval(s);
+                    }
+
+                    throw new ArgumentOutOfRangeException($"Invlaid bool operator: {boolOp}");
+
+                }, new CppBoolType());
+
+            }
+            
+        }
+        
         var function = op.Operator.Match(
             e => e switch
             {
@@ -341,12 +376,7 @@ public class Stage3Parser
                 AstBinOpOperator.IntegerOp.BitXor => "^",
                 _ => throw new ArgumentOutOfRangeException(nameof(i), i, null)
             },
-            b => b switch
-            {
-                AstBinOpOperator.BoolOp.And => "&&",
-                AstBinOpOperator.BoolOp.Or => "||",
-                _ => throw new ArgumentOutOfRangeException(nameof(b), b, null)
-            },
+            BoolOpString,
             a => a switch
             {
                 AstBinOpOperator.Arithmetic.Add => "+",
@@ -366,14 +396,19 @@ public class Stage3Parser
                 var l = left.Eval(s);
                 var r = right.Eval(s);
 
-                var f = l.Type.GetFunction($"operator{function}", r.Type);
+                var f = l.Type.GetMemberFunction($"operator{function}", r.Type);
 
                 return f.Invoke(l, [r]);
             },
             left.Result
         );
 
-
+        string BoolOpString(AstBinOpOperator.BoolOp b) => b switch
+        {
+            AstBinOpOperator.BoolOp.And => "&&",
+            AstBinOpOperator.BoolOp.Or => "||",
+            _ => throw new ArgumentOutOfRangeException(nameof(b), b, null)
+        };
     }
     
     public static ExpressionResult ParseLiteral(AstLiteral literal) => 
