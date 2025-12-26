@@ -49,7 +49,7 @@ public class UserFunctionsTest
         var stmt = Stage3Parser.BuildFunction(ast, scope, typeScope);
         
         //Assert
-        stmt.Eval(scope).HasValue.ShouldBeFalse();
+        stmt.Eval(scope).IsNone.ShouldBeTrue();
         userFunction.Invoke(null, []);
 
         dummyFunction.Received(1).Invoke(null, []);

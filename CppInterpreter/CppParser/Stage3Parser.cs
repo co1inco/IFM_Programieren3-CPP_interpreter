@@ -1,9 +1,13 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using CSharpFunctionalExtensions;
+using OneOf;
+using OneOf.Types;
+using Maybe = CSharpFunctionalExtensions.Maybe;
 
 namespace CppInterpreter.CppParser;
 
@@ -25,12 +29,38 @@ public record ExpressionResult(
     public StatementResult ToStatement() => new StatementResult(s =>
     {
         _ = Eval(s);
-        return Maybe<ICppValueBase>.None;
+        return new None();
     }, []);
 }
 
 // TODO: instead of maybe returning a result, return an option that can also take continue and break
-public delegate Maybe<ICppValueBase> InterpreterStatement(Scope<ICppValueBase> scope);
+[GenerateOneOf]
+public partial class StatementEvalResult : OneOfBase<
+    StatementEvalResult.Return,
+    StatementEvalResult.Continue,
+    StatementEvalResult.Break,
+    None
+>
+{
+    public record struct Return(ICppValueBase Value);
+    public record struct Continue(IAstNode ContinueNode);
+    public record struct Break(IAstNode ContinueNode);
+
+    public bool IsContinue => IsT1;
+    public bool IsBreak => IsT2;
+    public bool IsNone => IsT3;
+
+    public OneOf<Return, None> ThrowIfLoopControl()
+    {
+        if (TryPickT1(out var c, out var rem1))
+            c.ContinueNode.Throw("Can only be used in a loop construct");
+        if (rem1.TryPickT1(out var b, out var rem2))
+            b.ContinueNode.Throw("Can only be used in a loop construct");
+        return rem2;
+    }
+}
+
+public delegate StatementEvalResult InterpreterStatement(Scope<ICppValueBase> scope);
 public delegate ICppValueBase InterpreterExpression(Scope<ICppValueBase> scope);
 
 public class Stage3Parser
@@ -53,7 +83,7 @@ public class Stage3Parser
                 statement.Eval(s);
             }
 
-            return Maybe<ICppValueBase>.None;
+            return new None();
         }, []);
     }
 
@@ -77,20 +107,21 @@ public class Stage3Parser
 
             return s =>
             {
-                if (bodyStatement.Eval(s).TryGetValue(out var returnValue))
-                {
-                    return returnValue;
-                }
-                
-                // missing return is currently undetected if the function has at least one return
-                if (!definition.ReturnType.Equals(CppTypes.Void))
-                    throw new ParserException("Return statement missing", body.Metadata);
-
-                return new CppVoidValue();
+                return bodyStatement.Eval(s)
+                    .ThrowIfLoopControl()
+                    .Match(
+                        r => r.Value,
+                        n =>
+                        {
+                            if (!definition.ReturnType.Equals(CppTypes.Void))
+                                throw new ParserException("Return statement missing", body.Metadata);
+                            return new CppVoidValue();
+                        }
+                    );
             };
         });
 
-        return new StatementResult(_ => Maybe<ICppValueBase>.None, []);
+        return new StatementResult(_ => new None(), []);
     }
 
     public static StatementResult ParseStatement(AstStatement statement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
@@ -150,9 +181,11 @@ public class Stage3Parser
                     do
                     {
                         var result = body.Eval(s);
-                        if (result.TryGetValue(out var r))
-                            return Maybe.From(r);
-                            
+
+                        if (result.TryPickT0(out var r, out var rem1))
+                            return r;
+                        if (result.TryPickT2(out var b, out _))
+                            break;
                     } while (condition.Eval(s).ToBool());
                 }
                 else
@@ -160,12 +193,14 @@ public class Stage3Parser
                     while (condition.Eval(s).ToBool())
                     {
                         var result = body.Eval(s);
-                        if (result.TryGetValue(out var r))
-                            return Maybe.From(r);
+                        if (result.TryPickT0(out var r, out var rem1))
+                            return r;
+                        if (result.TryPickT2(out var b, out _))
+                            break;
                     }  
                 }
 
-                return Maybe<ICppValueBase>.None;
+                return new None();
             } 
         };
     }
@@ -186,11 +221,12 @@ public class Stage3Parser
 
                 foreach (var statement in stmt)
                 {
-                    if (statement.Eval(blockScope).TryGetValue(out var r))
-                        return Maybe.From(r);
+                    var result = statement.Eval(blockScope);
+                    if (!result.IsNone)
+                        return result;
                 }
 
-                return Maybe<ICppValueBase>.None;
+                return new None();
             }, 
             [..returns]);
 
@@ -203,7 +239,7 @@ public class Stage3Parser
             : ParseExpression(returnStmt.ReturnValue, scope);
 
         return new StatementResult(
-            s => Maybe<ICppValueBase>.From(expression.Eval(s)),
+            s => new StatementEvalResult.Return(expression.Eval(s)),
             [ (expression.Result, returnStmt.Metadata) ]
         );
     }
@@ -231,7 +267,7 @@ public class Stage3Parser
                     if (!s.TryBindSymbol(definition.Ident.Value, value))
                         definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
 
-                    return Maybe<ICppValueBase>.None;
+                    return new None();
                 }, []);
         }
      
@@ -251,7 +287,7 @@ public class Stage3Parser
 
                 initializer?.Eval(s);
                 
-                return Maybe<ICppValueBase>.None;
+                return new None();
             }, []);
     }
     
@@ -277,7 +313,7 @@ public class Stage3Parser
 
             _ = initializer?.Eval(s);
             
-            return Maybe<ICppValueBase>.None;
+            return new None();
         }, []);
     }
     

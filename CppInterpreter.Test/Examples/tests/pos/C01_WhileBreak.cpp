@@ -5,7 +5,7 @@ int main() {
     
     int count = 0;
     while (count < 10) {
-        print_bool(count);
+        print(count);
         
         if (count == 5)
         {
@@ -25,7 +25,7 @@ int main() {
             continue;
         }
         
-        print_int(i);
+        print(i);
     }
 
     return 0;
