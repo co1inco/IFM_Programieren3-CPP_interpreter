@@ -104,6 +104,7 @@ public sealed class CppBoolType : CppPrimitiveType
             //     (a, b) => new CppBoolValue(a.Value && b.Value)),
             // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator||", 
             //     (a, b) => new CppBoolValue(a.Value || b.Value))
+            new MemberFunction<CppBoolValue, CppBoolValue>("operator!", a => new CppBoolValue(!a.Value))
         ];
     }
 

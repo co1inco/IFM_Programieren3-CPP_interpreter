@@ -348,7 +348,7 @@ public class Stage3Parser
             a => ParseAtom(a, scope),
             a => ParseAssignment(a, scope),
             b => ParseBinOp(b, scope),
-            unary => throw new NotImplementedException(),
+            u => ParseUnaryOp(u, scope),
             func => ParseFunctionCall(func, scope)
         );
 
@@ -489,6 +489,7 @@ public class Stage3Parser
                 var l = left.Eval(s);
                 var r = right.Eval(s);
 
+                // Getting the function again could help with virtual members later?
                 var f = l.Type.GetMemberFunction($"operator{function}", r.Type);
 
                 return f.Invoke(l, [r]);
@@ -502,6 +503,38 @@ public class Stage3Parser
             AstBinOpOperator.BoolOp.Or => "||",
             _ => throw new ArgumentOutOfRangeException(nameof(b), b, null)
         };
+    }
+
+    public static ExpressionResult ParseUnaryOp(AstUnary unary, Scope<ICppValueBase> scope)
+    {
+
+        var function = unary.Operator switch
+        {
+            AstUnary.UnaryOperator.Negate => "!",
+            AstUnary.UnaryOperator.BitwiseNot => "~",
+            AstUnary.UnaryOperator.Increment => "++",
+            AstUnary.UnaryOperator.Decrement => "--",
+            AstUnary.UnaryOperator.Positive => "+",
+            AstUnary.UnaryOperator.Negative => "-",
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        
+        var left = ParseExpression(unary.Expression, scope);
+        
+        if (!left.ResultType.TryGetMemberFunction($"operator{function}", out var memberFunc))
+            unary.Throw($"Type '{left.ResultType}' does not implement unary operator '{function}'");
+
+        return new ExpressionResult(
+            s =>
+            {
+                var result = left.Eval(s);
+                // Getting the function again could help with virtual members later?
+                var f = result.Type.GetMemberFunction($"operator{function}");
+
+                return f.Invoke(result, []);
+            },
+            memberFunc.ReturnType
+        );
     }
     
     public static ExpressionResult ParseLiteral(AstLiteral literal) => 

@@ -115,7 +115,7 @@ public static class AstParser
             throw new UnexpectedAntlrStateException(ctx, "Got left and right but no supported operator");
         }
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
-        if (ctx.unary is { } unary) throw new NotImplementedException("ast parser unary");
+        if (ctx.unary is { } unary) return ParseUnaryOp(ctx.expression()[0], unary);
         throw new UnexpectedAntlrStateException(ctx, "Unknown expression variation");
     }
 
@@ -174,6 +174,22 @@ public static class AstParser
     //         ctx
     //     );
 
+    public static AstUnary ParseUnaryOp(ExpressionContext expression, IToken unary) =>
+        new(
+            ParseExpression(expression),
+            unary.Text switch
+            {
+                "++" => AstUnary.UnaryOperator.Increment,
+                "--" => AstUnary.UnaryOperator.Decrement,
+                "+" => AstUnary.UnaryOperator.Positive,
+                "-" => AstUnary.UnaryOperator.Negative,
+                "!" => AstUnary.UnaryOperator.Negate,
+                "~" => AstUnary.UnaryOperator.BitwiseNot,
+                var t => throw new UnexpectedAntlrStateException(unary, $"Invalid unary operator: '{t}'")
+            },
+            new AstMetadata(SourceSymbol.Create(unary))
+        );
+    
     public static AstFunctionCall ParseFunctionCall(ExpressionContext function, FuncParametersContext? arguments) =>
         new(
             ParseExpression(function),

@@ -57,8 +57,9 @@ public class Examples
     }
     
     [TestMethod]
-    [DataRow("P01_vars.cpp")]
-    [DataRow("P02_expr.cpp")]
+    // [DataRow("P01_vars.cpp")]
+    // [DataRow("P02_expr.cpp")]
+    [DataRow("P05_operators.cpp")]
     public void Positive_Manual(string filename)
     {
         //Arrange
