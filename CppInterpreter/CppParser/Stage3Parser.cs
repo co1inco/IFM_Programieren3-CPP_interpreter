@@ -480,6 +480,9 @@ public class Stage3Parser
         
         // TODO: check if overloads exist
 
+        if (!left.ResultType.TryGetMemberFunction($"operator{function}", out var memberFunc, right.ResultType))
+            op.Throw($"Type '{left.ResultType}' does not have a matching operator '{function}'");
+        
         return new ExpressionResult(
             s =>
             {
@@ -490,7 +493,7 @@ public class Stage3Parser
 
                 return f.Invoke(l, [r]);
             },
-            left.ResultType
+            memberFunc.ReturnType
         );
 
         string BoolOpString(AstBinOpOperator.BoolOp b) => b switch
