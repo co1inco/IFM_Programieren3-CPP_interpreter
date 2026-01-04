@@ -79,7 +79,15 @@ public record AstUnary(
         Negative
     }
 }
-    
+
+public record struct AstOperator(string Value);
+
+public record AstSuffix(
+    AstExpression Expression,
+    AstOperator Operator,
+    AstMetadata Metadata
+) : IAstNode;
+
 public record AstAssignment(
     AstExpression Target,
     AstExpression Value,
@@ -152,10 +160,13 @@ public partial class AstExpression : OneOfBase<
     AstAssignment,
     AstBinOp,
     AstUnary,
-    AstFunctionCall>, IAstNode
+    AstFunctionCall,
+    AstSuffix>
+    , IAstNode
 {
     public AstMetadata Metadata => Match(
         x => new AstMetadata(new SourceSymbol("<unknown literal>", 0, 0)),
+        x => x.Metadata,
         x => x.Metadata,
         x => x.Metadata,
         x => x.Metadata,

@@ -349,7 +349,8 @@ public class Stage3Parser
             a => ParseAssignment(a, scope),
             b => ParseBinOp(b, scope),
             u => ParseUnaryOp(u, scope),
-            func => ParseFunctionCall(func, scope)
+            func => ParseFunctionCall(func, scope),
+            s => ParseSuffixOp(s, scope)
         );
 
     public static ExpressionResult ParseAtom(AstAtom atom, Scope<ICppValueBase> scope)
@@ -532,6 +533,28 @@ public class Stage3Parser
                 var f = result.Type.GetMemberFunction($"operator{function}");
 
                 return f.Invoke(result, []);
+            },
+            memberFunc.ReturnType
+        );
+    }
+
+    public static ExpressionResult ParseSuffixOp(AstSuffix suffix, Scope<ICppValueBase> scope)
+    {
+        var functionName = $"operator{suffix.Operator.Value}";
+        
+        // Suffix operators expect an additional int parameter to differentiate from the prefix operator  
+        var expr = ParseExpression(suffix.Expression, scope);
+        if (!expr.ResultType.TryGetMemberFunction(functionName, out var memberFunc, CppTypes.Int32))
+            suffix.Throw($"Type '{expr.ResultType}' does not implement suffix operator '{suffix.Operator.Value}'");
+        
+        return new ExpressionResult(
+            s =>
+            {
+                var result = expr.Eval(s);
+                // Getting the function again could help with virtual members later?
+                var f = result.Type.GetMemberFunction(functionName);
+
+                return f.Invoke(result, [ new CppInt32Value(0) ]);
             },
             memberFunc.ReturnType
         );

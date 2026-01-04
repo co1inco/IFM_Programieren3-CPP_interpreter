@@ -72,12 +72,17 @@ block : '{' statement* '}';
 
 // Expressions
 expression : '(' brace=expression ')'
+		   // Suffix
+		   | expression suffix=('++' | '--')
  		   | func=expression '(' funcParameters? ')' 
 		   | subscript=expression '[' param=expression ']'
-		   // TODO: Member access
-		   | memberExpr=expression '.' memberAtom=atom 
+		   | memberExpr=expression memberAccess='.' memberAtom=atom
+		   | memberExpr=expression memberAccess='->' memberAtom=atom
+		   // Prefix
 		   | unary=('++' | '--') expression 
-           | unary=('+' | '-' | '!' | '~' ) expression 
+           | unary=('+' | '-' | '!' | '~' ) expression
+           // - Case, derefference, address of, sizeof, new
+           // Infix 
 		   | left=expression binop=('*' | '/' | '%') right=expression
 		   | left=expression binop=('+' | '-') right=expression
 		   | left=expression comp=('<' | '<=' | '>' | '>=') right=expression 
@@ -85,8 +90,12 @@ expression : '(' brace=expression ')'
 		   | left=expression bit='&' right=expression 
 		   | left=expression bit='^' right=expression 
 		   | left=expression bit='|' right=expression 
-		   | left=expression logic=('&&' | '||') right=expression 
+		   | left=expression logic=('&&' | '||') right=expression
+		   // Assignment 
 		   | left=expression assign='=' right=expression
+		   // - Compond assignments
+		   // Coma 
+		   // Utility
 		   | atom
 		   | literal; //TODO
 

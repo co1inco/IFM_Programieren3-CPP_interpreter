@@ -116,6 +116,8 @@ public static class AstParser
         }
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
         if (ctx.unary is { } unary) return ParseUnaryOp(ctx.expression()[0], unary);
+        if (ctx.suffix is { } suffix) return ParseSuffixOp(ctx.expression()[0], suffix);
+        
         throw new UnexpectedAntlrStateException(ctx, "Unknown expression variation");
     }
 
@@ -189,6 +191,18 @@ public static class AstParser
             },
             new AstMetadata(SourceSymbol.Create(unary))
         );
+
+    public static AstSuffix ParseSuffixOp(ExpressionContext ctx, IToken suffix) =>
+        new(
+            ParseExpression(ctx),
+            suffix.Text switch
+            {
+                "++" => new AstOperator("++"),
+                "--" => new AstOperator("--"),
+                var t => throw new UnexpectedAntlrStateException(suffix, $"Invalid suffix operator: '{t}'")
+            },
+            new AstMetadata(SourceSymbol.Create(suffix))
+        ); 
     
     public static AstFunctionCall ParseFunctionCall(ExpressionContext function, FuncParametersContext? arguments) =>
         new(
