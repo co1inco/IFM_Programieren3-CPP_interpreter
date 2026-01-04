@@ -80,6 +80,8 @@ public abstract class CppPrimitiveType : ICppType
     public abstract ICppValueBase Create();
 }
 
+// TODO: Make all types singletons / always use CppTypes.<type> 
+
 public sealed class CppVoidType : CppPrimitiveType
 {
     public CppVoidType() : base("void")

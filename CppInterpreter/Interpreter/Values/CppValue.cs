@@ -57,7 +57,7 @@ public static class CppValues
 
 public struct CppVoidValue : ICppValue
 {
-    public static ICppType SType => new CppVoidType();
+    public static ICppType SType => CppTypes.Void;
     public ICppType Type => SType;
 
     public string StringRep() => "(void)";

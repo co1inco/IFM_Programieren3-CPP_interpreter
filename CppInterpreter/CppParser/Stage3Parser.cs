@@ -440,7 +440,7 @@ public class Stage3Parser
 
                     throw new ArgumentOutOfRangeException($"Invlaid bool operator: {boolOp}");
 
-                }, new CppBoolType());
+                }, CppTypes.Boolean);
 
             }
             

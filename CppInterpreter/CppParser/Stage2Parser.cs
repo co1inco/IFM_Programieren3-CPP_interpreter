@@ -84,7 +84,7 @@ public static class Stage2Parser
     public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
     {
         return statement.Match<Stage2Statement>(
-            e => e,
+            e => e, // TODO: I think expressions should not be allowed here
             v => ParseVarDefinition(v, scope, typeScope),
             f => ParseFuncDefinition(f, scope, typeScope),
             b => throw b.CreateException("Unsupported top level statement"),
