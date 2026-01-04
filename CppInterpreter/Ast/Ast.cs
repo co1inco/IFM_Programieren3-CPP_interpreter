@@ -257,6 +257,8 @@ public record AstCompoundTypeDefinition(
     AstCompoundTypeMember<AstFuncDefinition>[] Functions,
     AstCompoundTypeMember<AstVarDefinition>[] Variables,
     AstCompoundTypeDefinition.TypeKind Kind,
+    AstCompoundTypeMember<AstFuncDefinition>[] Constructors,
+    AstFuncDefinition? Destructor,
     AstMetadata Metadata
     ) : IAstNode
 {

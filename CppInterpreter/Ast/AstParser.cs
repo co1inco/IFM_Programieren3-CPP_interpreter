@@ -9,7 +9,12 @@ using static Language.GrammarParser;
 
 namespace CppInterpreter.Ast;
 
-
+/// <summary>
+/// Exception that indicates a missmatch between the Antlr grammar and AstParser.
+/// The AstParser should normaly accept all states the Antlr grammar allows.
+/// </summary>
+/// <param name="symbol"></param>
+/// <param name="message"></param>
 public sealed class UnexpectedAntlrStateException(SourceSymbol symbol, string message = "Unsupported Antlr context") 
     : Exception($"{message}: {symbol.Text}")
 {
@@ -230,21 +235,22 @@ public static class AstParser
         return new AstFuncDefinition(
             new AstIdentifier(ctx.ident.Text, ctx),
             returnType,
-            Enumerable.Zip(
-                    ctx.parameterList()
-                        .typeIdentifierUsage()
-                        .Select(ParseTypeUsage),
-                    ctx.parameterList()
-                        .varIdentifier()
-                        .Select(x => new AstIdentifier(x.ident.Text,  AstMetadata.FromToken(x.ident)))
-                )
-                .Select(x => new AstFunctionDefinitionParameter(x.Second, x.First, ctx.parameterList()))
-                .ToArray(),
+            ParseFunctionParameters(ctx.parameterList()),
             ParseBlock(ctx.block()),
             ctx
         );
     }
 
+    public static AstFunctionDefinitionParameter[] ParseFunctionParameters(ParameterListContext ctx) =>
+        Enumerable.Zip(
+                ctx.typeIdentifierUsage()
+                    .Select(ParseTypeUsage),
+                ctx.varIdentifier()
+                    .Select(x => new AstIdentifier(x.ident.Text, AstMetadata.FromToken(x.ident)))
+            )
+            .Select(x => new AstFunctionDefinitionParameter(x.Second, x.First, ctx))
+            .ToArray();
+    
     public static AstCompoundTypeDefinition ParseCompoundTypeDefinition(ClassContext ctx)
     {
         var name = ParseIdentifier(ctx.typeIdentifier());
@@ -261,15 +267,80 @@ public static class AstParser
         
         List<AstCompoundTypeMember<AstVarDefinition>> variables = [];
         List<AstCompoundTypeMember<AstFuncDefinition>> functions = [];
-
+        List<AstCompoundTypeMember<AstFuncDefinition>> constructors = [];
+        AstFuncDefinition? destructor = null;
+        
         var currentVisibility = kind switch
         {
             AstCompoundTypeDefinition.TypeKind.Class => AstVisibility.Private,
             AstCompoundTypeDefinition.TypeKind.Struct => AstVisibility.Public,
             _ => throw new ArgumentOutOfRangeException()
         };
-        
-        
+
+        foreach (var member in ctx.classBlock().classBlockStatement())
+        {
+            if (member.pub is not null)
+            {
+                currentVisibility = AstVisibility.Public;
+            }
+            else if (member.prv is not null)
+            {
+                currentVisibility = AstVisibility.Public;
+            }
+            else if (member.classConstructor() is { } ctor)
+            {
+                if (ctor.ident.Text != name.Value)
+                    throw new ParserException("Constructor must have the same name as the containing class", ctor);
+                
+                constructors.Add(new AstCompoundTypeMember<AstFuncDefinition>(
+                    new AstFuncDefinition(
+                        new AstIdentifier("$ctor", member),
+                        new  AstTypeIdentifier("void", false, ctx),
+                        ParseFunctionParameters(ctor.parameterList()),
+                        ParseBlock(ctor.block()),
+                        member
+                    ),
+                    currentVisibility,
+                    member
+                    ));
+            }
+            else if (member.classDestructor() is { } dtor)
+            {
+                if (dtor.ident.Text != name.Value)
+                    throw new ParserException("Destructor must have the same name as the containing class", dtor);
+                
+                if (destructor is not null)
+                    throw new ParserException("Multiple constructors defined", member);
+
+                destructor = new AstFuncDefinition(
+                    new AstIdentifier("$dtor", member),
+                    new AstTypeIdentifier("void", false, ctx),
+                    [],
+                    ParseBlock(dtor.block()),
+                    member
+                );
+            }
+            else if (member.functionDefinition() is { } fd)
+            {
+                functions.Add(new AstCompoundTypeMember<AstFuncDefinition>(
+                    ParseFunctionDefinition(fd),
+                    currentVisibility,
+                    member
+                ));   
+            }
+            else if (member.variableDefinition() is { } vd)
+            {
+                variables.Add(new AstCompoundTypeMember<AstVarDefinition>(
+                    ParseVarDefinition(vd),
+                    currentVisibility,
+                    member
+                ));
+            }
+            else
+            {
+                throw new UnexpectedAntlrStateException(member, "Unknown class member kind");
+            }
+        }
         
         return new AstCompoundTypeDefinition(
             name,
@@ -277,6 +348,8 @@ public static class AstParser
             functions.ToArray(),
             variables.ToArray(),
             kind,
+            constructors.ToArray(),
+            destructor,
             ctx
         );
     }
@@ -299,6 +372,11 @@ public static class AstParser
     public static AstIdentifier ParseIdentifier(TypeIdentifierContext ctx) => new(
         ctx.GetText(),
         ctx
+    );
+
+    public static AstIdentifier ParseIdentifier(IToken identToken) => new(
+        identToken.Text,
+        new AstMetadata(SourceSymbol.Create(identToken)) 
     );
     
     public static AstIf ParseIf(IfStmtContext ctx)
