@@ -24,7 +24,7 @@ classMemberMod : virtual=VIRTUAL?;
 
 classInheritance : ':' classInheitanceIdent (',' classInheitanceIdent)*;  
 
-classInheitanceIdent : vis=(PRIVATE|PUBLIC)? typeIdentifierUsage;
+classInheitanceIdent : vis=(PRIVATE|PUBLIC)? typeIdentifier;
 
 classConstructor : ident=IDENTIFIER '(' parameterList ')' block;
 

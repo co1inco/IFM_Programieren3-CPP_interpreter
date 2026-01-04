@@ -44,7 +44,8 @@ public partial class AstStatement : OneOfBase<
     AstIf,
     AstWhile,
     AstBreak,
-    AstContinue
+    AstContinue,
+    AstCompoundTypeDefinition
 >
 {
     
@@ -80,6 +81,8 @@ public record AstUnary(
     }
 }
 
+// TODO: Replace all enum operator types with this one.
+//  It is just redundant parse to enum just to convert it back to a string later
 public record struct AstOperator(string Value);
 
 public record AstSuffix(
@@ -234,6 +237,36 @@ public record AstFunctionCall(
     AstExpression[] Arguments,
     AstMetadata Metadata
 ) : IAstNode;
+
+public enum AstVisibility
+{
+    Public,
+    Private,
+    Protected
+}
+
+public record AstCompoundTypeMember<T>(
+    T Member, 
+    AstVisibility Visibility, 
+    AstMetadata Metadata
+) : IAstNode;
+
+public record AstCompoundTypeDefinition(
+    AstIdentifier Ident,
+    AstCompoundTypeMember<AstIdentifier>[] BaseTypes,
+    AstCompoundTypeMember<AstFuncDefinition>[] Functions,
+    AstCompoundTypeMember<AstVarDefinition>[] Variables,
+    AstCompoundTypeDefinition.TypeKind Kind,
+    AstMetadata Metadata
+    ) : IAstNode
+{
+
+    public enum TypeKind
+    {
+        Class,
+        Struct
+    };
+}
 
 
 public static class GeneratedAstTreeBuilder 

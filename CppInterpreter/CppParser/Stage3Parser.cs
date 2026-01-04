@@ -135,7 +135,8 @@ public class Stage3Parser
             i => ParseIf(i, scope, typeScope),
             w => ParseWhile(w, scope, typeScope),
             b => ParseBreak(b, scope),
-            c => ParseContinue(c, scope)
+            c => ParseContinue(c, scope),
+            c => throw c.CreateException("Class def in stage3. Should be handled in stage1")
         );
     }
 

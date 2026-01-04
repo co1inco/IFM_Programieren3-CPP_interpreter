@@ -70,7 +70,9 @@ public static class AstParser
             return ParseFunctionDefinition(funcDef);
         if (ctx.variableDefinition() is { } varDef)
             return ParseVarDefinition(varDef);
-
+        if (ctx.@class() is { } classDef)
+            return ParseCompoundTypeDefinition(classDef);
+        
         throw new UnexpectedAntlrStateException(ctx, "Unknown top level statement variation");
     }
 
@@ -243,6 +245,62 @@ public static class AstParser
         );
     }
 
+    public static AstCompoundTypeDefinition ParseCompoundTypeDefinition(ClassContext ctx)
+    {
+        var name = ParseIdentifier(ctx.typeIdentifier());
+        var baseClasses = ctx.classInheritance() is { } b
+            ? b.classInheitanceIdent().Select(ParseBaseClassIdentifier).ToArray()
+            : [];
+        
+        var kind = ctx.defaultVis.Text switch
+        {
+            "class" => AstCompoundTypeDefinition.TypeKind.Class,
+            "struct" => AstCompoundTypeDefinition.TypeKind.Struct,
+            _ => throw new UnexpectedAntlrStateException(ctx.defaultVis, "Unexpected TypeDef type")
+        };
+        
+        List<AstCompoundTypeMember<AstVarDefinition>> variables = [];
+        List<AstCompoundTypeMember<AstFuncDefinition>> functions = [];
+
+        var currentVisibility = kind switch
+        {
+            AstCompoundTypeDefinition.TypeKind.Class => AstVisibility.Private,
+            AstCompoundTypeDefinition.TypeKind.Struct => AstVisibility.Public,
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        
+        
+        
+        return new AstCompoundTypeDefinition(
+            name,
+            baseClasses,
+            functions.ToArray(),
+            variables.ToArray(),
+            kind,
+            ctx
+        );
+    }
+    
+    public static AstCompoundTypeMember<AstIdentifier> ParseBaseClassIdentifier(ClassInheitanceIdentContext ctx) => new(
+        ParseIdentifier(ctx.typeIdentifier()),
+        ParseVisibility(ctx.vis),    
+        ctx
+    );
+      
+    public static AstVisibility ParseVisibility(IToken token) => token?.Text switch
+    {
+        "private" => AstVisibility.Private,
+        "public" => AstVisibility.Public,
+        "protected" => AstVisibility.Protected,
+        null => AstVisibility.Private, 
+        var t => throw new UnexpectedAntlrStateException(token, $"Invalid visibility: '{t}'")
+    };
+    
+    public static AstIdentifier ParseIdentifier(TypeIdentifierContext ctx) => new(
+        ctx.GetText(),
+        ctx
+    );
+    
     public static AstIf ParseIf(IfStmtContext ctx)
     {
         List<(AstExpression, AstBlock)> branches = [];

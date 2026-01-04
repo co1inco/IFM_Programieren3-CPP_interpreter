@@ -642,8 +642,8 @@ public partial class GrammarParser : Parser {
 
 	public partial class ClassInheitanceIdentContext : ParserRuleContext {
 		public IToken vis;
-		[System.Diagnostics.DebuggerNonUserCode] public TypeIdentifierUsageContext typeIdentifierUsage() {
-			return GetRuleContext<TypeIdentifierUsageContext>(0);
+		[System.Diagnostics.DebuggerNonUserCode] public TypeIdentifierContext typeIdentifier() {
+			return GetRuleContext<TypeIdentifierContext>(0);
 		}
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PRIVATE() { return GetToken(GrammarParser.PRIVATE, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PUBLIC() { return GetToken(GrammarParser.PUBLIC, 0); }
@@ -687,7 +687,7 @@ public partial class GrammarParser : Parser {
 			}
 
 			State = 130;
-			typeIdentifierUsage();
+			typeIdentifier();
 			}
 		}
 		catch (RecognitionException re) {
@@ -2616,7 +2616,7 @@ public partial class GrammarParser : Parser {
 		0,119,124,3,16,8,0,120,121,5,5,0,0,121,123,3,16,8,0,122,120,1,0,0,0,123,
 		126,1,0,0,0,124,122,1,0,0,0,124,125,1,0,0,0,125,15,1,0,0,0,126,124,1,0,
 		0,0,127,129,7,1,0,0,128,127,1,0,0,0,128,129,1,0,0,0,129,130,1,0,0,0,130,
-		131,3,62,31,0,131,17,1,0,0,0,132,133,5,57,0,0,133,134,5,6,0,0,134,135,
+		131,3,64,32,0,131,17,1,0,0,0,132,133,5,57,0,0,133,134,5,6,0,0,134,135,
 		3,28,14,0,135,136,5,7,0,0,136,137,3,48,24,0,137,19,1,0,0,0,138,139,5,8,
 		0,0,139,140,5,57,0,0,140,141,5,6,0,0,141,142,5,7,0,0,142,143,3,48,24,0,
 		143,21,1,0,0,0,144,145,3,24,12,0,145,146,5,1,0,0,146,166,1,0,0,0,147,148,
