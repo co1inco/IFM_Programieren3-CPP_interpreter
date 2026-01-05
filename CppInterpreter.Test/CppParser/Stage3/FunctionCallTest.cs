@@ -26,7 +26,7 @@ public class FunctionCallTest
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
-        function.ReturnType.Returns(new CppVoidType());
+        function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([]);
         function.Invoke(null, []).Returns(new CppVoidValue());
         
@@ -60,8 +60,8 @@ public class FunctionCallTest
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
-        function.ReturnType.Returns(new CppVoidType());
-        function.ParameterTypes.Returns([ new CppFunctionParameter("", new CppInt32Type(), false) ]);
+        function.ReturnType.Returns(CppTypes.Void);
+        function.ParameterTypes.Returns([ new CppFunctionParameter("", CppTypes.Int32, false) ]);
         function.Invoke(null, Arg.Any<ICppValueBase[]>()).Returns(new CppVoidValue());
         
         var callable = new CppCallableValue(scope);
@@ -93,7 +93,7 @@ public class FunctionCallTest
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
-        function.ReturnType.Returns(new CppInt32Type());
+        function.ReturnType.Returns(CppTypes.Int32);
         function.ParameterTypes.Returns([]);
         function.Invoke(null, []).Returns(new CppInt32Value(42));
         
@@ -126,8 +126,8 @@ public class FunctionCallTest
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
-        function.ReturnType.Returns(new CppVoidType());
-        function.ParameterTypes.Returns([ new CppFunctionParameter("", new CppInt32Type(), false) ]);
+        function.ReturnType.Returns(CppTypes.Void);
+        function.ParameterTypes.Returns([ new CppFunctionParameter("", CppTypes.Int32, false) ]);
         function.Invoke(null, Arg.Any<ICppValueBase[]>())
             .Returns(x =>
             {
@@ -169,8 +169,8 @@ public class FunctionCallTest
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
-        function.ReturnType.Returns(new CppVoidType());
-        function.ParameterTypes.Returns([ new CppFunctionParameter("p1", new CppInt32Type(), true) ]);
+        function.ReturnType.Returns(CppTypes.Void);
+        function.ParameterTypes.Returns([ new CppFunctionParameter("p1", CppTypes.Int32, true) ]);
         function.Invoke(null, Arg.Any<ICppValueBase[]>())
             .Returns(x =>
             {
@@ -267,8 +267,8 @@ public class FunctionCallTest
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("x");
         function.InstanceType.Returns((ICppType?)null);
-        function.ReturnType.Returns(new CppVoidType());
-        function.ParameterTypes.Returns([ new CppFunctionParameter("p1", new CppInt32Type(), true) ]); 
+        function.ReturnType.Returns(CppTypes.Void);
+        function.ParameterTypes.Returns([ new CppFunctionParameter("p1", CppTypes.Int32, true) ]); 
         
         
         var typeScope = Stage1Parser.CreateBaseScope();

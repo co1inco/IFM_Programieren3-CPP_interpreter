@@ -30,7 +30,7 @@ public class UserFunctionsTest
         
         var userFunction = new CppUserFunction(
             "test",
-            new CppVoidType(),
+            CppTypes.Void,
             [],
             AstBlock([
                     AstFunctionCallExpr(AstAtom("foo"), [])
@@ -39,7 +39,7 @@ public class UserFunctionsTest
         
         var ast = new Stage2FuncDefinition(
             "test",
-            new CppVoidType(),
+            CppTypes.Void,
             [], 
             AstBlock([]), 
             userFunction, 

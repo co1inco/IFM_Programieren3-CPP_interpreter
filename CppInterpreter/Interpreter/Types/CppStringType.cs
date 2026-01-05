@@ -4,7 +4,9 @@ namespace CppInterpreter.Interpreter.Types;
 
 public sealed class CppStringType : CppPrimitiveType
 {
-    public CppStringType() : base("string")
+    public static CppStringType Instance { get; } = new CppStringType();
+    
+    private CppStringType() : base("string")
     {
         Functions =
         [

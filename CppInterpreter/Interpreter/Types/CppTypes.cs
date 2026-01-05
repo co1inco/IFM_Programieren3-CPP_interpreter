@@ -31,13 +31,13 @@ public class CppTypes
         return t;
     }
 
-    public static ICppType Char => field ??= new CppCharType();
-    public static ICppType Int32 => field ??= new CppInt32Type();
-    public static ICppType Int64 => field ??= new CppInt64Type();
+    public static ICppType Char => CppCharType.Instance;
+    public static ICppType Int32 => CppInt32Type.Instance;
+    public static ICppType Int64 => CppInt64Type.Instance;
     
-    public static ICppType Void => field ??= new CppVoidType();
-    public static ICppType Boolean => field ??= new CppBoolType();
-    public static ICppType String => field ??= new CppStringType();
+    public static ICppType Void => CppVoidType.Instance;
+    public static ICppType Boolean => CppBoolType.Instance;
+    public static ICppType String => CppStringType.Instance;
     
     public static ICppType Callable => field ??= new CppCallableType();
     
@@ -84,7 +84,9 @@ public abstract class CppPrimitiveType : ICppType
 
 public sealed class CppVoidType : CppPrimitiveType
 {
-    public CppVoidType() : base("void")
+    public static CppVoidType Instance = new CppVoidType();
+    
+    private CppVoidType() : base("void")
     {
         Constructor = [ new ConstructorFunction<CppVoidValue>(() => new CppVoidValue() ) ];
         Functions = [];
@@ -96,7 +98,9 @@ public sealed class CppVoidType : CppPrimitiveType
 
 public sealed class CppBoolType : CppPrimitiveType
 {
-    public CppBoolType() : base("bool")
+    public static CppBoolType Instance { get; } = new CppBoolType();
+    
+    private CppBoolType() : base("bool")
     {
         Functions =
         [

@@ -23,7 +23,7 @@ public class VariableDefinitionTest
             null);
 
         var typeScope = new Scope<ICppType>();
-        typeScope.TryBindSymbol("int", new CppInt32Type());
+        typeScope.TryBindSymbol("int", CppTypes.Int32);
         
         var scope = new Scope<ICppValueBase>();
         
@@ -49,7 +49,7 @@ public class VariableDefinitionTest
             new AstExpression(initializer));
 
         var typeScope = new Scope<ICppType>();
-        typeScope.TryBindSymbol("int", new CppInt32Type());
+        typeScope.TryBindSymbol("int", CppTypes.Int32);
         
         var scope = new Scope<ICppValueBase>();
         
@@ -74,7 +74,7 @@ public class VariableDefinitionTest
             null);
 
         var typeScope = new Scope<ICppType>();
-        typeScope.TryBindSymbol("int", new CppInt32Type());
+        typeScope.TryBindSymbol("int", CppTypes.Int32);
         
         var scope = new Scope<ICppValueBase>();
         

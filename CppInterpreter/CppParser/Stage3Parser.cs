@@ -250,7 +250,7 @@ public class Stage3Parser
     public static StatementResult ParseReturn(AstReturn returnStmt, Scope<ICppValueBase> scope)
     {
         var expression = returnStmt.ReturnValue is null
-            ? new ExpressionResult(_ => new CppVoidValue(), new CppVoidType())
+            ? new ExpressionResult(_ => new CppVoidValue(), CppTypes.Void)
             : ParseExpression(returnStmt.ReturnValue, scope);
 
         return new StatementResult(

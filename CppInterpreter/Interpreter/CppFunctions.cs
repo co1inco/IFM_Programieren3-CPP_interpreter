@@ -21,7 +21,7 @@ public sealed class MemberAction<TInstance>(string name, Action<TInstance> actio
     where TInstance : ICppValue
 {
     public string Name => name;
-    public ICppType ReturnType => new CppVoidType();
+    public ICppType ReturnType => CppTypes.Void;
     public ICppType? InstanceType => TInstance.SType;
     public CppFunctionParameter[] ParameterTypes => [];
     
@@ -40,7 +40,7 @@ public sealed class MemberAction<TInstance, TValue1>(string name, Action<TInstan
     where TValue1 : ICppValue
 {
     public string Name => name;
-    public ICppType ReturnType => new CppVoidType();
+    public ICppType ReturnType => CppTypes.Void;
     public ICppType? InstanceType => TInstance.SType;
     public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
     
