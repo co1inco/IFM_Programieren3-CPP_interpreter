@@ -6,7 +6,7 @@ namespace CppInterpreter.Interpreter.Values;
 
 public interface ICppValueBase
 {
-    ICppType Type { get; }
+    ICppType GetCppType { get; }
     string StringRep();
     
     bool ToBool();
@@ -14,7 +14,7 @@ public interface ICppValueBase
 
 public interface ICppValue : ICppValueBase
 {
-    static abstract ICppType SType { get; }
+    static abstract ICppType TypeOf { get; }
 
 }
 
@@ -57,8 +57,8 @@ public static class CppValues
 
 public struct CppVoidValue : ICppValue
 {
-    public static ICppType SType => CppTypes.Void;
-    public ICppType Type => SType;
+    public static ICppType TypeOf => CppTypes.Void;
+    public ICppType GetCppType => TypeOf;
 
     public string StringRep() => "(void)";
     public bool ToBool() => false;
@@ -74,7 +74,7 @@ public interface ICppPrimitiveValue<T, out TType> : ICppValue
 
 public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppValue
 {
-    public ICppType Type => TType.SType;
+    public ICppType GetCppType => TType.TypeOf;
 
     public T Value { get; set; } = value;
 
@@ -87,7 +87,7 @@ public sealed class CppBoolValue(bool value)
     : CppPrimitiveValue<bool, CppBoolValue>(value)
     , ICppPrimitiveValue<bool, CppBoolValue>
 {
-    public static ICppType SType => CppTypes.Boolean;
+    public static ICppType TypeOf => CppTypes.Boolean;
     public static CppBoolValue Create(bool value) => new CppBoolValue(value);
     public bool ToBool() => Value;
 }

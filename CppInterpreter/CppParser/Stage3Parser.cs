@@ -372,7 +372,7 @@ public class Stage3Parser
 
                 return variable;
             }, 
-            symbol.Type, 
+            symbol.GetCppType, 
             functions);
     }
 
@@ -395,7 +395,7 @@ public class Stage3Parser
                 var targetValue = target.Eval(s);
                 
                 var exprValue = inner.Eval(s);
-                var function = targetValue.Type.GetMemberFunction("operator=", [exprValue.Type]);
+                var function = targetValue.GetCppType.GetMemberFunction("operator=", [exprValue.GetCppType]);
 
                 function.Invoke(targetValue, [exprValue]);
                 return exprValue;
@@ -492,7 +492,7 @@ public class Stage3Parser
                 var r = right.Eval(s);
 
                 // Getting the function again could help with virtual members later?
-                var f = l.Type.GetMemberFunction($"operator{function}", r.Type);
+                var f = l.GetCppType.GetMemberFunction($"operator{function}", r.GetCppType);
 
                 return f.Invoke(l, [r]);
             },
@@ -531,7 +531,7 @@ public class Stage3Parser
             {
                 var result = left.Eval(s);
                 // Getting the function again could help with virtual members later?
-                var f = result.Type.GetMemberFunction($"operator{function}");
+                var f = result.GetCppType.GetMemberFunction($"operator{function}");
 
                 return f.Invoke(result, []);
             },
@@ -553,7 +553,7 @@ public class Stage3Parser
             {
                 var result = expr.Eval(s);
                 // Getting the function again could help with virtual members later?
-                var f = result.Type.GetMemberFunction(functionName);
+                var f = result.GetCppType.GetMemberFunction(functionName);
 
                 return f.Invoke(result, [ new CppInt32Value(0) ]);
             },
@@ -602,7 +602,7 @@ public class Stage3Parser
                     .ToArray();
 
                 if (c is not CppCallableValue callableValue)
-                    throw new InterpreterException($"Expected callable symbol, got '{c.Type}'", functionCall.Metadata);
+                    throw new InterpreterException($"Expected callable symbol, got '{c.GetCppType}'", functionCall.Metadata);
 
                 try
                 {

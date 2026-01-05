@@ -22,13 +22,13 @@ public sealed class MemberAction<TInstance>(string name, Action<TInstance> actio
 {
     public string Name => name;
     public ICppType ReturnType => CppTypes.Void;
-    public ICppType? InstanceType => TInstance.SType;
+    public ICppType? InstanceType => TInstance.TypeOf;
     public CppFunctionParameter[] ParameterTypes => [];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
-            throw new InvalidTypeException(TInstance.SType, instance?.Type);
+            throw new InvalidTypeException(TInstance.TypeOf, instance?.GetCppType);
         action(tInstance);
         
         return new CppVoidValue();
@@ -41,13 +41,13 @@ public sealed class MemberAction<TInstance, TValue1>(string name, Action<TInstan
 {
     public string Name => name;
     public ICppType ReturnType => CppTypes.Void;
-    public ICppType? InstanceType => TInstance.SType;
-    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
+    public ICppType? InstanceType => TInstance.TypeOf;
+    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.TypeOf, true) ];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
-            throw new InvalidTypeException(TInstance.SType, instance?.Type);
+            throw new InvalidTypeException(TInstance.TypeOf, instance?.GetCppType);
         
         if (parameters is not [ TValue1 v1 ])
             throw new InvalidParametersException("Invalid parameters");
@@ -63,14 +63,14 @@ public sealed class MemberFunction<TInstance, TReturn>(string name, Func<TInstan
     where TReturn : ICppValue
 {
     public string Name => name;
-    public ICppType ReturnType => TReturn.SType;
-    public ICppType? InstanceType => TInstance.SType;
+    public ICppType ReturnType => TReturn.TypeOf;
+    public ICppType? InstanceType => TInstance.TypeOf;
     public CppFunctionParameter[] ParameterTypes => [];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
-            throw new InvalidTypeException(TInstance.SType, instance?.Type);
+            throw new InvalidTypeException(TInstance.TypeOf, instance?.GetCppType);
         
         return function(tInstance);
     }
@@ -82,14 +82,14 @@ public sealed class MemberFunction<TInstance, TValue1, TReturn>(string name, Fun
     where TReturn : ICppValue
 {
     public string Name => name;
-    public ICppType ReturnType => TReturn.SType;
-    public ICppType? InstanceType => TInstance.SType;
-    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
+    public ICppType ReturnType => TReturn.TypeOf;
+    public ICppType? InstanceType => TInstance.TypeOf;
+    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.TypeOf, true) ];
     
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not TInstance tInstance)
-            throw new InvalidTypeException(TInstance.SType, instance?.Type);
+            throw new InvalidTypeException(TInstance.TypeOf, instance?.GetCppType);
         
         if (parameters is not [ TValue1 v1 ])
             throw new InvalidParametersException("Invalid parameters");
@@ -105,7 +105,7 @@ public sealed class CppAction<TValue1>(string name, Action<TValue1> action) : IC
 
     public ICppType ReturnType => CppTypes.Void;
     public ICppType? InstanceType => null;
-    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.SType, true) ];
+    public CppFunctionParameter[] ParameterTypes => [ new CppFunctionParameter("p1", TValue1.TypeOf, true) ];
     public ICppValueBase Invoke(ICppValueBase? instance, ICppValueBase[] parameters)
     {
         if (instance is not null)
@@ -145,7 +145,7 @@ public sealed class CppUserFunction : ICppFunction
         if (instance is not null)
             throw new Exception("Function is not a member function");
         
-        if (parameters.ZipFill(ParameterTypes).Any(x => !x.Left?.Type.Equals(x.Right?.Type) ?? false))
+        if (parameters.ZipFill(ParameterTypes).Any(x => !x.Left?.GetCppType.Equals(x.Right?.Type) ?? false))
             throw new Exception("Invalid parameters");
 
         if (Function is null || Closure is null)
@@ -202,7 +202,7 @@ public interface ICppConstructor
 public sealed class ConstructorFunction<TInstance>(Func<TInstance> constructor) : ICppConstructor
     where TInstance : ICppValue
 {
-    public ICppType InstanceType => TInstance.SType;
+    public ICppType InstanceType => TInstance.TypeOf;
     public ICppType[] ParameterTypes => [ ];
 
     public ICppValue Construct(ICppValueBase[] parameters) => constructor();
@@ -212,8 +212,8 @@ public sealed class ConstructorFunction<TInstance, TValue1>(Func<TValue1, TInsta
     where TInstance : ICppValue
     where TValue1 : ICppValue
 {
-    public ICppType InstanceType => TInstance.SType;
-    public ICppType[] ParameterTypes => [ TValue1.SType ];
+    public ICppType InstanceType => TInstance.TypeOf;
+    public ICppType[] ParameterTypes => [ TValue1.TypeOf ];
     public ICppValue Construct(ICppValueBase[] parameters)
     {
         if (parameters is not [ TValue1 v1 ])

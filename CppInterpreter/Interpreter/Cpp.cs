@@ -36,7 +36,7 @@ public static class CppTypeExtensions
         public ICppValueBase InvokeMemberFunc(string name, params ICppValueBase[] parameters)
         {
             // todo: look for the correct overload
-            var f = T.SType.Functions.FirstOrDefault(x => x.Name == name);
+            var f = T.TypeOf.Functions.FirstOrDefault(x => x.Name == name);
             if (f is null)
                 throw new Exception($"Function '{name}' not found");
             return f.Invoke(instance, parameters);
@@ -113,9 +113,9 @@ public static class CppTypeExtensions
         
         public ICppValue Construct<T>(params ICppValue[] parameters) where T : ICppValue
         {
-            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.Type).ToArray();
+            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.GetCppType).ToArray();
             
-            var ctor = T.SType.Constructor.FirstOrDefault(x =>
+            var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
                 x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
             
             if (ctor is null)
@@ -126,7 +126,7 @@ public static class CppTypeExtensions
         
         public ICppValue Construct(params ICppValueBase[] parameters)
         {
-            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.Type).ToArray();
+            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.GetCppType).ToArray();
             
             var ctor = type.Constructor.FirstOrDefault(x =>
                 x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));

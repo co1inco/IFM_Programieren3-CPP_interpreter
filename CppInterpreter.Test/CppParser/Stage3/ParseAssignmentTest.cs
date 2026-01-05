@@ -58,7 +58,7 @@ public class ParseAssignmentTest
         ]);
         
         var value =  Substitute.For<ICppValueBase>();
-        value.Type.Returns(type);
+        value.GetCppType.Returns(type);
         
         var scope = new Scope<ICppValueBase>();
         scope.TryBindSymbol("test", value);

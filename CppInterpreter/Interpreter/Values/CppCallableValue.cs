@@ -7,8 +7,8 @@ public class CppCallableValue : ICppValue
     private readonly Scope<ICppValueBase> _scope;
     private readonly List<ICppFunction> _overloads = [];
     
-    public static ICppType SType => CppTypes.Callable;
-    public ICppType Type => SType;
+    public static ICppType TypeOf => CppTypes.Callable;
+    public ICppType GetCppType => TypeOf;
 
     public CppCallableValue(Scope<ICppValueBase> scope)
     {
@@ -40,8 +40,8 @@ public class CppCallableValue : ICppValue
 
     public ICppValueBase Invoke(params ICppValueBase[] parameters)
     {
-        if (GetOverload(parameters.Select(x => x.Type)) is not {} overload)
-            throw new Exception($"Overload for [{string.Join(", ", parameters.Select(x => x.Type))}] doesn't exist");
+        if (GetOverload(parameters.Select(x => x.GetCppType)) is not {} overload)
+            throw new Exception($"Overload for [{string.Join(", ", parameters.Select(x => x.GetCppType))}] doesn't exist");
 
         return overload.Invoke(null, parameters);
     }

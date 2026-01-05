@@ -4,9 +4,9 @@ namespace CppInterpreter.Interpreter.Values;
 
 public class CppStringValue(string initialValue) : ICppValue
 {
-    public static ICppType SType => CppTypes.String;
+    public static ICppType TypeOf => CppTypes.String;
 
-    public ICppType Type => SType;
+    public ICppType GetCppType => TypeOf;
 
     public string Value { get; set; } = initialValue;
 
