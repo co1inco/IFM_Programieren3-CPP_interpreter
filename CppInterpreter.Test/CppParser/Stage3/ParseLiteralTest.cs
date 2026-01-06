@@ -15,7 +15,7 @@ public class ParseLiteralTest
     {
         //Arrange
         var astInt = new AstLiteral(5);
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         var expression = Stage3Parser.ParseLiteral(astInt);

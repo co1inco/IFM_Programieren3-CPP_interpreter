@@ -20,7 +20,7 @@ public class UserFunctionsTest
         //Arrange
 
         var typeScope = Stage1Parser.CreateBaseScope();
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
 
         var dummyFunction = Substitute.For<ICppFunction>();
         scope.TryBindSymbol("foo", new CppCallableValue(scope)

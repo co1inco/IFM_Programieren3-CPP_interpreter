@@ -16,7 +16,7 @@ public class ParseAtomTest
     {
         //Arrange
         var ast = AstAtom("test");
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
 
         var value = new CppInt32Value(42);
 
@@ -35,7 +35,7 @@ public class ParseAtomTest
     {
         //Arrange
         var ast = AstAtom("test");
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
 
         var value = new CppInt32Value(42);
 

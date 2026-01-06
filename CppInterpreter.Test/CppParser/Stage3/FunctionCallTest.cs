@@ -21,14 +21,14 @@ public class FunctionCallTest
             (AstExpression)AstAtom("test"),
             []);
 
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
         function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([]);
-        function.Invoke(null, []).Returns(new CppVoidValue());
+        function.Invoke(null, []).Returns(new CppVoidValueT());
         
         var callable = new CppCallableValue(scope);
         callable.AddOverload(function);
@@ -41,7 +41,7 @@ public class FunctionCallTest
         var result = expr.Eval(scope);
 
         //Assert
-        result.ShouldBeOfType<CppVoidValue>();
+        result.ShouldBeOfType<CppVoidValueT>();
         function.Received(1).Invoke(null, []);
     }
     
@@ -55,14 +55,14 @@ public class FunctionCallTest
 
         var parameter = new CppInt32Value(42);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
         function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([ new CppFunctionParameter("", CppTypes.Int32, false) ]);
-        function.Invoke(null, Arg.Any<ICppValueBase[]>()).Returns(new CppVoidValue());
+        function.Invoke(null, Arg.Any<ICppValue[]>()).Returns(new CppVoidValueT());
         
         var callable = new CppCallableValue(scope);
         callable.AddOverload(function);
@@ -75,8 +75,8 @@ public class FunctionCallTest
         var result = expr.Eval(scope);
 
         //Assert
-        result.ShouldBeOfType<CppVoidValue>();
-        function.Received(1).Invoke(null, Arg.Is<ICppValueBase[]>( (ICppValueBase[] x) => x.Length == 1));
+        result.ShouldBeOfType<CppVoidValueT>();
+        function.Received(1).Invoke(null, Arg.Is<ICppValue[]>( (ICppValue[] x) => x.Length == 1));
         
     }
     
@@ -88,7 +88,7 @@ public class FunctionCallTest
             AstAtom("test"),
             []);
 
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
@@ -121,21 +121,21 @@ public class FunctionCallTest
             AstAtom("test"),
             [ AstAtom("value") ]);
 
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
         function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([ new CppFunctionParameter("", CppTypes.Int32, false) ]);
-        function.Invoke(null, Arg.Any<ICppValueBase[]>())
+        function.Invoke(null, Arg.Any<ICppValue[]>())
             .Returns(x =>
             {
-                var value = x.Arg<ICppValueBase[]>()[0];
+                var value = x.Arg<ICppValue[]>()[0];
                 
                 value.ShouldBeOfType<CppInt32Value>().Value = 5;
                 
-                return new CppVoidValue();
+                return new CppVoidValueT();
             });
         
         var callable = new CppCallableValue(scope);
@@ -144,7 +144,7 @@ public class FunctionCallTest
         scope.TryBindSymbol("test", callable);
 
         
-        var callingScope = new Scope<ICppValueBase>(scope);
+        var callingScope = new Scope<ICppValue>(scope);
         var value = new CppInt32Value(42);
         callingScope.TryBindSymbol("value", value);
         
@@ -164,21 +164,21 @@ public class FunctionCallTest
             AstAtom("test"),
             [ AstAtom("value") ]);
 
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         var function = Substitute.For<ICppFunction>();
         function.Name.Returns("test");
         function.InstanceType.Returns((ICppType?)null);
         function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([ new CppFunctionParameter("p1", CppTypes.Int32, true) ]);
-        function.Invoke(null, Arg.Any<ICppValueBase[]>())
+        function.Invoke(null, Arg.Any<ICppValue[]>())
             .Returns(x =>
             {
-                var value = x.Arg<ICppValueBase[]>()[0];
+                var value = x.Arg<ICppValue[]>()[0];
                 
                 value.ShouldBeOfType<CppInt32Value>().Value = 5;
                 
-                return new CppVoidValue();
+                return new CppVoidValueT();
             });
         
         var callable = new CppCallableValue(scope);
@@ -187,7 +187,7 @@ public class FunctionCallTest
         scope.TryBindSymbol("test", callable);
 
         
-        var callingScope = new Scope<ICppValueBase>(scope);
+        var callingScope = new Scope<ICppValue>(scope);
         var value = new CppInt32Value(42);
         callingScope.TryBindSymbol("value", value);
         
@@ -223,12 +223,12 @@ public class FunctionCallTest
         );
 
         var typeScope = Stage1Parser.CreateBaseScope();
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
         Stage3Parser.BuildFunction(fnDef, scope, typeScope);
         
-        var callingScope = new Scope<ICppValueBase>(scope);
+        var callingScope = new Scope<ICppValue>(scope);
         var value = new CppInt32Value(42);
         callingScope.TryBindSymbol("value", value);
         
@@ -272,7 +272,7 @@ public class FunctionCallTest
         
         
         var typeScope = Stage1Parser.CreateBaseScope();
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
 
         var callable = new CppCallableValue(scope);
         callable.AddOverload(function);
@@ -281,7 +281,7 @@ public class FunctionCallTest
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
         Stage3Parser.BuildFunction(fnDef, scope, typeScope);
         
-        var callingScope = new Scope<ICppValueBase>(scope);
+        var callingScope = new Scope<ICppValue>(scope);
         var value = new CppInt32Value(42);
         callingScope.TryBindSymbol("value", value);
         
@@ -294,6 +294,6 @@ public class FunctionCallTest
 
         //Assert
         value.Value.ShouldBe(42);
-        function.Received(1).Invoke(null, Arg.Is<ICppValueBase[]>(v => v[0] is CppInt32Value && ((CppInt32Value)v[0]).Value == 42));
+        function.Received(1).Invoke(null, Arg.Is<ICppValue[]>(v => v[0] is CppInt32Value && ((CppInt32Value)v[0]).Value == 42));
     }
 }

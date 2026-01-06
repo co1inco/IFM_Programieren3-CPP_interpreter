@@ -1,10 +1,19 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using CppInterpreter.Interpreter.Types;
 
 namespace CppInterpreter.Interpreter.Values;
 
+[Flags]
+public enum CppMemberBindingFlags
+{
+    Public = 1,
+    NonPublic = 2,
+    Static = 4,
+    Instance = 8
+}
 
-public interface ICppValueBase
+public interface ICppValue
 {
     ICppType GetCppType { get; }
     string StringRep();
@@ -12,7 +21,11 @@ public interface ICppValueBase
     bool ToBool();
 }
 
-public interface ICppValue : ICppValueBase
+/// <summary>
+/// <see cref="ICppValue"/> that statically knows its cpp type.
+/// Similar to using typeof(int)
+/// </summary>
+public interface ICppValueT : ICppValue
 {
     static abstract ICppType TypeOf { get; }
 
@@ -20,7 +33,14 @@ public interface ICppValue : ICppValueBase
 
 public static class CppValues
 {
-    extension(Scope<ICppValueBase> scope)
+    // private static void Test()
+    // {
+    //     typeof(int).GetMembers()
+    //     
+    //     BindingFlags
+    // }
+    
+    extension(Scope<ICppValue> scope)
     {
         public bool TryBindFunction(string name, ICppFunction func)
         {
@@ -55,7 +75,7 @@ public static class CppValues
 }
 
 
-public struct CppVoidValue : ICppValue
+public struct CppVoidValueT : ICppValueT
 {
     public static ICppType TypeOf => CppTypes.Void;
     public ICppType GetCppType => TypeOf;
@@ -65,14 +85,14 @@ public struct CppVoidValue : ICppValue
 }
 
 
-public interface ICppPrimitiveValue<T, out TType> : ICppValue
+public interface ICppPrimitiveValueT<T, out TType> : ICppValueT
 {
     public static abstract TType Create(T value);
     public T Value { get; set; }
 };
 
 
-public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppValue
+public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppValueT
 {
     public ICppType GetCppType => TType.TypeOf;
 
@@ -83,12 +103,12 @@ public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppVal
     public string StringRep() => Value?.ToString() ?? "(null)";
 }
 
-public sealed class CppBoolValue(bool value)
-    : CppPrimitiveValue<bool, CppBoolValue>(value)
-    , ICppPrimitiveValue<bool, CppBoolValue>
+public sealed class CppBoolValueT(bool value)
+    : CppPrimitiveValue<bool, CppBoolValueT>(value)
+    , ICppPrimitiveValueT<bool, CppBoolValueT>
 {
     public static ICppType TypeOf => CppTypes.Boolean;
-    public static CppBoolValue Create(bool value) => new CppBoolValue(value);
+    public static CppBoolValueT Create(bool value) => new CppBoolValueT(value);
     public bool ToBool() => Value;
 }
 

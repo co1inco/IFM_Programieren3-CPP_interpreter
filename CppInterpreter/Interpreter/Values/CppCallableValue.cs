@@ -2,17 +2,28 @@
 
 namespace CppInterpreter.Interpreter.Values;
 
-public class CppCallableValue : ICppValue
+public class CppCallableValue : ICppValueT
 {
-    private readonly Scope<ICppValueBase> _scope;
+    //TODO: remove unused scope member
+    private readonly ICppValue? _instance;
     private readonly List<ICppFunction> _overloads = [];
     
     public static ICppType TypeOf => CppTypes.Callable;
-    public ICppType GetCppType => TypeOf;
+    public ICppType GetCppType => new CppCallableType(Overloads.ToArray());
 
-    public CppCallableValue(Scope<ICppValueBase> scope)
+    public CppCallableValue(Scope<ICppValue> scope)
     {
-        _scope = scope;
+    }
+
+    public CppCallableValue(IEnumerable<ICppFunction> functions)
+    {
+        _overloads = functions.ToList();
+    }
+    
+    public CppCallableValue(ICppValue instance, IEnumerable<ICppFunction> functions)
+    {
+        _instance = instance;
+        _overloads = functions.ToList();
     }
     
     public string StringRep() => "<Callable>";
@@ -38,12 +49,12 @@ public class CppCallableValue : ICppValue
                 .ZipFill(parameters)
                 .All(y => y.Left?.Type.Equals(y.Right) ?? false));
 
-    public ICppValueBase Invoke(params ICppValueBase[] parameters)
+    public ICppValue Invoke(params ICppValue[] parameters)
     {
         if (GetOverload(parameters.Select(x => x.GetCppType)) is not {} overload)
             throw new Exception($"Overload for [{string.Join(", ", parameters.Select(x => x.GetCppType))}] doesn't exist");
 
-        return overload.Invoke(null, parameters);
+        return overload.Invoke(_instance, parameters);
     }
     
     

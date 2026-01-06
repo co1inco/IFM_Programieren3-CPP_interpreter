@@ -32,7 +32,7 @@ public class IfTest
 
         var typeScope = Stage1Parser.CreateBaseScope();
         var valueScope = Stage2Parser.CreateBaseScope();
-        var parseScope = new Scope<ICppValueBase>(valueScope);
+        var parseScope = new Scope<ICppValue>(valueScope);
 
         valueScope.BindFunction(testFunction, "test");
         
@@ -41,7 +41,7 @@ public class IfTest
         var result = s3.Eval(valueScope);
         
         //Assert
-        testFunction.Received(1).Invoke(null, FirstArgIs<ICppValueBase[]>(1));
+        testFunction.Received(1).Invoke(null, FirstArgIs<ICppValue[]>(1));
     }
     
     [TestMethod]
@@ -67,7 +67,7 @@ public class IfTest
 
         var typeScope = Stage1Parser.CreateBaseScope();
         var valueScope = Stage2Parser.CreateBaseScope();
-        var parseScope = new Scope<ICppValueBase>(valueScope);
+        var parseScope = new Scope<ICppValue>(valueScope);
 
         valueScope.BindFunction(testFunction, "test");
         
@@ -76,7 +76,7 @@ public class IfTest
         var result = s3.Eval(valueScope);
         
         //Assert
-        testFunction.Received(1).Invoke(null, FirstArgIs<ICppValueBase[]>(2));
+        testFunction.Received(1).Invoke(null, FirstArgIs<ICppValue[]>(2));
     }
 
     [TestMethod]
@@ -102,7 +102,7 @@ public class IfTest
 
         var typeScope = Stage1Parser.CreateBaseScope();
         var valueScope = Stage2Parser.CreateBaseScope();
-        var parseScope = new Scope<ICppValueBase>(valueScope);
+        var parseScope = new Scope<ICppValue>(valueScope);
 
         valueScope.BindFunction(testFunction, "test");
         
@@ -111,11 +111,11 @@ public class IfTest
         var result = s3.Eval(valueScope);
         
         //Assert
-        testFunction.Received(1).Invoke(null, FirstArgIs<ICppValueBase[]>(3));
+        testFunction.Received(1).Invoke(null, FirstArgIs<ICppValue[]>(3));
     }
     
 
-    public static ICppValueBase[] FirstArgIs<T>(int value) => Arg.Is<ICppValueBase[]>(x =>
+    public static ICppValue[] FirstArgIs<T>(int value) => Arg.Is<ICppValue[]>(x =>
         x.Length == 1
         && x.First() is CppInt32Value
         && ((CppInt32Value)x.First()).Value == value

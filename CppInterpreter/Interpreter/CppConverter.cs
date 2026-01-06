@@ -8,17 +8,17 @@ public interface ICppConverter
     ICppType SourceType { get; }
     ICppType TargetType { get; }
     
-    ICppValue Convert(ICppValue? value);
+    ICppValueT Convert(ICppValueT? value);
 }
 
 public class CppConverter<TSource, TTarget>(Func<TSource, TTarget> convert) : ICppConverter
-    where TSource : ICppValue
-    where TTarget : ICppValue
+    where TSource : ICppValueT
+    where TTarget : ICppValueT
 {
     public ICppType SourceType => TSource.TypeOf;
     public ICppType TargetType => TTarget.TypeOf;
     
-    public ICppValue Convert(ICppValue? value)
+    public ICppValueT Convert(ICppValueT? value)
     {
         if (value is not TSource source)
             throw new InvalidTypeException(TSource.TypeOf, value?.GetCppType);

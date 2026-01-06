@@ -16,7 +16,7 @@ public class AssignmentTest
         //Arrange
         var ast = AstAssignment(AstIdentifier("test"), AstLiteral(5));
 
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         scope.TryBindSymbol("test", new CppStringValue("Hello"));
         
         //Act

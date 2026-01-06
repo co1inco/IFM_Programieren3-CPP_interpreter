@@ -23,7 +23,7 @@ public class FunctionDefinitionTest
         );
 
         var stage1Scope = Stage1Parser.CreateBaseScope();
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         var result = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
@@ -55,7 +55,7 @@ public class FunctionDefinitionTest
         );
 
         var stage1Scope = Stage1Parser.CreateBaseScope();
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         var result = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);

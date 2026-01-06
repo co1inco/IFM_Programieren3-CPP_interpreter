@@ -8,6 +8,15 @@ public class CppCallableType : ICppType
 
     public bool Equals(ICppType? other) => Name == other?.Name;
 
+    public CppCallableType() { }
+
+    public CppCallableType(ICppFunction[] functions)
+    {
+        CallableFunctions = functions;
+    }
+
+    public ICppFunction[] CallableFunctions { get; } = [];
+    
     public ICppConstructor[] Constructor { get; } = [];
     public ICppFunction[] Functions { get; } = [];
     public ICppConverter[] Converter { get; }= [];
@@ -17,8 +26,10 @@ public class CppCallableType : ICppType
         throw new NotSupportedException();
     }
 
-    public ICppValueBase Create()
+    public ICppValue Create()
     {
         throw new NotSupportedException();
     }
+
+    public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => [];
 }

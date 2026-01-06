@@ -2,7 +2,7 @@
 
 namespace CppInterpreter.Interpreter.Values;
 
-public class CppStringValue(string initialValue) : ICppValue
+public class CppStringValue(string initialValue) : ICppValueT
 {
     public static ICppType TypeOf => CppTypes.String;
 

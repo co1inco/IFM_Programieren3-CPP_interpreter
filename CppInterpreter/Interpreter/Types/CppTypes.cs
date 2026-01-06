@@ -1,4 +1,5 @@
 ﻿using System.Numerics;
+using System.Reflection;
 using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter.Types;
@@ -43,6 +44,14 @@ public class CppTypes
     
 }
 
+public interface ICppMemberInfo
+{
+    string Name { get; }
+    ICppType MemberType { get; }
+    ICppValue GetValue(ICppValue instance);
+}
+
+public record CppMethodInfo(string Name, CppCallableType Callable);
 
 public interface ICppType : IEquatable<ICppType>
 {
@@ -54,45 +63,78 @@ public interface ICppType : IEquatable<ICppType>
 
     public bool IsAssignableTo(ICppType other);
 
-    ICppValueBase Create();
+    ICppValue Create();
+
+    IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags);
+
+    ICppMemberInfo? GetMember(string name, CppMemberBindingFlags flags) => 
+        GetMembers(flags)
+            .FirstOrDefault(m => m.Name == name);
+
+    // MethodInfo useful for implementing the interpreter?
+    // IEnumerable<CppMethodInfo> GetFunctions(CppMemberBindingFlags flags) => throw new NotImplementedException();
 }
 
+public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICppMemberInfo
+{
+    public string Name => name;
+
+    private CppCallableValue _dummyValue = new CppCallableValue(functions);
+    
+    public ICppType MemberType => _dummyValue.GetCppType;
+
+    public ICppValue GetValue(ICppValue instance) => new CppCallableValue(instance, functions);
+}
 
 public abstract class CppPrimitiveType : ICppType
 {
+    private ICppMemberInfo[] _members;
+    
     protected CppPrimitiveType(string name, ICppFunction[]? functions = null)
     {
         Name = name;
         if (functions is not null)
             Functions = functions;
+        
+        _members = functions?
+            .GroupBy(x => x.Name)
+            .Select(ICppMemberInfo (x) => new CppMemberFunctionInfo(x.Key, x.ToArray()))
+            .ToArray() ?? [];
+        // typeof(int).GetMethod("").
+
+        // MethodInfo mi = null!;
+        // mi.In
     }
     
     public string Name { get; }
 
     public ICppConstructor[] Constructor { get; init; } = [];
-    public ICppFunction[] Functions { get; init; } = [];
+    public ICppFunction[] Functions { get; } = [];
     public ICppConverter[] Converter { get; init; } = [];
     
     public bool IsAssignableTo(ICppType other) => other.GetType() == GetType();
     
     public bool Equals(ICppType? other) => Name == other?.Name;
 
-    public abstract ICppValueBase Create();
+    public abstract ICppValue Create();
+
+    // TODO: Implement accessibility
+    public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => _members;
+
 }
 
 // TODO: Make all types singletons / always use CppTypes.<type> 
 
 public sealed class CppVoidType : CppPrimitiveType
 {
-    public static CppVoidType Instance = new CppVoidType();
+    public static CppVoidType Instance { get; }= new CppVoidType();
     
     private CppVoidType() : base("void")
     {
-        Constructor = [ new ConstructorFunction<CppVoidValue>(() => new CppVoidValue() ) ];
-        Functions = [];
+        Constructor = [ new ConstructorFunction<CppVoidValueT>(() => new CppVoidValueT() ) ];
     }
 
-    public override ICppValueBase Create() => new CppVoidValue();
+    public override ICppValue Create() => new CppVoidValueT();
 };
 
 
@@ -100,21 +142,23 @@ public sealed class CppBoolType : CppPrimitiveType
 {
     public static CppBoolType Instance { get; } = new CppBoolType();
     
-    private CppBoolType() : base("bool")
+    private static ICppFunction[] MemberFunctions() =>
+    [
+        ..CppCommonOperators.EquatorOperators<CppBoolValueT, bool>(),
+        CppCommonOperators.PrimitiveAssignment<CppBoolValueT, bool>(),
+        // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator&&", 
+        //     (a, b) => new CppBoolValue(a.Value && b.Value)),
+        // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator||", 
+        //     (a, b) => new CppBoolValue(a.Value || b.Value))
+        new MemberFunction<CppBoolValueT, CppBoolValueT>("operator!", a => new CppBoolValueT(!a.Value))
+    ];
+    
+    private CppBoolType() : base("bool", MemberFunctions())
     {
-        Functions =
-        [
-            ..CppCommonOperators.EquatorOperators<CppBoolValue, bool>(),
-            CppCommonOperators.PrimitiveAssignment<CppBoolValue, bool>(),
-            // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator&&", 
-            //     (a, b) => new CppBoolValue(a.Value && b.Value)),
-            // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator||", 
-            //     (a, b) => new CppBoolValue(a.Value || b.Value))
-            new MemberFunction<CppBoolValue, CppBoolValue>("operator!", a => new CppBoolValue(!a.Value))
-        ];
+        
     }
 
-    public override ICppValueBase Create() => new CppBoolValue(false);
+    public override ICppValue Create() => new CppBoolValueT(false);
 }
 
 

@@ -49,7 +49,7 @@ public class BlockScope
         var typeScope = Stage1Parser.CreateBaseScope();
         var scope = Stage2Parser.CreateBaseScope();
 
-        var value = new CppBoolValue(true);
+        var value = new CppBoolValueT(true);
         scope.TryBindSymbol("test", value);
         
         var statement = Stage3Parser.ParseBlock(ast, scope, typeScope);

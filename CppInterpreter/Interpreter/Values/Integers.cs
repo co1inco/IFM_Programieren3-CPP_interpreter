@@ -4,7 +4,7 @@ namespace CppInterpreter.Interpreter.Values;
 
 public sealed class CppInt32Value(int value) 
     : CppPrimitiveValue<int, CppInt32Value>(value)
-    , ICppPrimitiveValue<int, CppInt32Value>
+    , ICppPrimitiveValueT<int, CppInt32Value>
 {
     public static ICppType TypeOf => CppTypes.Int32;
 
@@ -12,21 +12,21 @@ public sealed class CppInt32Value(int value)
     public bool ToBool() => Value != 0;
 }
 
-public sealed class CppInt64Value(Int64 value) 
-    : CppPrimitiveValue<Int64, CppInt64Value>(value)
-    , ICppPrimitiveValue<long, CppInt64Value>
+public sealed class CppInt64ValueT(Int64 value) 
+    : CppPrimitiveValue<Int64, CppInt64ValueT>(value)
+    , ICppPrimitiveValueT<long, CppInt64ValueT>
 {
     public static ICppType TypeOf => CppTypes.Int64;
-    public static CppInt64Value Create(long value) => new CppInt64Value(value);
+    public static CppInt64ValueT Create(long value) => new CppInt64ValueT(value);
     public bool ToBool() => Value != 0;
 }
 
-public sealed class CppCharValue(char value) 
-    : CppPrimitiveValue<char, CppCharValue>(value)
-    , ICppPrimitiveValue<char, CppCharValue>
+public sealed class CppCharValueT(char value) 
+    : CppPrimitiveValue<char, CppCharValueT>(value)
+    , ICppPrimitiveValueT<char, CppCharValueT>
 {
     public static ICppType TypeOf => CppTypes.Char;
 
-    public static CppCharValue Create(char value) => new CppCharValue(value);
+    public static CppCharValueT Create(char value) => new CppCharValueT(value);
     public bool ToBool() => Value != '\0';
 }

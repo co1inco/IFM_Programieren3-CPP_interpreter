@@ -164,7 +164,8 @@ public partial class AstExpression : OneOfBase<
     AstBinOp,
     AstUnary,
     AstFunctionCall,
-    AstSuffix>
+    AstSuffix,
+    AstMemberAccess>
     , IAstNode
 {
     public AstMetadata Metadata => Match(
@@ -174,9 +175,16 @@ public partial class AstExpression : OneOfBase<
         x => x.Metadata,
         x => x.Metadata,
         x => x.Metadata,
+        x => x.Metadata,
         x => x.Metadata
     );
 }
+
+public record AstMemberAccess(
+    AstExpression Value,
+    AstAtom Member,
+    AstMetadata Metadata
+) : IAstNode;
 
 // TODO: The operator is only used to create the the name for the function (eg. operator+) so storing it here as a simple string should be enough
 [GenerateOneOf]
@@ -365,4 +373,11 @@ public static class GeneratedAstTreeBuilder
     
     public static (AstExpression, AstBlock) AstIfBranch(AstExpression expression, params AstStatement[] block) =>
         (expression, AstBlock(block));
+    
+    public static AstMemberAccess AstMemberAccess(AstExpression expression, AstAtom member, AstMetadata? m = null) => 
+        new AstMemberAccess(expression, member, m ?? AstMetadata.Generated());
+    
+    public static AstMemberAccess AstMemberAccess(AstExpression expression, string member, AstMetadata? m = null) => 
+        new AstMemberAccess(expression, AstAtom(member), m ?? AstMetadata.Generated());
+    
 }

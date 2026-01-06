@@ -23,8 +23,7 @@ public record StatementResult(
 
 public record ExpressionResult(
     InterpreterExpression Eval,
-    ICppType ResultType,
-    ICppFunction[]? Functions = null)
+    ICppType ResultType)
 {
     public StatementResult ToStatement() => new StatementResult(s =>
     {
@@ -42,7 +41,7 @@ public partial class StatementEvalResult : OneOfBase<
     None
 >
 {
-    public record struct Return(ICppValueBase Value);
+    public record struct Return(ICppValue Value);
     public record struct Continue(IAstNode ContinueNode);
     public record struct Break(IAstNode ContinueNode);
 
@@ -60,13 +59,13 @@ public partial class StatementEvalResult : OneOfBase<
     }
 }
 
-public delegate StatementEvalResult InterpreterStatement(Scope<ICppValueBase> scope);
-public delegate ICppValueBase InterpreterExpression(Scope<ICppValueBase> scope);
+public delegate StatementEvalResult InterpreterStatement(Scope<ICppValue> scope);
+public delegate ICppValue InterpreterExpression(Scope<ICppValue> scope);
 
 public class Stage3Parser
 {
 
-    public static StatementResult ParseProgram(Stage2SymbolTree program, Scope<ICppValueBase> scope)
+    public static StatementResult ParseProgram(Stage2SymbolTree program, Scope<ICppValue> scope)
     {
         var statements = program.Statement
             .Select(x => x.Match(
@@ -88,7 +87,7 @@ public class Stage3Parser
     }
 
     
-    public static StatementResult BuildFunction(Stage2FuncDefinition definition, Scope<ICppValueBase> sc, Scope<ICppType> typeScope)
+    public static StatementResult BuildFunction(Stage2FuncDefinition definition, Scope<ICppValue> sc, Scope<ICppType> typeScope)
     {
         definition.Function.BuildBody(definition.Closure, (body, scope) =>
         {
@@ -115,7 +114,7 @@ public class Stage3Parser
                         {
                             if (!definition.ReturnType.Equals(CppTypes.Void))
                                 throw new ParserException("Return statement missing", body.Metadata);
-                            return new CppVoidValue();
+                            return new CppVoidValueT();
                         }
                     );
             };
@@ -124,7 +123,7 @@ public class Stage3Parser
         return new StatementResult(_ => new None(), []);
     }
 
-    public static StatementResult ParseStatement(AstStatement statement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    public static StatementResult ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         return statement.Match<StatementResult>(
             e => ParseExpression(e, scope).ToStatement(),
@@ -140,7 +139,7 @@ public class Stage3Parser
         );
     }
 
-    public static StatementResult ParseIf(AstIf ifStmt, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    public static StatementResult ParseIf(AstIf ifStmt, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         var branches = ifStmt.Branches
             .Select(x => (
@@ -171,7 +170,7 @@ public class Stage3Parser
             returnValues);
     }
 
-    public static StatementResult ParseWhile(AstWhile whileStatement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    public static StatementResult ParseWhile(AstWhile whileStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         var condition = ParseExpression(whileStatement.Condition, scope);
         var body = ParseBlock(whileStatement.Body, scope, typeScope);
@@ -208,21 +207,21 @@ public class Stage3Parser
         };
     }
 
-    public static StatementResult ParseBreak(AstBreak breakStatement, Scope<ICppValueBase> scope)
+    public static StatementResult ParseBreak(AstBreak breakStatement, Scope<ICppValue> scope)
     {
         return new StatementResult(_ =>  new StatementEvalResult.Break(), []);
     }
 
-    public static StatementResult ParseContinue(AstContinue continueStatement, Scope<ICppValueBase> scope)
+    public static StatementResult ParseContinue(AstContinue continueStatement, Scope<ICppValue> scope)
     {
         return new StatementResult(_ =>  new StatementEvalResult.Continue(), []);
     }
 
 
 
-    public static StatementResult ParseBlock(AstBlock block, Scope<ICppValueBase> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
+    public static StatementResult ParseBlock(AstBlock block, Scope<ICppValue> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
-        var parseScope = suppressBlockScope ? scope : new Scope<ICppValueBase>(scope);
+        var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
             
         var stmt = block.Statements
             .Select(x => ParseStatement(x, parseScope, typeScope))
@@ -232,7 +231,7 @@ public class Stage3Parser
 
         return new StatementResult(s =>
             {
-                var blockScope = suppressBlockScope ? s : new Scope<ICppValueBase>(s);
+                var blockScope = suppressBlockScope ? s : new Scope<ICppValue>(s);
 
                 foreach (var statement in stmt)
                 {
@@ -247,10 +246,10 @@ public class Stage3Parser
 
     }
 
-    public static StatementResult ParseReturn(AstReturn returnStmt, Scope<ICppValueBase> scope)
+    public static StatementResult ParseReturn(AstReturn returnStmt, Scope<ICppValue> scope)
     {
         var expression = returnStmt.ReturnValue is null
-            ? new ExpressionResult(_ => new CppVoidValue(), CppTypes.Void)
+            ? new ExpressionResult(_ => new CppVoidValueT(), CppTypes.Void)
             : ParseExpression(returnStmt.ReturnValue, scope);
 
         return new StatementResult(
@@ -259,7 +258,7 @@ public class Stage3Parser
         );
     }
     
-    public static StatementResult ParseVariableDefinition(AstVarDefinition definition, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    public static StatementResult ParseVariableDefinition(AstVarDefinition definition, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
             definition.Type.ThrowNotFound();
@@ -306,7 +305,7 @@ public class Stage3Parser
             }, []);
     }
     
-    public static StatementResult ParseVariableDefinition(Stage2VarDefinition definition, Scope<ICppValueBase> scope)
+    public static StatementResult ParseVariableDefinition(Stage2VarDefinition definition, Scope<ICppValue> scope)
     {
         var initializer = definition.Initializer is null
             ? null
@@ -333,7 +332,7 @@ public class Stage3Parser
         }, []);
     }
 
-    public static ExpressionResult ParseAssignmentTargetExpression(AstExpression expression, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseAssignmentTargetExpression(AstExpression expression, Scope<ICppValue> scope)
     {
         if (expression.TryPickT1(out var atom, out var rem1))
             return ParseAtom(atom, scope);
@@ -343,7 +342,7 @@ public class Stage3Parser
     }
     
     
-    public static ExpressionResult ParseExpression(AstExpression expression, Scope<ICppValueBase> scope) =>
+    public static ExpressionResult ParseExpression(AstExpression expression, Scope<ICppValue> scope) =>
         expression.Match<ExpressionResult>(
             ParseLiteral,
             a => ParseAtom(a, scope),
@@ -351,17 +350,14 @@ public class Stage3Parser
             b => ParseBinOp(b, scope),
             u => ParseUnaryOp(u, scope),
             func => ParseFunctionCall(func, scope),
-            s => ParseSuffixOp(s, scope)
+            s => ParseSuffixOp(s, scope),
+            m => ParseMemberAccess(m, scope)
         );
 
-    public static ExpressionResult ParseAtom(AstAtom atom, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseAtom(AstAtom atom, Scope<ICppValue> scope)
     {
         if (!scope.TryGetSymbol(atom.Value, out var symbol))
             atom.Throw("Undefined value");
-
-        var functions = symbol is CppCallableValue callable
-            ? callable.Overloads.ToArray()
-            : null;
         
         return new ExpressionResult(
             s =>
@@ -372,11 +368,11 @@ public class Stage3Parser
 
                 return variable;
             }, 
-            symbol.GetCppType, 
-            functions);
+            symbol.GetCppType
+        );
     }
 
-    public static ExpressionResult ParseAssignment(AstAssignment assignment, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseAssignment(AstAssignment assignment, Scope<ICppValue> scope)
     {
         var inner = ParseExpression(assignment.Value, scope);
         var target = ParseAssignmentTargetExpression(assignment.Target, scope);
@@ -407,7 +403,7 @@ public class Stage3Parser
         
 
 
-    public static ExpressionResult ParseBinOp(AstBinOp op, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseBinOp(AstBinOp op, Scope<ICppValue> scope)
     {
         var left = ParseExpression(op.Left, scope);
         var right = ParseExpression(op.Right, scope);
@@ -426,7 +422,7 @@ public class Stage3Parser
                     {
                         var l = left.Eval(s);
                         if (!l.ToBool())
-                            return new CppBoolValue(false);
+                            return new CppBoolValueT(false);
                         return right.Eval(s);
                     }
 
@@ -434,7 +430,7 @@ public class Stage3Parser
                     {
                         var l = left.Eval(s);
                         if (l.ToBool())
-                            return new CppBoolValue(true);
+                            return new CppBoolValueT(true);
                         return right.Eval(s);
                     }
 
@@ -507,7 +503,7 @@ public class Stage3Parser
         };
     }
 
-    public static ExpressionResult ParseUnaryOp(AstUnary unary, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseUnaryOp(AstUnary unary, Scope<ICppValue> scope)
     {
 
         var function = unary.Operator switch
@@ -539,7 +535,7 @@ public class Stage3Parser
         );
     }
 
-    public static ExpressionResult ParseSuffixOp(AstSuffix suffix, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseSuffixOp(AstSuffix suffix, Scope<ICppValue> scope)
     {
         var functionName = $"operator{suffix.Operator.Value}";
         
@@ -560,16 +556,30 @@ public class Stage3Parser
             memberFunc.ReturnType
         );
     }
+
+    public static ExpressionResult ParseMemberAccess(AstMemberAccess memberAccess, Scope<ICppValue> scope)
+    {
+        var value = ParseExpression(memberAccess.Value, scope);
+
+        var flags = CppMemberBindingFlags.Public | CppMemberBindingFlags.Instance;
+        if (value.ResultType.GetMember(memberAccess.Member.Value, flags) is not {} member)
+            throw memberAccess.Member.CreateException($"Type '{value.ResultType.Name}'  does not have a member '{memberAccess.Member.Value}'");
+        
+        return new ExpressionResult(
+            s => member.GetValue(value.Eval(s)),
+            member.MemberType
+        );
+    }
     
     public static ExpressionResult ParseLiteral(AstLiteral literal) => 
         literal.Match(
-            c => new ExpressionResult(_ => new CppCharValue(c), CppTypes.Char),
+            c => new ExpressionResult(_ => new CppCharValueT(c), CppTypes.Char),
             i => new ExpressionResult(_ => new CppInt32Value(i), CppTypes.Int32),
             s => new ExpressionResult(_ => new CppStringValue(s),  CppTypes.String) ,
-            b => new ExpressionResult(_ => new CppBoolValue(b),  CppTypes.Boolean) 
+            b => new ExpressionResult(_ => new CppBoolValueT(b),  CppTypes.Boolean) 
         );
 
-    public static ExpressionResult ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValueBase> scope)
+    public static ExpressionResult ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValue> scope)
     {
         // TODO: check functionCall type here
         var callable = ParseExpression(functionCall.Function, scope);
@@ -580,10 +590,10 @@ public class Stage3Parser
         if (!callable.ResultType.Equals(CppTypes.Callable))
             functionCall.Throw("Symbol is not a function");
         
-        if (callable.Functions is not {} functions)
+        if (callable.ResultType is not CppCallableType callableType)
             throw functionCall.CreateException("Symbol is not a function");
 
-        var function = functions.FirstOrDefault(x => x.ParameterTypes
+        var function = callableType.CallableFunctions.FirstOrDefault(x => x.ParameterTypes
             .ZipFill(arguments)
             .All(y => y.Left?.Type.Equals(y.Right?.ResultType) ?? false));
         
@@ -618,4 +628,5 @@ public class Stage3Parser
                 }
             }, function.ReturnType);
     }
+    
 }

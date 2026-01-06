@@ -21,7 +21,7 @@ public class ParseExpressionTest
              AstLiteral(6),
             AstBinOpOperator.Arithmetic.Add
         );
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         var expr = Stage3Parser.ParseExpression(ast, scope);

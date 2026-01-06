@@ -30,10 +30,10 @@ public class InvalidParametersException(string message) : Exception(message)
 
 public static class CppTypeExtensions
 {
-    extension<T>(T instance) where T : ICppValue
+    extension<T>(T instance) where T : ICppValueT
     {
 
-        public ICppValueBase InvokeMemberFunc(string name, params ICppValueBase[] parameters)
+        public ICppValue InvokeMemberFunc(string name, params ICppValue[] parameters)
         {
             // todo: look for the correct overload
             var f = T.TypeOf.Functions.FirstOrDefault(x => x.Name == name);
@@ -111,9 +111,9 @@ public static class CppTypeExtensions
             // throw new Exception($"No matching function '{name}' found on type '{type}'");
         }
         
-        public ICppValue Construct<T>(params ICppValue[] parameters) where T : ICppValue
+        public ICppValueT Construct<T>(params ICppValueT[] parameters) where T : ICppValueT
         {
-            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.GetCppType).ToArray();
+            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
             
             var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
                 x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
@@ -124,9 +124,9 @@ public static class CppTypeExtensions
             return ctor.Construct(parameters);
         }
         
-        public ICppValue Construct(params ICppValueBase[] parameters)
+        public ICppValueT Construct(params ICppValue[] parameters)
         {
-            var parameterTypes = parameters.Select<ICppValueBase, ICppType>(x => x.GetCppType).ToArray();
+            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
             
             var ctor = type.Constructor.FirstOrDefault(x =>
                 x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
@@ -171,7 +171,7 @@ public static class CppTypeExtensions
         }
     }
 
-    extension(Scope<ICppValueBase> scope)
+    extension(Scope<ICppValue> scope)
     {
         public int ExecuteFunction(string name = "main")
         {

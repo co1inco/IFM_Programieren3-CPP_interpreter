@@ -475,6 +475,5 @@ public static class AstParser
         if (ctx.hex is { } hex) return int.Parse(hex.Text.Replace("0x", ""), NumberStyles.HexNumber);
         throw new UnreachableException("Unsupported number style");
     }
-
-
+    
 }

@@ -55,10 +55,10 @@ public class VariableAssignment
 
         var baseVal = new CppInt32Value(42);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         scope.TryBindSymbol("baseVal", baseVal);
 
-        var parseScope = new Scope<ICppValueBase>(scope);
+        var parseScope = new Scope<ICppValue>(scope);
         
         //Act / Assert 
         var expr =  Stage3Parser.ParseVariableDefinition(ast, parseScope, typeScope);

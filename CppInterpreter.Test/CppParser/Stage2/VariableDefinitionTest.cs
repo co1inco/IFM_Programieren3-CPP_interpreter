@@ -25,7 +25,7 @@ public class VariableDefinitionTest
         var typeScope = new Scope<ICppType>();
         typeScope.TryBindSymbol("int", CppTypes.Int32);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         var result = Stage2Parser.ParseVarDefinition(ast, scope, typeScope);
@@ -51,7 +51,7 @@ public class VariableDefinitionTest
         var typeScope = new Scope<ICppType>();
         typeScope.TryBindSymbol("int", CppTypes.Int32);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         var result = Stage2Parser.ParseVarDefinition(ast, scope, typeScope);
@@ -76,7 +76,7 @@ public class VariableDefinitionTest
         var typeScope = new Scope<ICppType>();
         typeScope.TryBindSymbol("int", CppTypes.Int32);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         
         //Act
         

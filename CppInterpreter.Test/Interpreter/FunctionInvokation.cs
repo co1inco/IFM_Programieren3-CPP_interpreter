@@ -68,55 +68,55 @@ public class FunctionInvocation
     public void Int64_Add()
     {
         //Arrange
-        var a = new CppInt64Value(1);
-        var b = new CppInt64Value(2);
+        var a = new CppInt64ValueT(1);
+        var b = new CppInt64ValueT(2);
 
         //Act
         var c = a.InvokeMemberFunc("operator+", b);
         
         //Assert
-        c.ShouldBeOfType<CppInt64Value>().Value.ShouldBe(3);
+        c.ShouldBeOfType<CppInt64ValueT>().Value.ShouldBe(3);
     }
     
     [TestMethod]
     public void Int64_Sub()
     {
         //Arrange
-        var a = new CppInt64Value(1);
-        var b = new CppInt64Value(2);
+        var a = new CppInt64ValueT(1);
+        var b = new CppInt64ValueT(2);
 
         //Act
         var c = a.InvokeMemberFunc("operator-", b);
         
         //Assert
-        c.ShouldBeOfType<CppInt64Value>().Value.ShouldBe(-1);
+        c.ShouldBeOfType<CppInt64ValueT>().Value.ShouldBe(-1);
     }
     
     [TestMethod]
     public void Int64_Mul()
     {
         //Arrange
-        var a = new CppInt64Value(2);
-        var b = new CppInt64Value(3);
+        var a = new CppInt64ValueT(2);
+        var b = new CppInt64ValueT(3);
 
         //Act
         var c = a.InvokeMemberFunc("operator*", b);
         
         //Assert
-        c.ShouldBeOfType<CppInt64Value>().Value.ShouldBe(6);
+        c.ShouldBeOfType<CppInt64ValueT>().Value.ShouldBe(6);
     }
     
     [TestMethod]
     public void Int64_Div()
     {
         //Arrange
-        var a = new CppInt64Value(10);
-        var b = new CppInt64Value(5);
+        var a = new CppInt64ValueT(10);
+        var b = new CppInt64ValueT(5);
 
         //Act
         var c = a.InvokeMemberFunc("operator/", b);
         
         //Assert
-        c.ShouldBeOfType<CppInt64Value>().Value.ShouldBe(2);
+        c.ShouldBeOfType<CppInt64ValueT>().Value.ShouldBe(2);
     }
 }

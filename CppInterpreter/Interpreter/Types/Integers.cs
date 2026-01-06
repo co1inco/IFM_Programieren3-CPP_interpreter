@@ -6,38 +6,40 @@ public sealed class CppInt32Type : CppPrimitiveType
 {
     public static ICppType Instance { get; } = new CppInt32Type();
     
-    private CppInt32Type() : base("Int32")
+    private static ICppFunction[] MemberFunctions() =>
+    [
+        ..CppCommonOperators.IntegerOperators<CppInt32Value, Int32>()
+    ];
+    
+    private CppInt32Type() : base("Int32", MemberFunctions())
     {
         Constructor = [ 
             new ConstructorFunction<CppInt32Value>(() => new CppInt32Value(0) ),
             new ConstructorFunction<CppInt32Value, CppInt32Value>(i => new CppInt32Value(i.Value) ),
         ];
-        Functions =
-        [
-            ..CppCommonOperators.IntegerOperators<CppInt32Value, Int32>()
-        ];
     }
 
-    public override ICppValueBase Create() => new CppInt32Value(0);
+    public override ICppValue Create() => new CppInt32Value(0);
 }
 
 public sealed class CppInt64Type : CppPrimitiveType
 {
     public static ICppType Instance { get; } = new CppInt64Type();
     
-    private CppInt64Type() : base("Int64")
+    private static ICppFunction[] MemberFunctions() =>
+    [
+        ..CppCommonOperators.IntegerOperators<CppInt64ValueT, Int64>()
+    ];
+    
+    private CppInt64Type() : base("Int64", MemberFunctions())
     {
         Constructor = [ 
-            new ConstructorFunction<CppInt64Value>(() => new CppInt64Value(0) ),
-            new ConstructorFunction<CppInt64Value, CppInt64Value>(c => new CppInt64Value(c.Value) ),
-        ];
-        Functions =
-        [
-            ..CppCommonOperators.IntegerOperators<CppInt64Value, Int64>()
+            new ConstructorFunction<CppInt64ValueT>(() => new CppInt64ValueT(0) ),
+            new ConstructorFunction<CppInt64ValueT, CppInt64ValueT>(c => new CppInt64ValueT(c.Value) ),
         ];
     }
     
-    public override ICppValueBase Create() => new CppInt64Value(0);
+    public override ICppValue Create() => new CppInt64ValueT(0);
 }
 
 
@@ -45,17 +47,18 @@ public sealed class CppCharType : CppPrimitiveType
 {
     public static CppCharType Instance { get; } = new CppCharType();
     
-    private CppCharType() : base("char")
+    private static ICppFunction[] MemberFunctions() =>
+    [
+        ..CppCommonOperators.IntegerOperators<CppCharValueT, char>()
+    ];
+    
+    private CppCharType() : base("char", MemberFunctions())
     {
         Constructor = [ 
-            new ConstructorFunction<CppCharValue>(() => new CppCharValue('\0') ),
-            new ConstructorFunction<CppCharValue, CppCharValue>(i => new CppCharValue(i.Value) ),
-        ];
-        Functions =
-        [
-            ..CppCommonOperators.IntegerOperators<CppCharValue, char>()
+            new ConstructorFunction<CppCharValueT>(() => new CppCharValueT('\0') ),
+            new ConstructorFunction<CppCharValueT, CppCharValueT>(i => new CppCharValueT(i.Value) ),
         ];
     }
 
-    public override ICppValueBase Create() => new CppCharValue('\0');
+    public override ICppValue Create() => new CppCharValueT('\0');
 }

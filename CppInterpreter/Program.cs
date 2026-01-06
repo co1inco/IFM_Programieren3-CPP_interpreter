@@ -32,7 +32,7 @@ typeScope.TryBindSymbol("long", CppTypes.Int64);
 
 var stage1Scope = Stage1Parser.CreateBaseScope();
 var stage2Scope = Stage2Parser.CreateBaseScope();
-var scope = new Scope<ICppValueBase>(stage2Scope);
+var scope = new Scope<ICppValue>(stage2Scope);
 
 while (true)
 {
@@ -47,13 +47,13 @@ while (true)
             {
                 var s1 = Stage1Parser.ParseProgram([ stmt ], stage1Scope);
                 var s2 = Stage2Parser.ParseProgram(s1, stage2Scope);
-                var s3 = Stage3Parser.ParseProgram(s2, new Scope<ICppValueBase>(scope));
+                var s3 = Stage3Parser.ParseProgram(s2, new Scope<ICppValue>(scope));
 
                 s3.Eval(scope);
             },
             expr =>
             {
-                var s3 = Stage3Parser.ParseExpression(expr, new Scope<ICppValueBase>(scope));
+                var s3 = Stage3Parser.ParseExpression(expr, new Scope<ICppValue>(scope));
                 var result = s3.Eval(scope);
                 Console.WriteLine($"<   {result.StringRep()}");
             }

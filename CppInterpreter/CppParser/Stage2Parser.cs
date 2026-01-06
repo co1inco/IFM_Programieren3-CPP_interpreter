@@ -30,11 +30,11 @@ public record Stage2FuncDefinition(
     CppFunctionParameter[] Arguments,
     AstBlock Body,
     CppUserFunction Function,
-    Scope<ICppValueBase> Closure
+    Scope<ICppValue> Closure
 );
 
 
-public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValueBase> Scope, Scope<ICppType> TypeScope);
+public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValue> Scope, Scope<ICppType> TypeScope);
 
 
 /// <summary>
@@ -44,32 +44,32 @@ public static class Stage2Parser
 {
 
 
-    public static Scope<ICppValueBase> CreateBaseScope(TextWriter? stdOut = null)
+    public static Scope<ICppValue> CreateBaseScope(TextWriter? stdOut = null)
     {
         stdOut ??= Console.Out;
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
 
         var print = new CppCallableValue(scope);
         scope.TryBindSymbol("print", print);
         
         print.AddOverload(new CppAction<CppInt32Value>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppInt64Value>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppBoolValue>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppInt64ValueT>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppBoolValueT>("print", stdOut.WriteLine));
         print.AddOverload(new CppAction<CppStringValue>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppCharValue>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppCharValueT>("print", stdOut.WriteLine));
         
         scope.BindFunction(new CppAction<CppInt32Value>("print_int", stdOut.WriteLine));
-        scope.BindFunction(new CppAction<CppInt64Value>("print_long", stdOut.WriteLine));
-        scope.BindFunction(new CppAction<CppBoolValue>("print_bool", b => stdOut.WriteLine(b.Value ? "1" : "0" )));
+        scope.BindFunction(new CppAction<CppInt64ValueT>("print_long", stdOut.WriteLine));
+        scope.BindFunction(new CppAction<CppBoolValueT>("print_bool", b => stdOut.WriteLine(b.Value ? "1" : "0" )));
         scope.BindFunction(new CppAction<CppStringValue>("print_string", s => stdOut.WriteLine(s.Value)));
-        scope.BindFunction(new CppAction<CppCharValue>("print_char", stdOut.WriteLine));
+        scope.BindFunction(new CppAction<CppCharValueT>("print_char", stdOut.WriteLine));
         
         return scope;
     }
 
 
-    public static Stage2SymbolTree ParseProgram(Stage1SymbolTree program, Scope<ICppValueBase> scope)
+    public static Stage2SymbolTree ParseProgram(Stage1SymbolTree program, Scope<ICppValue> scope)
     {
         // TODO: TopLevel statements must be collected and initialization must happen before any user code is executed
         return new Stage2SymbolTree(
@@ -81,7 +81,7 @@ public static class Stage2Parser
         );
     }
 
-    public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValueBase> scope, Scope<ICppType> typeScope)
+    public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         return statement.Match<Stage2Statement>(
             e => e, // TODO: I think expressions should not be allowed here
@@ -99,7 +99,7 @@ public static class Stage2Parser
 
     public static Stage2VarDefinition ParseVarDefinition(
         AstVarDefinition definition, 
-        Scope<ICppValueBase> scope,
+        Scope<ICppValue> scope,
         Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
@@ -117,7 +117,7 @@ public static class Stage2Parser
 
     public static Stage2FuncDefinition ParseFuncDefinition(
         AstFuncDefinition definition,
-        Scope<ICppValueBase> scope,
+        Scope<ICppValue> scope,
         Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.ReturnType.Ident, out var returnType))

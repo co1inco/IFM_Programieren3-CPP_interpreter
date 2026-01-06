@@ -20,7 +20,7 @@ public class ParseAssignmentTest
         //Arrange
         var value = new CppInt32Value(0);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         scope.TryBindSymbol("test", value);
         
         var ast = AstAssignment(
@@ -46,7 +46,7 @@ public class ParseAssignmentTest
         var assignmentOperator = Substitute.For<ICppFunction>();
         assignmentOperator.Name.Returns("operator=");
         assignmentOperator
-            .When(x => x.Invoke(Arg.Any<ICppValueBase>(), Arg.Any<ICppValueBase[]>()))
+            .When(x => x.Invoke(Arg.Any<ICppValue>(), Arg.Any<ICppValue[]>()))
             .Do((_ => {}));
         
         var type = Substitute.For<ICppType>();
@@ -57,10 +57,10 @@ public class ParseAssignmentTest
             assignmentOperator
         ]);
         
-        var value =  Substitute.For<ICppValueBase>();
+        var value =  Substitute.For<ICppValue>();
         value.GetCppType.Returns(type);
         
-        var scope = new Scope<ICppValueBase>();
+        var scope = new Scope<ICppValue>();
         scope.TryBindSymbol("test", value);
         
         assignmentOperator.InstanceType.Returns(type);
@@ -76,7 +76,7 @@ public class ParseAssignmentTest
         var result = expr.Eval(scope);
         
         //Assert
-        assignmentOperator.Received(1).Invoke(Arg.Any<ICppValueBase>(), Arg.Any<ICppValueBase[]>());
+        assignmentOperator.Received(1).Invoke(Arg.Any<ICppValue>(), Arg.Any<ICppValue[]>());
     }
 
 }
