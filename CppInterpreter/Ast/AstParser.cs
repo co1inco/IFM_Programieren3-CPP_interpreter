@@ -110,7 +110,7 @@ public static class AstParser
     {
         if (ctx.brace is {} expr) return ParseExpression(expr);
         if (ctx.literal() is { } literal) return ParseLiteral(literal);
-        if (ctx.atom() is { } atom) return ParseAtom(atom);
+        if (ctx.memberExpr is not null) return ParseMemberAccess(ctx);
         // if (ctx.assignment() is { } assignment) return ParseAssignment(assignment);
         if (ctx is { left: { } left, right: { } right })
         {
@@ -124,11 +124,27 @@ public static class AstParser
         if (ctx.func is { } func) return ParseFunctionCall(func, ctx.funcParameters());
         if (ctx.unary is { } unary) return ParseUnaryOp(ctx.expression()[0], unary);
         if (ctx.suffix is { } suffix) return ParseSuffixOp(ctx.expression()[0], suffix);
+        if (ctx.atom() is { } atom) return ParseAtom(atom);
         
         throw new UnexpectedAntlrStateException(ctx, "Unknown expression variation");
     }
 
     public static AstAtom ParseAtom(AtomContext ctx) => new AstAtom(ctx.GetText(), ctx);
+
+    public static AstMemberAccess ParseMemberAccess(ExpressionContext ctx)
+    {
+        if (ctx.memberExpr is not { } instance)
+            throw new ArgumentException("Must specify memberExpr", nameof(ctx));
+        
+        if (ctx.memberAtom is not { } member)
+            throw new ArgumentException("Must specify memberAtom", nameof(ctx));
+
+        var memberAccess = ctx.memberAccess;
+        if (memberAccess.Text != ".")
+            throw new UnexpectedAntlrStateException(memberAccess, $"Unsupported member access '{memberAccess.Text}'");
+        
+        return new AstMemberAccess(ParseExpression(instance), ParseAtom(member), ctx);
+    }
     
     public static AstBinOp ParseLogicBinOp(ExpressionContext left, ExpressionContext right, IToken logicOperator) =>
         new(ParseExpression(left), ParseExpression(right), logicOperator.Text switch

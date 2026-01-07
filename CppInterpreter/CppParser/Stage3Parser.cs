@@ -559,7 +559,7 @@ public class Stage3Parser
 
     public static ExpressionResult ParseMemberAccess(AstMemberAccess memberAccess, Scope<ICppValue> scope)
     {
-        var value = ParseExpression(memberAccess.Value, scope);
+        var value = ParseExpression(memberAccess.Instance, scope);
 
         var flags = CppMemberBindingFlags.Public | CppMemberBindingFlags.Instance;
         if (value.ResultType.GetMember(memberAccess.Member.Value, flags) is not {} member)

@@ -181,7 +181,7 @@ public partial class AstExpression : OneOfBase<
 }
 
 public record AstMemberAccess(
-    AstExpression Value,
+    AstExpression Instance,
     AstAtom Member,
     AstMetadata Metadata
 ) : IAstNode;
