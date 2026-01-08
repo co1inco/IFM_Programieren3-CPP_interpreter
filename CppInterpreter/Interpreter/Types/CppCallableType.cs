@@ -32,4 +32,5 @@ public class CppCallableType : ICppType
     }
 
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => [];
+    public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags) => [];
 }

@@ -10,7 +10,8 @@ public enum CppMemberBindingFlags
     Public = 1,
     NonPublic = 2,
     Static = 4,
-    Instance = 8
+    Instance = 8,
+    PublicInstance = 1 | 8
 }
 
 public interface ICppValue

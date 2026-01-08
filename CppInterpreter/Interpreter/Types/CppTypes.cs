@@ -72,7 +72,11 @@ public interface ICppType : IEquatable<ICppType>
             .FirstOrDefault(m => m.Name == name);
 
     // MethodInfo useful for implementing the interpreter?
+    IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags);
     // IEnumerable<CppMethodInfo> GetFunctions(CppMemberBindingFlags flags) => throw new NotImplementedException();
+    CppMemberFunctionInfo? GetFunction(string name, CppMemberBindingFlags flags) => 
+        GetFunctions(flags).FirstOrDefault(m => m.Name == name);
+    
 }
 
 public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICppMemberInfo
@@ -84,6 +88,29 @@ public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICpp
     public ICppType MemberType => _dummyValue.GetCppType;
 
     public ICppValue GetValue(ICppValue instance) => new CppCallableValue(instance, functions);
+
+    public ICppValue Invoke(ICppValue? instance, params ICppValue[] args)
+    {
+        var overload = GetOverload(instance?.GetCppType, args.Select(x => x.GetCppType));
+        if (overload is null)
+            throw new Exception($"Function '{Name}' has no matching overload'");
+
+        return overload.Invoke(instance, args);
+    }
+
+    public ICppFunction? GetOverload(ICppType? instance, IEnumerable<ICppType> args) =>
+        functions.FirstOrDefault(x =>
+            SameInstanceType(x.InstanceType, instance)
+            && x.ParameterTypes
+                .ZipFill(args.Select(y => y))
+                .All(y => y.Left is not null && y.Left.Type.Equals(y.Right)));
+
+    private bool SameInstanceType(ICppType? a, ICppType? b)
+    {
+        if (a is null)
+            return b is null;
+        return a.Equals(b);
+    }
 }
 
 public abstract class CppPrimitiveType : ICppType
@@ -121,6 +148,13 @@ public abstract class CppPrimitiveType : ICppType
     // TODO: Implement accessibility
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => _members;
 
+    public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags)
+    {
+        foreach (var function in Functions.GroupBy(x => x.Name))
+        {
+            yield return new CppMemberFunctionInfo(function.Key, function.ToArray());
+        }
+    }
 }
 
 // TODO: Make all types singletons / always use CppTypes.<type> 

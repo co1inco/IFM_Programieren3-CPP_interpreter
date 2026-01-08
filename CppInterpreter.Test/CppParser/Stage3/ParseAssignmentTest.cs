@@ -53,9 +53,9 @@ public class ParseAssignmentTest
         type.Name.Returns("dummy");
         type.Equals(type).Returns(true);
         type.Equals(CppTypes.Int32).Returns(true);
-        type.Functions.Returns([
-            assignmentOperator
-        ]);
+        type.GetFunction("operator=", CppMemberBindingFlags.PublicInstance)
+            .Returns(new CppMemberFunctionInfo("operator=", [assignmentOperator]));
+
         
         var value =  Substitute.For<ICppValue>();
         value.GetCppType.Returns(type);

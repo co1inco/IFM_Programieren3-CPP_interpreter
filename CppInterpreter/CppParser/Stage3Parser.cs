@@ -385,14 +385,21 @@ public class Stage3Parser
         if (!target.ResultType.Equals(inner.ResultType))
             assignment.Throw($"Incompatible types. Expected '{target.ResultType}' got '{inner.ResultType}'");
         
+        
+        
         return new ExpressionResult(
             s =>
             {
                 var targetValue = target.Eval(s);
                 
                 var exprValue = inner.Eval(s);
-                var function = targetValue.GetCppType.GetMemberFunction("operator=", [exprValue.GetCppType]);
-
+                
+                // TODO: Can this be outside the interpreter or will this interfere with inheritance?
+                // TODO: change assignment resolution. The generated (all?) overloads should be resolved to base class assignments 
+                var function = targetValue.GetCppType.GetFunction("operator=", CppMemberBindingFlags.PublicInstance);
+                if (function is null)
+                    throw assignment.CreateException($"Type '{targetValue.GetCppType.Name}' can not be assigned to");
+                
                 function.Invoke(targetValue, [exprValue]);
                 return exprValue;
             },
@@ -475,11 +482,12 @@ public class Stage3Parser
                 _ => throw new ArgumentOutOfRangeException(nameof(a), a, null)
             }
         );
-        
-        // TODO: check if overloads exist
 
         if (!left.ResultType.TryGetMemberFunction($"operator{function}", out var memberFunc, right.ResultType))
             op.Throw($"Type '{left.ResultType}' does not have a matching operator '{function}'");
+        
+        if (left.ResultType.GetFunction($"operator{function}", CppMemberBindingFlags.PublicInstance) is not {} mb)
+            throw op.CreateException($"Type '{left.ResultType}' does not have a matching operator '{function}'");
         
         return new ExpressionResult(
             s =>
@@ -488,9 +496,9 @@ public class Stage3Parser
                 var r = right.Eval(s);
 
                 // Getting the function again could help with virtual members later?
-                var f = l.GetCppType.GetMemberFunction($"operator{function}", r.GetCppType);
-
-                return f.Invoke(l, [r]);
+                // var f = l.GetCppType.GetMemberFunction($"operator{function}", r.GetCppType);
+                // return f.Invoke(l, [r]);
+                return mb.Invoke(l, [r]);
             },
             memberFunc.ReturnType
         );
@@ -527,8 +535,10 @@ public class Stage3Parser
             {
                 var result = left.Eval(s);
                 // Getting the function again could help with virtual members later?
-                var f = result.GetCppType.GetMemberFunction($"operator{function}");
-
+                var f = result.GetCppType.GetFunction($"operator{function}", CppMemberBindingFlags.PublicInstance);
+                if (f is null)
+                    throw new UnreachableException();
+                
                 return f.Invoke(result, []);
             },
             memberFunc.ReturnType
@@ -541,19 +551,24 @@ public class Stage3Parser
         
         // Suffix operators expect an additional int parameter to differentiate from the prefix operator  
         var expr = ParseExpression(suffix.Expression, scope);
-        if (!expr.ResultType.TryGetMemberFunction(functionName, out var memberFunc, CppTypes.Int32))
-            suffix.Throw($"Type '{expr.ResultType}' does not implement suffix operator '{suffix.Operator.Value}'");
+        // if (!expr.ResultType.TryGetMemberFunction(functionName, out var memberFunc, CppTypes.Int32))
+        //     suffix.Throw($"Type '{expr.ResultType}' does not implement suffix operator '{suffix.Operator.Value}'");
+        
+        if (expr.ResultType.GetFunction(functionName, CppMemberBindingFlags.PublicInstance) is not {} function)
+            throw suffix.CreateException($"Type '{expr.ResultType}' does not implement suffix operator '{suffix.Operator.Value}'");
+        
+        if (function.GetOverload(expr.ResultType, [CppTypes.Int32]) is not  {} overload)
+            throw suffix.CreateException($"Type '{expr.ResultType}' does not have overload '{function}'");
         
         return new ExpressionResult(
             s =>
             {
                 var result = expr.Eval(s);
                 // Getting the function again could help with virtual members later?
-                var f = result.GetCppType.GetMemberFunction(functionName);
-
-                return f.Invoke(result, [ new CppInt32Value(0) ]);
+                
+                return overload.Invoke(result, [ new CppInt32Value(0) ]);
             },
-            memberFunc.ReturnType
+            overload.ReturnType
         );
     }
 

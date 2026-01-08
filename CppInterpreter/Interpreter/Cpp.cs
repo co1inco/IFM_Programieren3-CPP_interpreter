@@ -47,33 +47,33 @@ public static class CppTypeExtensions
     
     extension(ICppType type)
     {
-        public ICppFunction GetMemberFunction(string name, params ICppType[] parameters)
-        {
-            foreach (var function in type.Functions
-                         .Where(x => x.Name == name)
-                         .Where(x => x.InstanceType == type))
-            {
-                if (parameters is [] && function.InstanceType is null && function.ParameterTypes.Length == 0)
-                    return function;
-
-                if (parameters.ZipFill(function.ParameterTypes).All(x => x.Left?.Equals(x.Right?.Type) ?? false))
-                    return function;
-                
-                // if (parameters is [var instance, .. var param]
-                //     && instance == function.InstanceType
-                //     && param.ZipFill(function.ParameterTypes).All(x => x.Left == x.Right))
-                //     return function;
-                //
-                // if (function.InstanceType is null &&
-                //     function.ParameterTypes.ZipFill(parameters).All(x => x.Left == x.Right))
-                //     return function;
-            }
-
-            if (type.Functions.All(x => x.Name != name))
-                throw new Exception($"Type '{type}' does not have a function named  '{name}'");
-            
-            throw new Exception($"No matching function '{name}' found on type '{type}'");
-        }
+        // public ICppFunction GetMemberFunction(string name, params ICppType[] parameters)
+        // {
+        //     foreach (var function in type.Functions
+        //                  .Where(x => x.Name == name)
+        //                  .Where(x => x.InstanceType == type))
+        //     {
+        //         if (parameters is [] && function.InstanceType is null && function.ParameterTypes.Length == 0)
+        //             return function;
+        //
+        //         if (parameters.ZipFill(function.ParameterTypes).All(x => x.Left?.Equals(x.Right?.Type) ?? false))
+        //             return function;
+        //         
+        //         // if (parameters is [var instance, .. var param]
+        //         //     && instance == function.InstanceType
+        //         //     && param.ZipFill(function.ParameterTypes).All(x => x.Left == x.Right))
+        //         //     return function;
+        //         //
+        //         // if (function.InstanceType is null &&
+        //         //     function.ParameterTypes.ZipFill(parameters).All(x => x.Left == x.Right))
+        //         //     return function;
+        //     }
+        //
+        //     if (type.Functions.All(x => x.Name != name))
+        //         throw new Exception($"Type '{type}' does not have a function named  '{name}'");
+        //     
+        //     throw new Exception($"No matching function '{name}' found on type '{type}'");
+        // }
 
         public bool TryGetMemberFunction(string name, [NotNullWhen(true)] out ICppFunction? function, params ICppType[] parameters)
         {
@@ -141,6 +141,12 @@ public static class CppTypeExtensions
 
     extension<T>(IEnumerable<T> collection)
     {
+        /// <summary>
+        /// Variation of the <see cref="Enumerable.Zip"/> function
+        /// </summary>
+        /// <param name="other"></param>
+        /// <typeparam name="TR"></typeparam>
+        /// <returns></returns>
         public IEnumerable<(T? Left, TR? Right)> ZipFill<TR>(IEnumerable<TR> other)
         {
             using var l = collection.GetEnumerator();
