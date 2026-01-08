@@ -4,10 +4,6 @@ using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter;
 
-public class Cpp
-{
-    
-}
 
 public class InvalidTypeException : Exception
 {
@@ -30,88 +26,8 @@ public class InvalidParametersException(string message) : Exception(message)
 
 public static class CppTypeExtensions
 {
-    extension<T>(T instance) where T : ICppValueT
-    {
-
-        public ICppValue InvokeMemberFunc(string name, params ICppValue[] parameters)
-        {
-            // todo: look for the correct overload
-            var f = T.TypeOf.Functions.FirstOrDefault(x => x.Name == name);
-            if (f is null)
-                throw new Exception($"Function '{name}' not found");
-            return f.Invoke(instance, parameters);
-        }
-        
-        
-    }
     
-    extension(ICppType type)
-    {
-        public ICppValueT Construct<T>(params ICppValueT[] parameters) where T : ICppValueT
-        {
-            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
-            
-            var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
-                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
-            
-            if (ctor is null)
-                throw new Exception($"Constructor '{typeof(T)}' not found");
-            
-            return ctor.Construct(parameters);
-        }
-        
-        public ICppValueT Construct(params ICppValue[] parameters)
-        {
-            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
-            
-            var ctor = type.Constructor.FirstOrDefault(x =>
-                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
-            
-            if (ctor is null)
-                throw new Exception($"Constructor '{type}' not found");
-            
-            return ctor.Construct(parameters);
-        }
-        
-    }
 
-    extension<T>(IEnumerable<T> collection)
-    {
-        /// <summary>
-        /// Variation of the <see cref="Enumerable.Zip"/> function
-        /// </summary>
-        /// <param name="other"></param>
-        /// <typeparam name="TR"></typeparam>
-        /// <returns></returns>
-        public IEnumerable<(T? Left, TR? Right)> ZipFill<TR>(IEnumerable<TR> other)
-        {
-            using var l = collection.GetEnumerator();
-            using var r = other.GetEnumerator();
-
-            var lNext = l.MoveNext();
-            var rNext = r.MoveNext();
-            
-            while (lNext && rNext)
-            {
-                yield return (l.Current, r.Current);
-                
-                lNext = l.MoveNext();
-                rNext = r.MoveNext();
-            }
-
-            while (lNext)
-            {
-                yield return (l.Current, default(TR));
-                lNext = l.MoveNext();
-            }
-            
-            while (rNext)
-            {
-                yield return (default(T), r.Current);
-                rNext = r.MoveNext();
-            }
-        }
-    }
 
     extension(Scope<ICppValue> scope)
     {

@@ -73,6 +73,21 @@ public static class CppValues
         
         
     }
+    
+    extension<T>(T instance) where T : ICppValueT
+    {
+
+        public ICppValue InvokeMemberFunc(string name, params ICppValue[] parameters)
+        {
+            // todo: look for the correct overload
+            var f = T.TypeOf.Functions.FirstOrDefault(x => x.Name == name);
+            if (f is null)
+                throw new Exception($"Function '{name}' not found");
+            return f.Invoke(instance, parameters);
+        }
+        
+        
+    }
 }
 
 

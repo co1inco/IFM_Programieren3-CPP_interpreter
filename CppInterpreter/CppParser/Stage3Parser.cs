@@ -1,6 +1,7 @@
 ﻿using System.Collections.Immutable;
 using System.Diagnostics;
 using CppInterpreter.Ast;
+using CppInterpreter.Helper;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
@@ -609,6 +610,7 @@ public class Stage3Parser
         if (callable.ResultType is not CppCallableType callableType)
             throw functionCall.CreateException("Symbol is not a function");
 
+        // TODO: move this to CallableType
         var function = callableType.CallableFunctions.FirstOrDefault(x => x.ParameterTypes
             .ZipFill(arguments)
             .All(y => y.Left?.Type.Equals(y.Right?.ResultType) ?? false));

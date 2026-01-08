@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using CppInterpreter.Helper;
 using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter.Types;
@@ -60,6 +61,31 @@ public static class CppTypeExtensions
             return true;
         }
         
+        public ICppValueT Construct<T>(params ICppValueT[] parameters) where T : ICppValueT
+        {
+            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
+            
+            var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
+                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
+            
+            if (ctor is null)
+                throw new Exception($"Constructor '{typeof(T)}' not found");
+            
+            return ctor.Construct(parameters);
+        }
+        
+        public ICppValueT Construct(params ICppValue[] parameters)
+        {
+            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
+            
+            var ctor = type.Constructor.FirstOrDefault(x =>
+                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
+            
+            if (ctor is null)
+                throw new Exception($"Constructor '{type}' not found");
+            
+            return ctor.Construct(parameters);
+        }
     }
 }
 
