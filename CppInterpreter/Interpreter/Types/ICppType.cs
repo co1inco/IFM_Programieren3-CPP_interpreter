@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using CppInterpreter.Helper;
+using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter.Types;

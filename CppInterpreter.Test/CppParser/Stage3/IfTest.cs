@@ -1,6 +1,7 @@
 ﻿using CppInterpreter.Ast;
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using NSubstitute;

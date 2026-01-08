@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Interpreter.Values;
+﻿using CppInterpreter.Interpreter.Functions;
+using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter.Types;
 

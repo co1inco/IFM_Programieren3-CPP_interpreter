@@ -3,6 +3,7 @@ using System.Diagnostics;
 using CppInterpreter.Ast;
 using CppInterpreter.Helper;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using CSharpFunctionalExtensions;
@@ -63,7 +64,7 @@ public partial class StatementEvalResult : OneOfBase<
 public delegate StatementEvalResult InterpreterStatement(Scope<ICppValue> scope);
 public delegate ICppValue InterpreterExpression(Scope<ICppValue> scope);
 
-public class Stage3Parser
+public static class Stage3Parser
 {
 
     public static StatementResult ParseProgram(Stage2SymbolTree program, Scope<ICppValue> scope)
