@@ -3,6 +3,7 @@ using Antlr4.Runtime;
 using CppInterpreter.Ast;
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Values;
 using CppInterpreter.Test.Helper;
 using Language;
 using Shouldly;

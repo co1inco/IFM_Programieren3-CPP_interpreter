@@ -610,10 +610,8 @@ public class Stage3Parser
         if (callable.ResultType is not CppCallableType callableType)
             throw functionCall.CreateException("Symbol is not a function");
 
-        // TODO: move this to CallableType
-        var function = callableType.CallableFunctions.FirstOrDefault(x => x.ParameterTypes
-            .ZipFill(arguments)
-            .All(y => y.Left?.Type.Equals(y.Right?.ResultType) ?? false));
+        var function = callableType.CallableFunctions.FirstOrDefault(x => x
+            .ParametersMatch(arguments.Select(y => y.ResultType)));
         
         if (function is null)
             functionCall.Throw($"No matching overload: [{string.Join(", ", arguments.Select(x => x.ResultType.Name))}]");

@@ -34,10 +34,7 @@ public class CppCallableValue : ICppValueT
 
     public bool AddOverload(ICppFunction overload)
     {
-        if (_overloads
-            .Any(x => x.ParameterTypes
-                .ZipFill(overload.ParameterTypes)
-                .All(y => y.Right == y.Left)))
+        if (_overloads.Any(x => x.ParametersMatch(overload)))
             throw new Exception("Overloads already exists");
         
         _overloads.Add(overload);
@@ -45,10 +42,7 @@ public class CppCallableValue : ICppValueT
     }
     
     public ICppFunction? GetOverload(params IEnumerable<ICppType> parameters) =>
-        _overloads
-            .SingleOrDefault(x => x.ParameterTypes
-                .ZipFill(parameters)
-                .All(y => y.Left?.Type.Equals(y.Right) ?? false));
+        _overloads.SingleOrDefault(x => x.ParametersMatch(parameters));
 
     public ICppValue Invoke(params ICppValue[] parameters)
     {

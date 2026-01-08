@@ -66,7 +66,7 @@ public static class CppTypeExtensions
             var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
             
             var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
-                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
+                x.ParameterTypes.FunctionParametersMatch(parameterTypes));
             
             if (ctor is null)
                 throw new Exception($"Constructor '{typeof(T)}' not found");
@@ -79,7 +79,7 @@ public static class CppTypeExtensions
             var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
             
             var ctor = type.Constructor.FirstOrDefault(x =>
-                x.ParameterTypes.ZipFill(parameterTypes).All(y => y.Left == y.Right));
+                x.ParameterTypes.FunctionParametersMatch(parameterTypes));
             
             if (ctor is null)
                 throw new Exception($"Constructor '{type}' not found");
@@ -119,9 +119,7 @@ public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICpp
     public ICppFunction? GetOverload(ICppType? instance, IEnumerable<ICppType> args) =>
         functions.FirstOrDefault(x =>
             SameInstanceType(x.InstanceType, instance)
-            && x.ParameterTypes
-                .ZipFill(args.Select(y => y))
-                .All(y => y.Left is not null && y.Left.Type.Equals(y.Right)));
+            && x.ParametersMatch(args));
 
     private bool SameInstanceType(ICppType? a, ICppType? b)
     {
