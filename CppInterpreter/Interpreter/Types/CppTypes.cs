@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Numerics;
 using System.Reflection;
 using CppInterpreter.Interpreter.Values;
 
@@ -112,6 +113,41 @@ public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICpp
         return a.Equals(b);
     }
 }
+
+public static class CppTypeExtensions
+{
+    extension(ICppType type)
+    {
+
+        public bool TryGetFunctionOverload(
+            string name,
+            CppMemberBindingFlags flags,
+            ICppType[] args, 
+            [NotNullWhen(true)] out ICppFunction? function)
+        {
+            if (type.GetFunction(name, flags) is not { } functionInfo)
+            {
+                function = null;
+                return false;
+            }
+
+            var instanceType = ((flags & CppMemberBindingFlags.Instance) != 0)
+                ? type
+                : null;
+
+            if (functionInfo.GetOverload(instanceType, args) is not { } overload)
+            {
+                function = null;
+                return false;
+            }
+
+            function = overload;
+            return true;
+        }
+        
+    }
+}
+
 
 public abstract class CppPrimitiveType : ICppType
 {

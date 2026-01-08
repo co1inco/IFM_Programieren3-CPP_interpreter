@@ -420,7 +420,8 @@ public class Stage3Parser
         {
             // check if type has an overload for the operator. short-circuit is not supported for custom operators 
             var functionName = $"operator{BoolOpString(boolOp)}";
-            if (!left.ResultType.TryGetMemberFunction(functionName, out _, [ right.ResultType ]) )
+            
+            if (!left.ResultType.TryGetFunctionOverload(functionName, CppMemberBindingFlags.PublicInstance,  [ right.ResultType ], out _))
             {
 
                 return new ExpressionResult(s =>
@@ -482,8 +483,8 @@ public class Stage3Parser
                 _ => throw new ArgumentOutOfRangeException(nameof(a), a, null)
             }
         );
-
-        if (!left.ResultType.TryGetMemberFunction($"operator{function}", out var memberFunc, right.ResultType))
+        
+        if (!left.ResultType.TryGetFunctionOverload($"operator{function}", CppMemberBindingFlags.PublicInstance, [right.ResultType], out var memberFunc))
             op.Throw($"Type '{left.ResultType}' does not have a matching operator '{function}'");
         
         if (left.ResultType.GetFunction($"operator{function}", CppMemberBindingFlags.PublicInstance) is not {} mb)
@@ -527,7 +528,7 @@ public class Stage3Parser
         
         var left = ParseExpression(unary.Expression, scope);
         
-        if (!left.ResultType.TryGetMemberFunction($"operator{function}", out var memberFunc))
+        if (!left.ResultType.TryGetFunctionOverload($"operator{function}", CppMemberBindingFlags.PublicInstance, [], out var memberFunc))
             unary.Throw($"Type '{left.ResultType}' does not implement unary operator '{function}'");
 
         return new ExpressionResult(
