@@ -115,7 +115,7 @@ public class Stage3Parser
                         {
                             if (!definition.ReturnType.Equals(CppTypes.Void))
                                 throw new ParserException("Return statement missing", body.Metadata);
-                            return new CppVoidValueT();
+                            return new CppVoidValue();
                         }
                     );
             };
@@ -250,7 +250,7 @@ public class Stage3Parser
     public static StatementResult ParseReturn(AstReturn returnStmt, Scope<ICppValue> scope)
     {
         var expression = returnStmt.ReturnValue is null
-            ? new ExpressionResult(_ => new CppVoidValueT(), CppTypes.Void)
+            ? new ExpressionResult(_ => new CppVoidValue(), CppTypes.Void)
             : ParseExpression(returnStmt.ReturnValue, scope);
 
         return new StatementResult(
@@ -431,7 +431,7 @@ public class Stage3Parser
                     {
                         var l = left.Eval(s);
                         if (!l.ToBool())
-                            return new CppBoolValueT(false);
+                            return new CppBoolValue(false);
                         return right.Eval(s);
                     }
 
@@ -439,7 +439,7 @@ public class Stage3Parser
                     {
                         var l = left.Eval(s);
                         if (l.ToBool())
-                            return new CppBoolValueT(true);
+                            return new CppBoolValue(true);
                         return right.Eval(s);
                     }
 
@@ -593,7 +593,7 @@ public class Stage3Parser
             c => new ExpressionResult(_ => new CppCharValueT(c), CppTypes.Char),
             i => new ExpressionResult(_ => new CppInt32Value(i), CppTypes.Int32),
             s => new ExpressionResult(_ => new CppStringValue(s),  CppTypes.String) ,
-            b => new ExpressionResult(_ => new CppBoolValueT(b),  CppTypes.Boolean) 
+            b => new ExpressionResult(_ => new CppBoolValue(b),  CppTypes.Boolean) 
         );
 
     public static ExpressionResult ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValue> scope)

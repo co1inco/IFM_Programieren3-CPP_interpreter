@@ -28,7 +28,7 @@ public class FunctionCallTest
         function.InstanceType.Returns((ICppType?)null);
         function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([]);
-        function.Invoke(null, []).Returns(new CppVoidValueT());
+        function.Invoke(null, []).Returns(new CppVoidValue());
         
         var callable = new CppCallableValue(scope);
         callable.AddOverload(function);
@@ -41,7 +41,7 @@ public class FunctionCallTest
         var result = expr.Eval(scope);
 
         //Assert
-        result.ShouldBeOfType<CppVoidValueT>();
+        result.ShouldBeOfType<CppVoidValue>();
         function.Received(1).Invoke(null, []);
     }
     
@@ -62,7 +62,7 @@ public class FunctionCallTest
         function.InstanceType.Returns((ICppType?)null);
         function.ReturnType.Returns(CppTypes.Void);
         function.ParameterTypes.Returns([ new CppFunctionParameter("", CppTypes.Int32, false) ]);
-        function.Invoke(null, Arg.Any<ICppValue[]>()).Returns(new CppVoidValueT());
+        function.Invoke(null, Arg.Any<ICppValue[]>()).Returns(new CppVoidValue());
         
         var callable = new CppCallableValue(scope);
         callable.AddOverload(function);
@@ -75,7 +75,7 @@ public class FunctionCallTest
         var result = expr.Eval(scope);
 
         //Assert
-        result.ShouldBeOfType<CppVoidValueT>();
+        result.ShouldBeOfType<CppVoidValue>();
         function.Received(1).Invoke(null, Arg.Is<ICppValue[]>( (ICppValue[] x) => x.Length == 1));
         
     }
@@ -135,7 +135,7 @@ public class FunctionCallTest
                 
                 value.ShouldBeOfType<CppInt32Value>().Value = 5;
                 
-                return new CppVoidValueT();
+                return new CppVoidValue();
             });
         
         var callable = new CppCallableValue(scope);
@@ -178,7 +178,7 @@ public class FunctionCallTest
                 
                 value.ShouldBeOfType<CppInt32Value>().Value = 5;
                 
-                return new CppVoidValueT();
+                return new CppVoidValue();
             });
         
         var callable = new CppCallableValue(scope);

@@ -8,13 +8,13 @@ public sealed class CppBoolType : CppPrimitiveType
     
     private static ICppFunction[] MemberFunctions() =>
     [
-        ..CppCommonOperators.EquatorOperators<CppBoolValueT, bool>(),
-        CppCommonOperators.PrimitiveAssignment<CppBoolValueT, bool>(),
+        ..CppCommonOperators.EquatorOperators<CppBoolValue, bool>(),
+        CppCommonOperators.PrimitiveAssignment<CppBoolValue, bool>(),
         // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator&&", 
         //     (a, b) => new CppBoolValue(a.Value && b.Value)),
         // new MemberFunction<CppBoolValue, CppBoolValue, CppBoolValue>("operator||", 
         //     (a, b) => new CppBoolValue(a.Value || b.Value))
-        new MemberFunction<CppBoolValueT, CppBoolValueT>("operator!", a => new CppBoolValueT(!a.Value))
+        new MemberFunction<CppBoolValue, CppBoolValue>("operator!", a => new CppBoolValue(!a.Value))
     ];
     
     private CppBoolType() : base("bool", MemberFunctions())
@@ -22,5 +22,5 @@ public sealed class CppBoolType : CppPrimitiveType
         
     }
 
-    public override ICppValue Create() => new CppBoolValueT(false);
+    public override ICppValue Create() => new CppBoolValue(false);
 }

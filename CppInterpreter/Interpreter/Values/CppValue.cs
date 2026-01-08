@@ -34,12 +34,7 @@ public interface ICppValueT : ICppValue
 
 public static class CppValues
 {
-    // private static void Test()
-    // {
-    //     typeof(int).GetMembers()
-    //     
-    //     BindingFlags
-    // }
+    
     
     extension(Scope<ICppValue> scope)
     {
@@ -71,6 +66,41 @@ public static class CppValues
             return true;
         } 
         
+        public int ExecuteFunction(string name = "main")
+        {
+            if (!scope.TryGetSymbol(name, out var value))
+                throw new Exception($"Function '{name}' not found");
+
+            if (value is not CppCallableValue callable)
+                throw new Exception($"Symbol '{name}'is not callable");
+
+            var result = callable.Invoke([]);
+
+            if (result is CppInt32Value returnCode)
+                return returnCode.Value;
+            return 0;
+        }
+
+        public void BindFunction(ICppFunction function, string? name = null)
+        {
+            name ??= function.Name;
+
+            if (scope.TryGetSymbol(name, out var value))
+            {
+                if (value is not CppCallableValue callable)
+                    throw new Exception($"Symbol '{name}' is not callable");
+                callable.AddOverload(function);
+            }
+            else
+            {
+                var callable = new CppCallableValue(scope);
+                if (!scope.TryBindSymbol(name, callable))
+                    throw new Exception($"Symbol '{name}' already exists");
+                
+                callable.AddOverload(function);
+                
+            }
+        }
         
     }
     
@@ -85,46 +115,13 @@ public static class CppValues
                 throw new Exception($"Function '{name}' not found");
             return f.Invoke(instance, parameters);
         }
-        
-        
     }
 }
 
 
-public struct CppVoidValueT : ICppValueT
-{
-    public static ICppType TypeOf => CppTypes.Void;
-    public ICppType GetCppType => TypeOf;
-
-    public string StringRep() => "(void)";
-    public bool ToBool() => false;
-}
 
 
-public interface ICppPrimitiveValueT<T, out TType> : ICppValueT
-{
-    public static abstract TType Create(T value);
-    public T Value { get; set; }
-};
 
 
-public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppValueT
-{
-    public ICppType GetCppType => TType.TypeOf;
 
-    public T Value { get; set; } = value;
-
-    public override string ToString() => Value?.ToString() ?? "null";
-    
-    public string StringRep() => Value?.ToString() ?? "(null)";
-}
-
-public sealed class CppBoolValueT(bool value)
-    : CppPrimitiveValue<bool, CppBoolValueT>(value)
-    , ICppPrimitiveValueT<bool, CppBoolValueT>
-{
-    public static ICppType TypeOf => CppTypes.Boolean;
-    public static CppBoolValueT Create(bool value) => new CppBoolValueT(value);
-    public bool ToBool() => Value;
-}
 

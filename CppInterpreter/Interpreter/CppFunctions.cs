@@ -32,7 +32,7 @@ public sealed class MemberAction<TInstance>(string name, Action<TInstance> actio
             throw new InvalidTypeException(TInstance.TypeOf, instance?.GetCppType);
         action(tInstance);
         
-        return new CppVoidValueT();
+        return new CppVoidValue();
     }
 }
 
@@ -55,7 +55,7 @@ public sealed class MemberAction<TInstance, TValue1>(string name, Action<TInstan
         
         action(tInstance, v1);
         
-        return new CppVoidValueT();
+        return new CppVoidValue();
     }
 }
 
@@ -117,7 +117,7 @@ public sealed class CppAction<TValue1>(string name, Action<TValue1> action) : IC
 
         action(v1);
         
-        return new CppVoidValueT();
+        return new CppVoidValue();
     }
 }
 

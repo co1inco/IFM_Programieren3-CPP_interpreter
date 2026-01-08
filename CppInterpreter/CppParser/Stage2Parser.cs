@@ -55,13 +55,13 @@ public static class Stage2Parser
         
         print.AddOverload(new CppAction<CppInt32Value>("print", stdOut.WriteLine));
         print.AddOverload(new CppAction<CppInt64ValueT>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppBoolValueT>("print", stdOut.WriteLine));
+        print.AddOverload(new CppAction<CppBoolValue>("print", stdOut.WriteLine));
         print.AddOverload(new CppAction<CppStringValue>("print", stdOut.WriteLine));
         print.AddOverload(new CppAction<CppCharValueT>("print", stdOut.WriteLine));
         
         scope.BindFunction(new CppAction<CppInt32Value>("print_int", stdOut.WriteLine));
         scope.BindFunction(new CppAction<CppInt64ValueT>("print_long", stdOut.WriteLine));
-        scope.BindFunction(new CppAction<CppBoolValueT>("print_bool", b => stdOut.WriteLine(b.Value ? "1" : "0" )));
+        scope.BindFunction(new CppAction<CppBoolValue>("print_bool", b => stdOut.WriteLine(b.Value ? "1" : "0" )));
         scope.BindFunction(new CppAction<CppStringValue>("print_string", s => stdOut.WriteLine(s.Value)));
         scope.BindFunction(new CppAction<CppCharValueT>("print_char", stdOut.WriteLine));
         

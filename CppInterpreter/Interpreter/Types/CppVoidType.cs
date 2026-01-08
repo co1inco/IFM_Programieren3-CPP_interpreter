@@ -8,8 +8,8 @@ public sealed class CppVoidType : CppPrimitiveType
     
     private CppVoidType() : base("void")
     {
-        Constructor = [ new ConstructorFunction<CppVoidValueT>(() => new CppVoidValueT() ) ];
+        Constructor = [ new ConstructorFunction<CppVoidValue>(() => new CppVoidValue() ) ];
     }
 
-    public override ICppValue Create() => new CppVoidValueT();
+    public override ICppValue Create() => new CppVoidValue();
 };

@@ -48,18 +48,18 @@ public static class CppCommonOperators
         where T : ICppPrimitiveValueT<TP, T>
         where TP : IEquatable<TP> =>
     [
-        new MemberFunction<T, T, CppBoolValueT>("operator==", (a, b) => new CppBoolValueT(a.Value.Equals(b.Value))),
-        new MemberFunction<T, T, CppBoolValueT>("operator!=", (a, b) => new CppBoolValueT(!a.Value.Equals(b.Value)))
+        new MemberFunction<T, T, CppBoolValue>("operator==", (a, b) => new CppBoolValue(a.Value.Equals(b.Value))),
+        new MemberFunction<T, T, CppBoolValue>("operator!=", (a, b) => new CppBoolValue(!a.Value.Equals(b.Value)))
     ];
     
     public static IEnumerable<ICppFunction> ComparisionOperators<T, TP>()
         where T : ICppPrimitiveValueT<TP, T>
         where TP : IComparable<TP> =>
     [
-        new MemberFunction<T, T, CppBoolValueT>("operator<", (a, b) => new CppBoolValueT(a.Value.CompareTo(b.Value) < 0)),
-        new MemberFunction<T, T, CppBoolValueT>("operator<=", (a, b) => new CppBoolValueT(a.Value.CompareTo(b.Value) <= 0)),
-        new MemberFunction<T, T, CppBoolValueT>("operator>", (a, b) => new CppBoolValueT(a.Value.CompareTo(b.Value) > 0)),
-        new MemberFunction<T, T, CppBoolValueT>("operator>=", (a, b) => new CppBoolValueT(a.Value.CompareTo(b.Value) >= 0))
+        new MemberFunction<T, T, CppBoolValue>("operator<", (a, b) => new CppBoolValue(a.Value.CompareTo(b.Value) < 0)),
+        new MemberFunction<T, T, CppBoolValue>("operator<=", (a, b) => new CppBoolValue(a.Value.CompareTo(b.Value) <= 0)),
+        new MemberFunction<T, T, CppBoolValue>("operator>", (a, b) => new CppBoolValue(a.Value.CompareTo(b.Value) > 0)),
+        new MemberFunction<T, T, CppBoolValue>("operator>=", (a, b) => new CppBoolValue(a.Value.CompareTo(b.Value) >= 0))
     ];
     
     public static ICppFunction PrimitiveAssignment<T, TP>() where T : ICppPrimitiveValueT<TP, T> => 
