@@ -2,7 +2,7 @@
 
 program : topLevelStatement*;
 
-replStatement : statement | expression;
+replStatement : statement | expression | topLevelStatement;
 
 topLevelStatement : functionDefinition
 		          | variableDefinition ';'
@@ -34,7 +34,7 @@ classDestructor : '~' ident=IDENTIFIER '(' ')' block;
 statement : returnStmt ';'
 		  | breakStmt ';'
 		  | continueStmt ';'
- 		  | functionDefinition
+// 		  | functionDefinition
 		  | variableDefinition ';'
 		  | ifStmt
 		  | whileStmt

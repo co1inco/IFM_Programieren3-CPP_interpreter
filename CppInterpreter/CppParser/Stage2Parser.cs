@@ -4,6 +4,7 @@ using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using OneOf;
+using OneOf.Types;
 
 namespace CppInterpreter.CppParser;
 
@@ -13,7 +14,10 @@ public record struct Default();
 public partial class Stage2Statement : OneOfBase<
     AstExpression, 
     Stage2VarDefinition,
-    Stage2FuncDefinition>
+    Stage2FuncDefinition,
+    AstStatement,
+    None
+>
 {
     
 }
@@ -80,6 +84,20 @@ public static class Stage2Parser
             scope,
             program.Scope
         );
+    }
+
+    public static Stage2Statement ParseReplStatement(Stage1Statement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    {
+        if (statement.TryPickT1(out _, out var astStmt))
+            return new None();
+        
+        if (astStmt.TryPickT0(out var expr, out _))
+            return expr;
+
+        if (astStmt.TryPickT2(out var func, out _))
+            return ParseFuncDefinition(func, scope, typeScope);
+
+        return astStmt;
     }
 
     public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)

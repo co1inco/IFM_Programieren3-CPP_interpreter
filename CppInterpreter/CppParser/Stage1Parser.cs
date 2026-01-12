@@ -2,6 +2,7 @@
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Types;
 using OneOf;
+using OneOf.Types;
 
 namespace CppInterpreter.CppParser;
 
@@ -13,6 +14,9 @@ public partial class Stage1Symbol : OneOfBase<AstStatement>
 }
 
 public record Stage1SymbolTree(Scope<ICppType> Scope, AstStatement[] Statements);
+
+[GenerateOneOf]
+public partial class Stage1Statement : OneOfBase<AstStatement, None> {} 
 
 
 /// <summary>
@@ -41,11 +45,8 @@ public class Stage1Parser
     public static Stage1SymbolTree ParseProgram(IEnumerable<AstStatement> statements, Scope<ICppType> scope) => 
         new(scope, statements.ToArray());
 
-
-    public static void ParseAssignment(AstAssignment assignment, Scope<ICppType> scope)
-    {
-        
-    }
+    public static Stage1Statement ParseRepl(AstStatement statement, Scope<ICppType> scope) =>
+        statement;
     
     
 }

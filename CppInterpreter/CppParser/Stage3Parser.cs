@@ -73,8 +73,11 @@ public static class Stage3Parser
             .Select(x => x.Match(
                 e => ParseExpression(e, scope).ToStatement(),
                 v => ParseVariableDefinition(v, scope),
-                f => BuildFunction(f, scope, program.TypeScope)
+                f => BuildFunction(f, scope, program.TypeScope),
+                s => throw s.CreateException("Statement can not be top level"),
+                none => null!
             ))
+            .Where(x => x is not null)
             .ToArray();
 
         return new StatementResult(s =>
@@ -88,6 +91,25 @@ public static class Stage3Parser
         }, []);
     }
 
+    public static StatementResult ParseReplStatement(Stage2Statement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    {
+        if (statement.TryPickT4(out var none, out var stmt))
+            return new StatementResult(_ => new None(), []);
+        
+        var parsedStatement = stmt.Match(
+            e => ParseExpression(e, scope).ToStatement(),
+            v => ParseVariableDefinition(v, scope),
+            f => BuildFunction(f, scope, typeScope),
+            s => ParseStatement(s, scope, typeScope)
+        );
+        
+        return new StatementResult(s =>
+        {
+            parsedStatement.Eval(s);
+            return new None();
+        }, []);
+    }
+    
     
     public static StatementResult BuildFunction(Stage2FuncDefinition definition, Scope<ICppValue> sc, Scope<ICppType> typeScope)
     {

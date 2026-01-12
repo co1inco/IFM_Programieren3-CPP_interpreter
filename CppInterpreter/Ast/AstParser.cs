@@ -87,8 +87,8 @@ public static class AstParser
             return ParseExpression(expr);
         if (ctx.variableDefinition() is { } varDef)
             return ParseVarDefinition(varDef);
-        if (ctx.functionDefinition() is { } funcDef)
-            return ParseFunctionDefinition(funcDef);
+        // if (ctx.functionDefinition() is { } funcDef)
+        //     return ParseFunctionDefinition(funcDef);
         if (ctx.ifStmt() is { } ifStmt)
             return ParseIf(ifStmt);
         if (ctx.whileStmt() is { } whileStmt)
@@ -103,6 +103,9 @@ public static class AstParser
             return ParseBreak(breakStmt);
         if (ctx.continueStmt() is { } continueStmt)
             return ParseContinue(continueStmt);
+        if (ctx.forStmt() is {} forStmt)
+            throw new UnexpectedAntlrStateException(ctx, "'for' loop not implemented");
+            
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
     }
     

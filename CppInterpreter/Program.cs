@@ -45,9 +45,9 @@ while (true)
         statement.Switch(
             stmt =>
             {
-                var s1 = Stage1Parser.ParseProgram([ stmt ], stage1Scope);
-                var s2 = Stage2Parser.ParseProgram(s1, stage2Scope);
-                var s3 = Stage3Parser.ParseProgram(s2, new Scope<ICppValue>(scope));
+                var s1 = Stage1Parser.ParseRepl(stmt, stage1Scope);
+                var s2 = Stage2Parser.ParseReplStatement(s1, stage2Scope, stage1Scope);
+                var s3 = Stage3Parser.ParseReplStatement(s2, new Scope<ICppValue>(scope), stage1Scope);
 
                 s3.Eval(scope);
             },
@@ -100,6 +100,8 @@ OneOf.OneOf<AstStatement, AstExpression, Quit> ReadUserInput()
                 return AstParser.ParseExpression(expr);
             if (stmt.statement() is { } statement)
                 return AstParser.ParseStatement(statement);
+            if (stmt.topLevelStatement() is { } topLevelStatement)
+                return AstParser.ParseTopLevelStatement(topLevelStatement);
             
             Console.WriteLine("Invalid input");
             line = "";

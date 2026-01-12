@@ -46,9 +46,20 @@ public partial class AstStatement : OneOfBase<
     AstBreak,
     AstContinue,
     AstCompoundTypeDefinition
->
+>, IAstNode
 {
-    
+    public AstMetadata Metadata => Match(
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata,
+        x => x.Metadata
+    );
 }
 
 public record AstBlock(
