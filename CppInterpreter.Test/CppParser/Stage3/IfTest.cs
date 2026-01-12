@@ -38,7 +38,7 @@ public class IfTest
         valueScope.BindFunction(testFunction, "test");
         
         //Act
-        var s3 = Stage3Parser.ParseIf(ast, parseScope, typeScope);
+        var s3 = Stage3StatementParser.ParseIf(ast, parseScope, typeScope);
         var result = s3.StatementEval(valueScope);
         
         //Assert
@@ -73,7 +73,7 @@ public class IfTest
         valueScope.BindFunction(testFunction, "test");
         
         //Act
-        var s3 = Stage3Parser.ParseIf(ast, parseScope, typeScope);
+        var s3 = Stage3StatementParser.ParseIf(ast, parseScope, typeScope);
         var result = s3.StatementEval(valueScope);
         
         //Assert
@@ -108,7 +108,7 @@ public class IfTest
         valueScope.BindFunction(testFunction, "test");
         
         //Act
-        var s3 = Stage3Parser.ParseIf(ast, parseScope, typeScope);
+        var s3 = Stage3StatementParser.ParseIf(ast, parseScope, typeScope);
         var result = s3.StatementEval(valueScope);
         
         //Assert

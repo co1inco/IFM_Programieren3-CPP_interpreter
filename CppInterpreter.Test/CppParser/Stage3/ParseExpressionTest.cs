@@ -24,7 +24,7 @@ public class ParseExpressionTest
         var scope = new Scope<ICppValue>();
         
         //Act
-        var expr = Stage3Parser.ParseExpression(ast, scope);
+        var expr = Stage3ExpressionParser.ParseExpression(ast, scope);
         var result = expr.Eval(scope);
         
         //Assert

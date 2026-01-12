@@ -37,7 +37,7 @@ public class VariableAssignment
             null);
 
         //Act / Assert
-        Should.Throw<ParserException>(() => Stage3Parser.ParseVariableDefinition(ast, scope, typeScope));
+        Should.Throw<ParserException>(() => Stage3StatementParser.ParseVariableDefinition(ast, scope, typeScope));
             // .BaseMessage.ShouldBe($"Declaration of reference variable 'test' required an initializer");
         
     }
@@ -61,7 +61,7 @@ public class VariableAssignment
         var parseScope = new Scope<ICppValue>(scope);
         
         //Act / Assert 
-        var expr =  Stage3Parser.ParseVariableDefinition(ast, parseScope, typeScope);
+        var expr =  Stage3StatementParser.ParseVariableDefinition(ast, parseScope, typeScope);
         expr.StatementEval(scope);
 
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();

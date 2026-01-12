@@ -34,7 +34,7 @@ public class MemberAccessTest
         valueScope.TryBindSymbol("value", value);
         
         //Act
-        var s3 = Stage3Parser.ParseExpression(ast, valueScope);
+        var s3 = Stage3ExpressionParser.ParseExpression(ast, valueScope);
 
         //Assert
 
@@ -57,7 +57,7 @@ public class MemberAccessTest
         valueScope.TryBindSymbol("value", value);
         
         //Act
-        var s3 = Stage3Parser.ParseExpression(ast, valueScope);
+        var s3 = Stage3ExpressionParser.ParseExpression(ast, valueScope);
         var result = s3.Eval(valueScope);
 
         //Assert

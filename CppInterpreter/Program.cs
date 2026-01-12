@@ -53,7 +53,7 @@ while (true)
             },
             expr =>
             {
-                var s3 = Stage3Parser.ParseExpression(expr, new Scope<ICppValue>(scope));
+                var s3 = Stage3ExpressionParser.ParseExpression(expr, new Scope<ICppValue>(scope));
                 var result = s3.Eval(scope);
                 Console.WriteLine($"<   {result.StringRep()}");
             }

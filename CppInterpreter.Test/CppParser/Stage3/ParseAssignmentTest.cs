@@ -30,7 +30,7 @@ public class ParseAssignmentTest
         );
         
         //Act
-        var expr = Stage3Parser.ParseAssignment(ast, scope);
+        var expr = Stage3ExpressionParser.ParseAssignment(ast, scope);
         var result = expr.Eval(scope);
         
         //Assert
@@ -73,7 +73,7 @@ public class ParseAssignmentTest
         );
         
         //Act
-        var expr = Stage3Parser.ParseAssignment(ast, scope);
+        var expr = Stage3ExpressionParser.ParseAssignment(ast, scope);
         var result = expr.Eval(scope);
         
         //Assert

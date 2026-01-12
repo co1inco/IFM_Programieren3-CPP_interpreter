@@ -18,7 +18,7 @@ public class ParseLiteralTest
         var scope = new Scope<ICppValue>();
         
         //Act
-        var expression = Stage3Parser.ParseLiteral(astInt);
+        var expression = Stage3ExpressionParser.ParseLiteral(astInt);
         var result = expression.Eval(scope);
 
         //Assert

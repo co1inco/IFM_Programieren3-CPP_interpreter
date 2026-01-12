@@ -22,6 +22,6 @@ public class AssignmentTest
         //Act
         
         //Assert
-        Should.Throw<ParserException>(() => Stage3Parser.ParseAssignment(ast, scope));
+        Should.Throw<ParserException>(() => Stage3ExpressionParser.ParseAssignment(ast, scope));
     }
 }
