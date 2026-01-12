@@ -84,7 +84,7 @@ public class Examples
         var s2 = Stage2Parser.ParseProgram(s1, valueScope);
         var s3= Stage3Parser.ParseProgram(s2, valueScope);
 
-        var _ = s3.Eval(valueScope);
+        var _ = s3.StatementEval(valueScope);
 
         var result = valueScope.ExecuteFunction("main");
         
@@ -114,7 +114,7 @@ public class Examples
         var s2 = Stage2Parser.ParseProgram(s1, valueScope);
         var s3= Stage3Parser.ParseProgram(s2, valueScope);
 
-        var _ = s3.Eval(valueScope);
+        var _ = s3.StatementEval(valueScope);
 
         var result = valueScope.ExecuteFunction("main");
         

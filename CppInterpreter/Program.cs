@@ -49,7 +49,7 @@ while (true)
                 var s2 = Stage2Parser.ParseReplStatement(s1, stage2Scope, stage1Scope);
                 var s3 = Stage3Parser.ParseReplStatement(s2, new Scope<ICppValue>(scope), stage1Scope);
 
-                s3.Eval(scope);
+                s3.StatementEval(scope);
             },
             expr =>
             {

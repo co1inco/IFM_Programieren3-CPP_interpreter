@@ -29,7 +29,7 @@ public class BlockScope
         var statement = Stage3Parser.ParseBlock(ast, scope, typeScope);
         
         //Act
-        var result = statement.Eval(scope);
+        var result = statement.StatementEval(scope);
 
         //Assert
         value.Value.ShouldBe(5);
@@ -55,7 +55,7 @@ public class BlockScope
         var statement = Stage3Parser.ParseBlock(ast, scope, typeScope);
         
         //Act
-        var result = statement.Eval(scope);
+        var result = statement.StatementEval(scope);
 
         //Assert
         value.Value.ShouldBe(true);

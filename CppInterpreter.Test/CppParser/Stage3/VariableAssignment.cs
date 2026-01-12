@@ -62,7 +62,7 @@ public class VariableAssignment
         
         //Act / Assert 
         var expr =  Stage3Parser.ParseVariableDefinition(ast, parseScope, typeScope);
-        expr.Eval(scope);
+        expr.StatementEval(scope);
 
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();
         var testVal = test.ShouldBeOfType<CppInt32Value>();

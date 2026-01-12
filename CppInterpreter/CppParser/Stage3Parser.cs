@@ -14,32 +14,22 @@ using Maybe = CSharpFunctionalExtensions.Maybe;
 namespace CppInterpreter.CppParser;
 
 
-public record StatementResult(
-    InterpreterStatement Eval,
+public record InterpreterStatement(
+    InterpreterStatementEval StatementEval,
     ImmutableArray<(ICppType Type, AstMetadata Return)> ReturnValues
 )
 {
-    public static implicit operator StatementResult(InterpreterStatement statement) =>
-        new StatementResult(statement, []);
+    public static implicit operator InterpreterStatement(InterpreterStatementEval statementEval) =>
+        new InterpreterStatement(statementEval, []);
 };
 
-public record ExpressionResult(
-    InterpreterExpression Eval,
-    ICppType ResultType)
-{
-    public StatementResult ToStatement() => new StatementResult(s =>
-    {
-        _ = Eval(s);
-        return new None();
-    }, []);
-}
+public delegate InterpreterStatementResult InterpreterStatementEval(Scope<ICppValue> scope);
 
-// TODO: instead of maybe returning a result, return an option that can also take continue and break
 [GenerateOneOf]
-public partial class StatementEvalResult : OneOfBase<
-    StatementEvalResult.Return,
-    StatementEvalResult.Continue,
-    StatementEvalResult.Break,
+public partial class InterpreterStatementResult : OneOfBase<
+    InterpreterStatementResult.Return,
+    InterpreterStatementResult.Continue,
+    InterpreterStatementResult.Break,
     None
 >
 {
@@ -61,13 +51,24 @@ public partial class StatementEvalResult : OneOfBase<
     }
 }
 
-public delegate StatementEvalResult InterpreterStatement(Scope<ICppValue> scope);
-public delegate ICppValue InterpreterExpression(Scope<ICppValue> scope);
+
+public record InterpreterExpressionResult(
+    InterpreterExpressionEval Eval,
+    ICppType ResultType)
+{
+    public InterpreterStatement ToStatement() => new InterpreterStatement(s =>
+    {
+        _ = Eval(s);
+        return new None();
+    }, []);
+}
+
+public delegate ICppValue InterpreterExpressionEval(Scope<ICppValue> scope);
 
 public static class Stage3Parser
 {
 
-    public static StatementResult ParseProgram(Stage2SymbolTree program, Scope<ICppValue> scope)
+    public static InterpreterStatement ParseProgram(Stage2SymbolTree program, Scope<ICppValue> scope)
     {
         var statements = program.Statement
             .Select(x => x.Match(
@@ -80,21 +81,21 @@ public static class Stage3Parser
             .Where(x => x is not null)
             .ToArray();
 
-        return new StatementResult(s =>
+        return new InterpreterStatement(s =>
         {
             foreach (var statement in statements)
             {
-                statement.Eval(s);
+                statement.StatementEval(s);
             }
 
             return new None();
         }, []);
     }
 
-    public static StatementResult ParseReplStatement(Stage2Statement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    public static InterpreterStatement ParseReplStatement(Stage2Statement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         if (statement.TryPickT4(out var none, out var stmt))
-            return new StatementResult(_ => new None(), []);
+            return new InterpreterStatement(_ => new None(), []);
         
         var parsedStatement = stmt.Match(
             e => ParseExpression(e, scope).ToStatement(),
@@ -103,15 +104,15 @@ public static class Stage3Parser
             s => ParseStatement(s, scope, typeScope)
         );
         
-        return new StatementResult(s =>
+        return new InterpreterStatement(s =>
         {
-            parsedStatement.Eval(s);
+            parsedStatement.StatementEval(s);
             return new None();
         }, []);
     }
     
     
-    public static StatementResult BuildFunction(Stage2FuncDefinition definition, Scope<ICppValue> sc, Scope<ICppType> typeScope)
+    public static InterpreterStatement BuildFunction(Stage2FuncDefinition definition, Scope<ICppValue> sc, Scope<ICppType> typeScope)
     {
         definition.Function.BuildBody(definition.Closure, (body, scope) =>
         {
@@ -130,7 +131,7 @@ public static class Stage3Parser
 
             return s =>
             {
-                return bodyStatement.Eval(s)
+                return bodyStatement.StatementEval(s)
                     .ThrowIfLoopControl()
                     .Match(
                         r => r.Value,
@@ -144,12 +145,12 @@ public static class Stage3Parser
             };
         });
 
-        return new StatementResult(_ => new None(), []);
+        return new InterpreterStatement(_ => new None(), []);
     }
 
-    public static StatementResult ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    public static InterpreterStatement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        return statement.Match<StatementResult>(
+        return statement.Match<InterpreterStatement>(
             e => ParseExpression(e, scope).ToStatement(),
             d => ParseVariableDefinition(d, scope, typeScope),
             f => throw f.CreateException("Functions must be placed at top level"),
@@ -163,7 +164,7 @@ public static class Stage3Parser
         );
     }
 
-    public static StatementResult ParseIf(AstIf ifStmt, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    public static InterpreterStatement ParseIf(AstIf ifStmt, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         var branches = ifStmt.Branches
             .Select(x => (
@@ -179,34 +180,34 @@ public static class Stage3Parser
             .SelectMany(x => x.ReturnValues)
             .ToImmutableArray();
 
-        return new StatementResult(
+        return new InterpreterStatement(
             s =>
             {
                 foreach (var (condition, body) in branches)
                 {
                     var result = condition.Eval(s);
                     if (result.ToBool()) 
-                        return body.Eval(s);
+                        return body.StatementEval(s);
                 }
 
-                return elseBlock.Eval(s);
+                return elseBlock.StatementEval(s);
             }, 
             returnValues);
     }
 
-    public static StatementResult ParseWhile(AstWhile whileStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    public static InterpreterStatement ParseWhile(AstWhile whileStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         var condition = ParseExpression(whileStatement.Condition, scope);
         var body = ParseBlock(whileStatement.Body, scope, typeScope);
 
         return body with { 
-            Eval = s =>
+            StatementEval = s =>
             {
                 if (whileStatement.DoWhile)
                 {
                     do
                     {
-                        var result = body.Eval(s);
+                        var result = body.StatementEval(s);
 
                         if (result.TryPickT0(out var r, out var rem1))
                             return r;
@@ -218,7 +219,7 @@ public static class Stage3Parser
                 {
                     while (condition.Eval(s).ToBool())
                     {
-                        var result = body.Eval(s);
+                        var result = body.StatementEval(s);
                         if (result.TryPickT0(out var r, out var rem1))
                             return r;
                         if (result.TryPickT2(out var b, out _))
@@ -231,19 +232,19 @@ public static class Stage3Parser
         };
     }
 
-    public static StatementResult ParseBreak(AstBreak breakStatement, Scope<ICppValue> scope)
+    public static InterpreterStatement ParseBreak(AstBreak breakStatement, Scope<ICppValue> scope)
     {
-        return new StatementResult(_ =>  new StatementEvalResult.Break(), []);
+        return new InterpreterStatement(_ =>  new InterpreterStatementResult.Break(), []);
     }
 
-    public static StatementResult ParseContinue(AstContinue continueStatement, Scope<ICppValue> scope)
+    public static InterpreterStatement ParseContinue(AstContinue continueStatement, Scope<ICppValue> scope)
     {
-        return new StatementResult(_ =>  new StatementEvalResult.Continue(), []);
+        return new InterpreterStatement(_ =>  new InterpreterStatementResult.Continue(), []);
     }
 
 
 
-    public static StatementResult ParseBlock(AstBlock block, Scope<ICppValue> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
+    public static InterpreterStatement ParseBlock(AstBlock block, Scope<ICppValue> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
         var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
             
@@ -253,13 +254,13 @@ public static class Stage3Parser
 
         var returns = stmt.SelectMany(x => x.ReturnValues).ToArray();
 
-        return new StatementResult(s =>
+        return new InterpreterStatement(s =>
             {
                 var blockScope = suppressBlockScope ? s : new Scope<ICppValue>(s);
 
                 foreach (var statement in stmt)
                 {
-                    var result = statement.Eval(blockScope);
+                    var result = statement.StatementEval(blockScope);
                     if (!result.IsNone)
                         return result;
                 }
@@ -270,19 +271,19 @@ public static class Stage3Parser
 
     }
 
-    public static StatementResult ParseReturn(AstReturn returnStmt, Scope<ICppValue> scope)
+    public static InterpreterStatement ParseReturn(AstReturn returnStmt, Scope<ICppValue> scope)
     {
         var expression = returnStmt.ReturnValue is null
-            ? new ExpressionResult(_ => new CppVoidValue(), CppTypes.Void)
+            ? new InterpreterExpressionResult(_ => new CppVoidValue(), CppTypes.Void)
             : ParseExpression(returnStmt.ReturnValue, scope);
 
-        return new StatementResult(
-            s => new StatementEvalResult.Return(expression.Eval(s)),
+        return new InterpreterStatement(
+            s => new InterpreterStatementResult.Return(expression.Eval(s)),
             [ (expression.ResultType, returnStmt.Metadata) ]
         );
     }
     
-    public static StatementResult ParseVariableDefinition(AstVarDefinition definition, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    public static InterpreterStatement ParseVariableDefinition(AstVarDefinition definition, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
             definition.Type.ThrowNotFound();
@@ -298,7 +299,7 @@ public static class Stage3Parser
             //TODO: refValue should not bind to temporary value (eg. return of function call
             var refValue = ParseExpression(definition.Initializer, scope);
             
-            return new StatementResult(s =>
+            return new InterpreterStatement(s =>
                 {
                     var value = refValue.Eval(s);
                 
@@ -317,7 +318,7 @@ public static class Stage3Parser
                 AstMetadata.Generated()),
                 scope);
         
-        return new StatementResult(s =>
+        return new InterpreterStatement(s =>
             {
                 var instance = type.Create();
                 if (!s.TryBindSymbol(definition.Ident.Value, instance))
@@ -329,7 +330,7 @@ public static class Stage3Parser
             }, []);
     }
     
-    public static StatementResult ParseVariableDefinition(Stage2VarDefinition definition, Scope<ICppValue> scope)
+    public static InterpreterStatement ParseVariableDefinition(Stage2VarDefinition definition, Scope<ICppValue> scope)
     {
         var initializer = definition.Initializer is null
             ? null
@@ -344,7 +345,7 @@ public static class Stage3Parser
             throw new Exception($"Variable '{definition.Name}' was already defined");
         
         // TODO: Stage2VarDefinition creation should happen in stage 2
-        return new StatementResult(s =>
+        return new InterpreterStatement(s =>
         {
             var instance = definition.Type.Create();
             if (!s.TryBindSymbol(definition.Name, instance))
@@ -356,7 +357,7 @@ public static class Stage3Parser
         }, []);
     }
 
-    public static ExpressionResult ParseAssignmentTargetExpression(AstExpression expression, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseAssignmentTargetExpression(AstExpression expression, Scope<ICppValue> scope)
     {
         if (expression.TryPickT1(out var atom, out var rem1))
             return ParseAtom(atom, scope);
@@ -366,8 +367,8 @@ public static class Stage3Parser
     }
     
     
-    public static ExpressionResult ParseExpression(AstExpression expression, Scope<ICppValue> scope) =>
-        expression.Match<ExpressionResult>(
+    public static InterpreterExpressionResult ParseExpression(AstExpression expression, Scope<ICppValue> scope) =>
+        expression.Match<InterpreterExpressionResult>(
             ParseLiteral,
             a => ParseAtom(a, scope),
             a => ParseAssignment(a, scope),
@@ -378,12 +379,12 @@ public static class Stage3Parser
             m => ParseMemberAccess(m, scope)
         );
 
-    public static ExpressionResult ParseAtom(AstAtom atom, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseAtom(AstAtom atom, Scope<ICppValue> scope)
     {
         if (!scope.TryGetSymbol(atom.Value, out var symbol))
             atom.Throw("Undefined value");
         
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s =>
             {
                 // Should not happen
@@ -396,7 +397,7 @@ public static class Stage3Parser
         );
     }
 
-    public static ExpressionResult ParseAssignment(AstAssignment assignment, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseAssignment(AstAssignment assignment, Scope<ICppValue> scope)
     {
         var inner = ParseExpression(assignment.Value, scope);
         var target = ParseAssignmentTargetExpression(assignment.Target, scope);
@@ -411,7 +412,7 @@ public static class Stage3Parser
         
         
         
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s =>
             {
                 var targetValue = target.Eval(s);
@@ -434,7 +435,7 @@ public static class Stage3Parser
         
 
 
-    public static ExpressionResult ParseBinOp(AstBinOp op, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseBinOp(AstBinOp op, Scope<ICppValue> scope)
     {
         var left = ParseExpression(op.Left, scope);
         var right = ParseExpression(op.Right, scope);
@@ -448,7 +449,7 @@ public static class Stage3Parser
             if (!left.ResultType.TryGetFunctionOverload(functionName, CppMemberBindingFlags.PublicInstance,  [ right.ResultType ], out _))
             {
 
-                return new ExpressionResult(s =>
+                return new InterpreterExpressionResult(s =>
                 {
                     if (boolOp == AstBinOpOperator.BoolOp.And)
                     {
@@ -514,7 +515,7 @@ public static class Stage3Parser
         if (left.ResultType.GetFunction($"operator{function}", CppMemberBindingFlags.PublicInstance) is not {} mb)
             throw op.CreateException($"Type '{left.ResultType}' does not have a matching operator '{function}'");
         
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s =>
             {
                 var l = left.Eval(s);
@@ -536,7 +537,7 @@ public static class Stage3Parser
         };
     }
 
-    public static ExpressionResult ParseUnaryOp(AstUnary unary, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseUnaryOp(AstUnary unary, Scope<ICppValue> scope)
     {
 
         var function = unary.Operator switch
@@ -555,7 +556,7 @@ public static class Stage3Parser
         if (!left.ResultType.TryGetFunctionOverload($"operator{function}", CppMemberBindingFlags.PublicInstance, [], out var memberFunc))
             unary.Throw($"Type '{left.ResultType}' does not implement unary operator '{function}'");
 
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s =>
             {
                 var result = left.Eval(s);
@@ -570,7 +571,7 @@ public static class Stage3Parser
         );
     }
 
-    public static ExpressionResult ParseSuffixOp(AstSuffix suffix, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseSuffixOp(AstSuffix suffix, Scope<ICppValue> scope)
     {
         var functionName = $"operator{suffix.Operator.Value}";
         
@@ -585,7 +586,7 @@ public static class Stage3Parser
         if (function.GetOverload(expr.ResultType, [CppTypes.Int32]) is not  {} overload)
             throw suffix.CreateException($"Type '{expr.ResultType}' does not have overload '{function}'");
         
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s =>
             {
                 var result = expr.Eval(s);
@@ -597,7 +598,7 @@ public static class Stage3Parser
         );
     }
 
-    public static ExpressionResult ParseMemberAccess(AstMemberAccess memberAccess, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseMemberAccess(AstMemberAccess memberAccess, Scope<ICppValue> scope)
     {
         var value = ParseExpression(memberAccess.Instance, scope);
 
@@ -605,21 +606,21 @@ public static class Stage3Parser
         if (value.ResultType.GetMember(memberAccess.Member.Value, flags) is not {} member)
             throw memberAccess.Member.CreateException($"Type '{value.ResultType.Name}'  does not have a member '{memberAccess.Member.Value}'");
         
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s => member.GetValue(value.Eval(s)),
             member.MemberType
         );
     }
     
-    public static ExpressionResult ParseLiteral(AstLiteral literal) => 
+    public static InterpreterExpressionResult ParseLiteral(AstLiteral literal) => 
         literal.Match(
-            c => new ExpressionResult(_ => new CppCharValueT(c), CppTypes.Char),
-            i => new ExpressionResult(_ => new CppInt32Value(i), CppTypes.Int32),
-            s => new ExpressionResult(_ => new CppStringValue(s),  CppTypes.String) ,
-            b => new ExpressionResult(_ => new CppBoolValue(b),  CppTypes.Boolean) 
+            c => new InterpreterExpressionResult(_ => new CppCharValueT(c), CppTypes.Char),
+            i => new InterpreterExpressionResult(_ => new CppInt32Value(i), CppTypes.Int32),
+            s => new InterpreterExpressionResult(_ => new CppStringValue(s),  CppTypes.String) ,
+            b => new InterpreterExpressionResult(_ => new CppBoolValue(b),  CppTypes.Boolean) 
         );
 
-    public static ExpressionResult ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValue> scope)
+    public static InterpreterExpressionResult ParseFunctionCall(AstFunctionCall functionCall, Scope<ICppValue> scope)
     {
         // TODO: check functionCall type here
         var callable = ParseExpression(functionCall.Function, scope);
@@ -642,7 +643,7 @@ public static class Stage3Parser
         //TODO: already have the type of the callable here and validate parameters / get overload
         // ParseExpression should return a dummy value or a type (callables should already know their functions)
 
-        return new ExpressionResult(
+        return new InterpreterExpressionResult(
             s =>
             {
                 var c = callable.Eval(s);

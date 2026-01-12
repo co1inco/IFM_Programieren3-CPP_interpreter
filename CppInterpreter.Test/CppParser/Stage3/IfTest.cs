@@ -39,7 +39,7 @@ public class IfTest
         
         //Act
         var s3 = Stage3Parser.ParseIf(ast, parseScope, typeScope);
-        var result = s3.Eval(valueScope);
+        var result = s3.StatementEval(valueScope);
         
         //Assert
         testFunction.Received(1).Invoke(null, FirstArgIs<ICppValue[]>(1));
@@ -74,7 +74,7 @@ public class IfTest
         
         //Act
         var s3 = Stage3Parser.ParseIf(ast, parseScope, typeScope);
-        var result = s3.Eval(valueScope);
+        var result = s3.StatementEval(valueScope);
         
         //Assert
         testFunction.Received(1).Invoke(null, FirstArgIs<ICppValue[]>(2));
@@ -109,7 +109,7 @@ public class IfTest
         
         //Act
         var s3 = Stage3Parser.ParseIf(ast, parseScope, typeScope);
-        var result = s3.Eval(valueScope);
+        var result = s3.StatementEval(valueScope);
         
         //Assert
         testFunction.Received(1).Invoke(null, FirstArgIs<ICppValue[]>(3));
