@@ -58,7 +58,8 @@ elseStmt : 'else' (ifStmt | innerBlock);
 
 whileStmt : 'while' '(' cond=expression ')' innerBlock;
 
-forStmt : 'for' '(' setup=statement? ';' cond=expression? ';' incr=expression? ')' innerBlock;
+forStmt : 'for' '(' setup=forStmtNestedStmt? ';' cond=expression? ';' incr=forStmtNestedStmt? ')' innerBlock;
+forStmtNestedStmt : variableDefinition | expression;
 
 doWhileStmt : 'do' block 'while' '(' cond=expression ')' ';';
 

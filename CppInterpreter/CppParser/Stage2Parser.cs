@@ -102,18 +102,16 @@ public static class Stage2Parser
 
     public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        return statement.Match<Stage2Statement>(
-            e => e, // TODO: I think expressions should not be allowed here
-            v => ParseVarDefinition(v, scope, typeScope),
-            f => ParseFuncDefinition(f, scope, typeScope),
-            b => throw b.CreateException("Unsupported top level statement"),
-            r => throw r.CreateException("Unsupported top level statement"),
-            i => throw i.CreateException("Unsupported top level statement"),
-            w => throw w.CreateException("Unsupported top level statement"),
-            w => throw w.CreateException("Unsupported top level statement"),
-            w => throw w.CreateException("Unsupported top level statement"),
-            c => throw new Exception("Class def in stage2. Should have ben handled in stage1")
-        );
+        if (statement.TryPickT0(out AstExpression e, out var r1))
+            return e;
+
+        if (r1.TryPickT0(out AstVarDefinition v, out var r2))
+            return ParseVarDefinition(v, scope, typeScope);
+
+        if (r2.TryPickT0(out AstFuncDefinition f, out _))
+            return ParseFuncDefinition(f, scope, typeScope);
+
+        throw statement.CreateException("Unsupported top level statement");
     }
 
     public static Stage2VarDefinition ParseVarDefinition(

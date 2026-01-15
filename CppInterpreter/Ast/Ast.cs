@@ -45,10 +45,12 @@ public partial class AstStatement : OneOfBase<
     AstWhile,
     AstBreak,
     AstContinue,
-    AstCompoundTypeDefinition
+    AstCompoundTypeDefinition,
+    AstFor
 >, IAstNode
 {
     public AstMetadata Metadata => Match(
+        x => x.Metadata,
         x => x.Metadata,
         x => x.Metadata,
         x => x.Metadata,
@@ -155,6 +157,14 @@ public record AstWhile(
     AstExpression Condition,
     AstBlock Body,
     bool DoWhile,
+    AstMetadata Metadata
+) : IAstNode;
+
+public record AstFor(
+    AstStatement Initializer,
+    AstExpression Condition,
+    AstStatement Incrementor,
+    AstBlock Body,
     AstMetadata Metadata
 ) : IAstNode;
 

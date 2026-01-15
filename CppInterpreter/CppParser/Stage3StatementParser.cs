@@ -172,7 +172,8 @@ public static class Stage3StatementParser
             w => ParseWhile(w, scope, typeScope),
             b => ParseBreak(b, scope),
             c => ParseContinue(c, scope),
-            c => throw c.CreateException("Class def in stage3. Should be handled in stage1")
+            c => throw c.CreateException("Class def in stage3. Should be handled in stage1"),
+            f => ParseFor(f, scope, typeScope)
         );
     }
 
@@ -247,6 +248,12 @@ public static class Stage3StatementParser
         );
     }
 
+    public static Stage3Statement ParseFor(AstFor forStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    {
+        throw new  NotImplementedException("For loop");
+    }
+    
+    
     public static Stage3Statement ParseBreak(AstBreak breakStatement, Scope<ICppValue> scope)
     {
         return new Stage3Statement(_ =>  new InterpreterStatementResult.Break(), []);

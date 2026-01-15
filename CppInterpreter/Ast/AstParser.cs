@@ -104,6 +104,7 @@ public static class AstParser
         if (ctx.continueStmt() is { } continueStmt)
             return ParseContinue(continueStmt);
         if (ctx.forStmt() is {} forStmt)
+            return ParseFor(forStmt);
             throw new UnexpectedAntlrStateException(ctx, "'for' loop not implemented");
             
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
@@ -437,6 +438,22 @@ public static class AstParser
         true,
         ctx);
 
+    public static AstFor ParseFor(ForStmtContext ctx) => new AstFor(
+        // ParseStatement(ctx.setup),
+        ParseForInnerStatement(ctx.setup),
+        ParseExpression(ctx.cond),
+        ParseForInnerStatement(ctx.incr),
+        ParseInnerBlock(ctx.innerBlock()),
+        ctx
+    );
+    
+    public static AstStatement ParseForInnerStatement(ForStmtNestedStmtContext ctx) 
+    {
+        if (ctx.variableDefinition() is { } vd) return ParseVarDefinition(vd);
+        if (ctx.expression() is { } expr) return ParseExpression(expr);
+        throw new UnexpectedAntlrStateException(ctx, $"Unexpected inner for statement");
+    }
+    
     public static AstBreak ParseBreak(BreakStmtContext ctx) => new AstBreak(ctx);
     public static AstContinue ParseContinue(ContinueStmtContext ctx) => new AstContinue(ctx);
     

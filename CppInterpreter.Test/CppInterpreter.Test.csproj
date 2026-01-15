@@ -31,6 +31,7 @@
 
     <ItemGroup>
       <ClCompile Include="Examples\tests\Check_01.cpp" />
+      <ClCompile Include="Examples\tests\pos\C01_for.cpp" />
       <ClCompile Include="Examples\tests\Test.cpp" />
       <None Include="Examples\tests\pos\C01_WhileBreak.cppx" />
     </ItemGroup>
