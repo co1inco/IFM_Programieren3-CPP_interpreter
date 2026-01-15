@@ -82,5 +82,96 @@ public class FunctionDefinitionTest
             x => x.Type.ShouldBeOfType<CppInt64Type>()
         );
     }
+
+    [TestMethod]
+    public void ParseFunction_MissingReturn()
+    {
+        //Arrange
+        var ast = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("int", false),
+            [ 
+                
+            ],
+            AstBlock([
+                AstIf(
+                    [
+                        AstIfBranch(AstLiteral(false), AstReturn(AstLiteral(5)))
+                    ], 
+                    null),
+                
+            ])
+        );
+
+        var stage1Scope = Stage1Parser.CreateBaseScope();
+        var scope = new Scope<ICppValue>();
+
+        //Act
+        var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        
+        //Assert
+        Should.Throw<ParserException>(() => Stage3StatementParser.BuildFunction(func, scope, stage1Scope))
+            .BaseMessage.ShouldContain("Function must return value of type");
+    }
     
+    [TestMethod]
+    public void ParseFunction_AllIfPathsReturn()
+    {
+        //Arrange
+        var ast = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("int", false),
+            [ 
+                
+            ],
+            AstBlock([
+                AstIf(
+                    [
+                        AstIfBranch(AstLiteral(false), AstReturn(AstLiteral(5)))
+                    ], 
+                    AstBlock([AstReturn(AstLiteral(5))])),
+            ])
+        );
+
+        var stage1Scope = Stage1Parser.CreateBaseScope();
+        var scope = new Scope<ICppValue>();
+
+        //Act
+        var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        
+        //Assert
+        Should.NotThrow(() => Stage3StatementParser.BuildFunction(func, scope, stage1Scope));
+    }
+    
+    [TestMethod]
+    public void ParseFunction_LoopNotCertainReturn()
+    {
+        //Arrange
+        var ast = AstFuncDefinition(
+            AstIdentifier("test"),
+            AstTypeIdentifier("int", false),
+            [ 
+                
+            ],
+            AstBlock([
+                AstWhile(
+                    //This test is technically statically resolvable to always return (not in scope of this project)
+                    AstLiteral(true),  
+                    [
+                        AstReturn(AstLiteral(5))
+                    ]),
+                
+            ])
+        );
+
+        var stage1Scope = Stage1Parser.CreateBaseScope();
+        var scope = new Scope<ICppValue>();
+
+        //Act
+        var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        
+        //Assert
+        Should.Throw<ParserException>(() => Stage3StatementParser.BuildFunction(func, scope, stage1Scope))
+            .BaseMessage.ShouldContain("Function must return value of type");
+    }
 }

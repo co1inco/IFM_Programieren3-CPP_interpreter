@@ -337,6 +337,9 @@ public static class GeneratedAstTreeBuilder
     public static AstBlock AstBlock(AstStatement[] statements, AstMetadata? m = null) => 
         new(statements, m ?? AstMetadata.Generated());
     
+    // public static AstBlock AstBlock(params AstStatement[] statements) => 
+    //     new(statements, m ?? AstMetadata.Generated());
+    
     public static AstFunctionDefinitionParameter AstFunctionDefinitionParameter(AstIdentifier ident, AstTypeIdentifier type, AstMetadata? m = null) => 
         new(
             ident, type, m ?? AstMetadata.Generated()
@@ -372,6 +375,12 @@ public static class GeneratedAstTreeBuilder
         new(left, right, op, m ?? AstMetadata.Generated());
     
     
+    public static AstWhile AstWhile(AstExpression condition, AstBlock body, AstMetadata? m = null) => 
+        new AstWhile(condition, body, false, m ?? AstMetadata.Generated());
+    
+    public static AstWhile AstWhile(AstExpression condition, AstStatement[] body, AstMetadata? m = null) => 
+        new AstWhile(condition, AstBlock(body), false, m ?? AstMetadata.Generated());
+    
     public static AstIf AstIf((AstExpression, AstBlock)[] branches, AstBlock? elseBranch, AstMetadata? m = null) =>
         new AstIf(
             branches,
@@ -391,4 +400,6 @@ public static class GeneratedAstTreeBuilder
     public static AstMemberAccess AstMemberAccess(AstExpression expression, string member, AstMetadata? m = null) => 
         new AstMemberAccess(expression, AstAtom(member), m ?? AstMetadata.Generated());
     
+    public static AstReturn AstReturn(AstExpression expression, AstMetadata? m = null) => 
+        new AstReturn(expression, m ??  AstMetadata.Generated());
 }

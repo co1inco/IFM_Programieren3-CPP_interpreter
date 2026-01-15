@@ -19,7 +19,7 @@ namespace CppInterpreter.CppParser;
 public static class Stage3Parser
 {
 
-    public static InterpreterStatement ParseProgram(Stage2SymbolTree program, Scope<ICppValue> scope)
+    public static Stage3Statement ParseProgram(Stage2SymbolTree program, Scope<ICppValue> scope)
     {
         var statements = program.Statement
             .Select(x => x.Match(
@@ -32,7 +32,7 @@ public static class Stage3Parser
             .Where(x => x is not null)
             .ToArray();
 
-        return new InterpreterStatement(s =>
+        return new Stage3Statement(s =>
         {
             foreach (var statement in statements)
             {
@@ -43,10 +43,10 @@ public static class Stage3Parser
         }, []);
     }
 
-    public static InterpreterStatement ParseReplStatement(Stage2Statement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    public static Stage3Statement ParseReplStatement(Stage2Statement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         if (statement.TryPickT4(out var none, out var stmt))
-            return new InterpreterStatement(_ => new None(), []);
+            return new Stage3Statement(_ => new None(), []);
         
         var parsedStatement = stmt.Match(
             e => Stage3ExpressionParser.ParseExpression(e, scope).ToStatement(),
@@ -55,7 +55,7 @@ public static class Stage3Parser
             s => Stage3StatementParser.ParseStatement(s, scope, typeScope)
         );
         
-        return new InterpreterStatement(s =>
+        return new Stage3Statement(s =>
         {
             parsedStatement.StatementEval(s);
             return new None();

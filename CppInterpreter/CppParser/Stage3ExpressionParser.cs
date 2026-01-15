@@ -14,7 +14,7 @@ public record InterpreterExpressionResult(
     InterpreterExpressionEval Eval,
     ICppType ResultType)
 {
-    public InterpreterStatement ToStatement() => new InterpreterStatement(s =>
+    public Stage3Statement ToStatement() => new Stage3Statement(s =>
     {
         _ = Eval(s);
         return new None();

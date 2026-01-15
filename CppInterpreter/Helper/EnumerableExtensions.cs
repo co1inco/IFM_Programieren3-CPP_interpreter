@@ -38,5 +38,15 @@ public static class EnumerableExtensions
                 rNext = r.MoveNext();
             }
         }
+        
+        
+        public void ForEach(Action<T> function)
+        {
+            foreach (var item in collection)
+            {
+                function(item);
+            }
+        }
+
     }
 }
