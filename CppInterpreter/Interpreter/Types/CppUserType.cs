@@ -78,7 +78,7 @@ public class CppUserType : ICppType
         builder(new Builder(this), _astNode, closure, typeScope);
     }
     
-    public void BuildMemberFunctions(Scope<ICppType> closure, Func<object> builder)
+    public void BuildMemberFunctions(Func<object> builder)
     {
         
     }

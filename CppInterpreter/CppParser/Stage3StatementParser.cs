@@ -159,7 +159,7 @@ public static class Stage3StatementParser
 
         return new Stage3Statement(_ => new None(), []);
     }
-
+    
     public static Stage3Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         return statement.Match<Stage3Statement>(

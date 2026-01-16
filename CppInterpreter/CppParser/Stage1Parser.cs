@@ -63,9 +63,10 @@ public class Stage1Parser
 
     public static Stage1CompoundTypeDefinition ParseCompoundTypeDefinition(AstCompoundTypeDefinition typeDefinition, Scope<ICppType> scope)
     {
-        return new Stage1CompoundTypeDefinition(
-            new CppUserType(typeDefinition.Ident.Value, typeDefinition)
-        );
+        var userType = new CppUserType(typeDefinition.Ident.Value, typeDefinition);
+        scope.TryBindSymbol(userType.Name, userType);
+        
+        return new Stage1CompoundTypeDefinition(userType);
     }
 
     public static AstStatement ParseStatement(AstStatement statement, Scope<ICppType> scope) => statement;

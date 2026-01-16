@@ -13,6 +13,30 @@ namespace CppInterpreter.Test.Interpreter;
 public class UserTypesTest
 {
 
+    [TestMethod]
+    public void RegisterNewType()
+    {
+        //Arrange
+        var ast = new AstCompoundTypeDefinition(
+            AstIdentifier("testType"),
+            [],
+            [],
+            [],
+            AstCompoundTypeDefinition.TypeKind.Class,
+            [],
+            null,
+            AstMetadata.Generated()
+        );
+
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var valueScope = new Scope<ICppValue>();
+
+        //Act
+        var s1 = Stage1Parser.ParseCompoundTypeDefinition(ast, typeScope);
+
+        //Assert
+        typeScope.TryGetSymbol("testType", out _).ShouldBeTrue();
+    }
 
     [TestMethod]
     public void WithField()

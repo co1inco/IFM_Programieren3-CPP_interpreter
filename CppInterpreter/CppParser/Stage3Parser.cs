@@ -28,7 +28,7 @@ public static class Stage3Parser
                 f => Stage3StatementParser.BuildFunction(f, scope, program.TypeScope),
                 s => throw s.CreateException("Statement can not be top level"),
                 none => null!,
-                c => throw new NotImplementedException()
+                ParseCompoundTypeDefinition
             ))
             .Where(x => x is not null)
             .ToArray();
@@ -54,7 +54,7 @@ public static class Stage3Parser
             v => Stage3StatementParser.ParseVariableDefinition(v, scope),
             f => Stage3StatementParser.BuildFunction(f, scope, typeScope),
             s => Stage3StatementParser.ParseStatement(s, scope, typeScope),
-            c => throw new NotImplementedException()
+            ParseCompoundTypeDefinition
         );
         
         return new Stage3Statement(s =>
@@ -63,7 +63,16 @@ public static class Stage3Parser
             return new None();
         }, []);
     }
-    
-    
+
+
+    public static Stage3Statement ParseCompoundTypeDefinition(Stage2CompoundTypeDefinition typeDefinition)
+    {
+        typeDefinition.Type.BuildMemberFunctions(() => null!);
+
+        return new Stage3Statement(
+            s => new None(), 
+            []
+        );
+    }
     
 }
