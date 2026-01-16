@@ -10,7 +10,6 @@ public interface ICppType : IEquatable<ICppType>
     string Name { get; }   
 
     ICppConstructor[] Constructor { get; }
-    ICppFunction[] Functions { get; }
     ICppConverter[] Converter { get; }
 
     public bool IsAssignableTo(ICppType other);

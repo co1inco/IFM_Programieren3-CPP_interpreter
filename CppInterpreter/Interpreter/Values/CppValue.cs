@@ -12,7 +12,8 @@ public enum CppMemberBindingFlags
     NonPublic = 2,
     Static = 4,
     Instance = 8,
-    PublicInstance = 1 | 8
+    PublicInstance = 1 | 8,
+    AnyInstance = 1 | 2 | 8
 }
 
 public interface ICppValue
@@ -111,7 +112,7 @@ public static class CppValues
         public ICppValue InvokeMemberFunc(string name, params ICppValue[] parameters)
         {
             // todo: look for the correct overload
-            var f = T.TypeOf.Functions.FirstOrDefault(x => x.Name == name);
+            var f = T.TypeOf.GetFunction(name, CppMemberBindingFlags.AnyInstance);
             if (f is null)
                 throw new Exception($"Function '{name}' not found");
             return f.Invoke(instance, parameters);
