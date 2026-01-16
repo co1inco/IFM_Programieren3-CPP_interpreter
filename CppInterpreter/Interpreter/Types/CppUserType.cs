@@ -10,6 +10,7 @@ public class CppUserType : ICppType
     private readonly AstCompoundTypeDefinition _astNode;
     private readonly List<MemberData> _members = [];
     private readonly List<MemberValue> _values = [];
+    private readonly List<MemberFunction> _functions = [];
     private readonly List<ICppFunction> _constructors = [];
     private ICppFunction? _defaultConstructor;
     
@@ -57,10 +58,19 @@ public class CppUserType : ICppType
             }
         }
     }
-
+    
     public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags)
     {
-        throw new NotImplementedException("get user type functions");
+        return _functions.GroupBy(x => x.Name)
+            .Select(x => new CppMemberFunctionInfo(
+                x.Key,
+                x.Where(y =>
+                        (y.Visibility == MemberVisibility.Public && flags.HasFlag(CppMemberBindingFlags.Public))
+                        ||
+                        (y.Visibility != MemberVisibility.Public && flags.HasFlag(CppMemberBindingFlags.NonPublic)))
+                    .Select(y => y.Function)
+                    .ToArray())
+        );
     }
 
     
@@ -90,9 +100,9 @@ public class CppUserType : ICppType
 
         public IEnumerable<MemberValue> Variables => instance._values;
         
-        public void AddFunction(string name, CppUserFunction func, MemberVisibility visibility)
+        public void AddFunction(string name, ICppFunction func, MemberVisibility visibility)
         {
-            throw new NotImplementedException("Add user type function");
+            instance._functions.Add(new MemberFunction(name, func, visibility));
         }
 
         public void AddConstructor(ICppFunction constructorFunction)
@@ -110,6 +120,8 @@ public class CppUserType : ICppType
     private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
 
     public record MemberValue(ICppMemberInfo MemberInfo, InterpreterExpressionResult? Initializer);
+    
+    private record MemberFunction(string Name, ICppFunction Function, MemberVisibility Visibility);
 }
 
 public enum MemberVisibility
@@ -124,7 +136,7 @@ public interface ICppUserTypeMemberBuilder
     void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility);
     IEnumerable<CppUserType.MemberValue> Variables { get; }
     
-    void AddFunction(string name, CppUserFunction func, MemberVisibility visibility);
+    void AddFunction(string name, ICppFunction func, MemberVisibility visibility);
 
     void AddConstructor(ICppFunction constructorFunction);
 }

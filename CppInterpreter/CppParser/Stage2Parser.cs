@@ -143,11 +143,19 @@ public static class Stage2Parser
                 );
             }
 
+            bool hasAssignOperator = false;
             foreach (var function in def.Functions)
             {
                 throw new NotImplementedException("member functions");
             }
 
+            if (!hasAssignOperator)
+            {
+                var f = new DefaultAssignmentOperator(typeDef.Type);
+                b.AddFunction(f.Name, f, MemberVisibility.Public);
+            }
+            
+            
             bool hasCopyConstructor = false;
             foreach (var constructor in def.Constructors)
             {
@@ -192,27 +200,7 @@ public static class Stage2Parser
 
             if (!hasCopyConstructor)
             {
-                var constructorFunction = new CppFunctionP<CppUserValue>(
-                    "ctor",
-                    (p) =>
-                    {
-                        if (p is not [CppUserValue other])
-                            throw new UnreachableException("Received invalid parameter");
-                        
-                        var instance = new CppUserValue(typeDef.Type);
-
-                        foreach (var variable in b.Variables)
-                        {
-                            // TODO: use the copy constructor instead
-                            instance.MemberValues[variable.MemberInfo.Name] =
-                                other.MemberValues[variable.MemberInfo.Name].Copy();
-                        }
-                        return instance;
-                    },
-                    typeDef.Type,
-                    [ new CppFunctionParameter("", typeDef.Type, true) ]
-                );
-                
+                var constructorFunction = new DefaultCopyConstructor(typeDef.Type);
                 b.AddConstructor(constructorFunction);
                 scope.BindFunction(constructorFunction, typeDef.Type.Name);
             }
