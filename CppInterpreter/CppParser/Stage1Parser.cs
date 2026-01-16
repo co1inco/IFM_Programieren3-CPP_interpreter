@@ -8,15 +8,20 @@ namespace CppInterpreter.CppParser;
 
 
 [GenerateOneOf]
-public partial class Stage1Symbol : OneOfBase<AstStatement>
+public partial class Stage1Symbol : OneOfBase<
+    AstStatement,
+    Stage1CompoundTypeDefinition
+>
 {
     
 }
 
-public record Stage1SymbolTree(Scope<ICppType> Scope, AstStatement[] Statements);
+public record Stage1SymbolTree(Scope<ICppType> Scope, Stage1Symbol[] Statements);
 
 [GenerateOneOf]
-public partial class Stage1Statement : OneOfBase<AstStatement, None> {} 
+public partial class Stage1Statement : OneOfBase<AstStatement, None> {}
+
+public record Stage1CompoundTypeDefinition(CppUserType Type);
 
 
 /// <summary>
@@ -43,10 +48,26 @@ public class Stage1Parser
         ParseProgram(program.Statements, scope);
     
     public static Stage1SymbolTree ParseProgram(IEnumerable<AstStatement> statements, Scope<ICppType> scope) => 
-        new(scope, statements.ToArray());
+        new(
+            scope, 
+            statements.Select(Stage1Symbol (x) =>
+                {
+                    if (x.TryPickT9(out AstCompoundTypeDefinition compound, out _))
+                        return ParseCompoundTypeDefinition(compound, scope);
+                    return ParseStatement(x, scope);
+                })
+            .ToArray());
 
     public static Stage1Statement ParseRepl(AstStatement statement, Scope<ICppType> scope) =>
         statement;
-    
-    
+
+    public static Stage1CompoundTypeDefinition ParseCompoundTypeDefinition(AstCompoundTypeDefinition typeDefinition, Scope<ICppType> scope)
+    {
+        return new Stage1CompoundTypeDefinition(
+            new CppUserType(typeDefinition.Ident.Value, typeDefinition)
+        );
+    }
+
+    public static AstStatement ParseStatement(AstStatement statement, Scope<ICppType> scope) => statement;
+
 }

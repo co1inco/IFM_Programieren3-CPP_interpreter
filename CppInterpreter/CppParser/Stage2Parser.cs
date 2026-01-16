@@ -16,7 +16,8 @@ public partial class Stage2Statement : OneOfBase<
     Stage2VarDefinition,
     Stage2FuncDefinition,
     AstStatement,
-    None
+    None,
+    Stage2CompoundTypeDefinition
 >
 {
     
@@ -37,6 +38,8 @@ public record Stage2FuncDefinition(
     CppUserFunction Function,
     Scope<ICppValue> Closure
 );
+
+public record Stage2CompoundTypeDefinition(CppUserType Type);
 
 
 public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValue> Scope, Scope<ICppType> TypeScope);
@@ -79,7 +82,7 @@ public static class Stage2Parser
         // TODO: TopLevel statements must be collected and initialization must happen before any user code is executed
         return new Stage2SymbolTree(
             program.Statements
-                .Select(x => ParseStatement(x, scope, program.Scope))
+                .Select(x => ParseStage1Symbol(x, scope, program.Scope))
                 .ToArray(),
             scope,
             program.Scope
@@ -100,6 +103,48 @@ public static class Stage2Parser
         return astStmt;
     }
 
+    public static Stage2Statement ParseStage1Symbol(Stage1Symbol symbol, Scope<ICppValue> scope,
+        Scope<ICppType> typeScope) =>
+        symbol.Match<Stage2Statement>(
+            s => ParseStatement(s, scope, typeScope),
+            c => ParseCompoundTypeDefinition(c, scope, typeScope)
+        );
+
+    public static Stage2CompoundTypeDefinition ParseCompoundTypeDefinition(Stage1CompoundTypeDefinition typeDef, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    {
+        typeDef.Type.BuildMembers(scope, typeScope, (b, def, valueScope, typeScope) =>
+        {
+            foreach (var variable in def.Variables)
+            {
+                if (!typeScope.TryGetSymbol(variable.Member.Type.Ident, out var type))
+                    throw variable.Member.Type.CreateException("Unknown type");
+
+                var visibility = variable.Visibility switch
+                {
+                    AstVisibility.Public => MemberVisibility.Public,
+                    AstVisibility.Private => MemberVisibility.Private,  
+                    AstVisibility.Protected => MemberVisibility.Protected,
+                    _ => throw new ArgumentOutOfRangeException()
+                };
+                
+                b.AddVariable(
+                    variable.Member.Ident.Value,
+                    type,
+                    visibility
+                );
+            }
+
+            foreach (var function in def.Functions)
+            {
+                throw new NotImplementedException("member functions");
+            }
+            
+            // TODO: other members
+        });
+
+        return new Stage2CompoundTypeDefinition(typeDef.Type);
+    }
+    
     public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
         if (statement.TryPickT0(out AstExpression e, out var r1))

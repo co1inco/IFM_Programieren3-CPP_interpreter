@@ -358,6 +358,9 @@ public static class GeneratedAstTreeBuilder
     public static AstVarDefinition AstVarDefinition(AstTypeIdentifier type, AstIdentifier ident, AstExpression? initializer, AstMetadata? m = null) => 
         new (type, ident, initializer, m ?? AstMetadata.Generated());
 
+    public static AstVarDefinition AstVarDefinition(string type, string ident, AstExpression? initializer, AstMetadata? m = null) =>
+        AstVarDefinition(AstTypeIdentifier(type, false), AstIdentifier(ident), initializer, m ?? AstMetadata.Generated());
+    
     public static AstLiteral AstLiteral(int value) => new AstLiteral(value);
     public static AstLiteral AstLiteral(string value) => new AstLiteral(value);
     public static AstLiteral AstLiteral(bool value) => new AstLiteral(value);
@@ -412,4 +415,10 @@ public static class GeneratedAstTreeBuilder
     
     public static AstReturn AstReturn(AstExpression expression, AstMetadata? m = null) => 
         new AstReturn(expression, m ??  AstMetadata.Generated());
+    
+    public static AstCompoundTypeMember<AstVarDefinition> AstMemberValue(AstVisibility visibility, AstVarDefinition definition, AstMetadata? m = null) => 
+        new(definition, visibility, m ?? AstMetadata.Generated());
+    
+    public static AstCompoundTypeMember<AstVarDefinition> AstMemberValue(AstVisibility visibility, string type, string name, AstExpression? initializer = null, AstMetadata? m = null) => 
+        new(AstVarDefinition(type, name, initializer) , visibility, m ?? AstMetadata.Generated());
 }

@@ -27,7 +27,8 @@ public static class Stage3Parser
                 v => Stage3StatementParser.ParseVariableDefinition(v, scope),
                 f => Stage3StatementParser.BuildFunction(f, scope, program.TypeScope),
                 s => throw s.CreateException("Statement can not be top level"),
-                none => null!
+                none => null!,
+                c => throw new NotImplementedException()
             ))
             .Where(x => x is not null)
             .ToArray();
@@ -52,7 +53,8 @@ public static class Stage3Parser
             e => Stage3ExpressionParser.ParseExpression(e, scope).ToStatement(),
             v => Stage3StatementParser.ParseVariableDefinition(v, scope),
             f => Stage3StatementParser.BuildFunction(f, scope, typeScope),
-            s => Stage3StatementParser.ParseStatement(s, scope, typeScope)
+            s => Stage3StatementParser.ParseStatement(s, scope, typeScope),
+            c => throw new NotImplementedException()
         );
         
         return new Stage3Statement(s =>
