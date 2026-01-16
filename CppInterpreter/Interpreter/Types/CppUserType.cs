@@ -1,4 +1,5 @@
 ﻿using CppInterpreter.Ast;
+using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Values;
 
@@ -9,6 +10,8 @@ public class CppUserType : ICppType
     private readonly AstCompoundTypeDefinition _astNode;
     private readonly List<MemberData> _members = [];
     private readonly List<MemberValue> _values = [];
+    private readonly List<ICppFunction> _constructors = [];
+    private ICppFunction? _defaultConstructor;
     
     public CppUserType(string name, AstCompoundTypeDefinition astNode)
     {
@@ -32,17 +35,9 @@ public class CppUserType : ICppType
 
     public ICppValue Create()
     {
-        var instance = new CppUserValue(this);
-
-        foreach (var value in _values)   
-        {
-            //TODO: initialize value
-            instance.MemberValues.Add(value.MemberInfo.Name, value.MemberInfo.MemberType.Create());
-        }
-
-        // TODO: Initialize vector table?
-        
-        return instance;
+        if (_defaultConstructor == null)
+                throw new Exception("Type has no default constructor");
+        return _defaultConstructor.Invoke(null, []);
     }
 
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags)
@@ -65,7 +60,7 @@ public class CppUserType : ICppType
 
     public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags)
     {
-        throw new NotImplementedException();
+        throw new NotImplementedException("get user type functions");
     }
 
     
@@ -86,22 +81,35 @@ public class CppUserType : ICppType
     private class Builder(CppUserType instance) : ICppUserTypeMemberBuilder
     {
 
-        public void AddVariable(string name, ICppType value, MemberVisibility visibility)
+        public void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility)
         {
             var memberValue = new CppMemberValue(name, value);
             instance._members.Add(new MemberData(memberValue, visibility));
-            instance._values.Add(new MemberValue(memberValue));
+            instance._values.Add(new MemberValue(memberValue, initializer));
         }
 
+        public IEnumerable<MemberValue> Variables => instance._values;
+        
         public void AddFunction(string name, CppUserFunction func, MemberVisibility visibility)
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("Add user type function");
+        }
+
+        public void AddConstructor(ICppFunction constructorFunction)
+        {
+            if (constructorFunction.ReturnType != instance)
+                throw new Exception("Constructor must return instance of itself");
+            
+            instance._constructors.Add(constructorFunction);
+
+            if (constructorFunction.ParameterTypes.Length == 0)
+                instance._defaultConstructor = constructorFunction;
         }
     }
     
     private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
 
-    private record MemberValue(ICppMemberInfo MemberInfo);
+    public record MemberValue(ICppMemberInfo MemberInfo, InterpreterExpressionResult? Initializer);
 }
 
 public enum MemberVisibility
@@ -113,6 +121,10 @@ public enum MemberVisibility
 
 public interface ICppUserTypeMemberBuilder
 {
-    void AddVariable(string name, ICppType value, MemberVisibility visibility);
+    void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility);
+    IEnumerable<CppUserType.MemberValue> Variables { get; }
+    
     void AddFunction(string name, CppUserFunction func, MemberVisibility visibility);
+
+    void AddConstructor(ICppFunction constructorFunction);
 }

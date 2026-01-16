@@ -9,7 +9,8 @@ public interface ICppPrimitiveValueT<T, out TType> : ICppValueT
 };
 
 
-public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppValueT
+public abstract class CppPrimitiveValue<T, TType>(T value)
+    where TType : ICppValueT, ICppPrimitiveValueT<T, TType>
 {
     public ICppType GetCppType => TType.TypeOf;
 
@@ -18,4 +19,6 @@ public abstract class CppPrimitiveValue<T, TType>(T value) where TType : ICppVal
     public override string ToString() => Value?.ToString() ?? "null";
     
     public string StringRep() => Value?.ToString() ?? "(null)";
+    
+    public ICppValue Copy() => TType.Create(Value);
 }

@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Ast;
+﻿using System.Diagnostics;
+using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
@@ -114,6 +115,9 @@ public static class Stage2Parser
     {
         typeDef.Type.BuildMembers(scope, typeScope, (b, def, valueScope, typeScope) =>
         {
+            // TODO: check for duplicate definitions
+            List<(string Name, ICppType Type)> memberVariables = []; 
+            
             foreach (var variable in def.Variables)
             {
                 if (!typeScope.TryGetSymbol(variable.Member.Type.Ident, out var type))
@@ -126,10 +130,15 @@ public static class Stage2Parser
                     AstVisibility.Protected => MemberVisibility.Protected,
                     _ => throw new ArgumentOutOfRangeException()
                 };
+
+                var initializer = variable.Member.Initializer is null
+                    ? null
+                    : Stage3ExpressionParser.ParseExpression(variable.Member.Initializer, scope);
                 
                 b.AddVariable(
                     variable.Member.Ident.Value,
                     type,
+                    initializer,
                     visibility
                 );
             }
@@ -138,12 +147,87 @@ public static class Stage2Parser
             {
                 throw new NotImplementedException("member functions");
             }
+
+            bool hasCopyConstructor = false;
+            foreach (var constructor in def.Constructors)
+            {
+                throw new NotImplementedException("User defined constructors");
+            }
+
+            if (def.Constructors.Length == 0)
+            {
+                var constructorFunction = new CppFunction<CppUserValue>(
+                    "ctor",
+                    () =>
+                    {
+                        var instance = new CppUserValue(typeDef.Type);
+
+                        foreach (var variable in b.Variables)
+                        {
+                            if (variable.Initializer is null)
+                            {
+                                instance.MemberValues.Add(
+                                    variable.MemberInfo.Name, 
+                                    variable.MemberInfo.MemberType.Create()
+                                );
+                            }
+                            else
+                            {
+                                var initResult = variable.Initializer.Eval(scope);
+                                
+                                instance.MemberValues.Add(
+                                    variable.MemberInfo.Name, 
+                                    initResult
+                                );
+                            }
+                        }
+                        return instance;
+                    },
+                    typeDef.Type
+                );
+                
+                b.AddConstructor(constructorFunction);
+                scope.BindFunction(constructorFunction, typeDef.Type.Name);
+            }
+
+            if (!hasCopyConstructor)
+            {
+                var constructorFunction = new CppFunctionP<CppUserValue>(
+                    "ctor",
+                    (p) =>
+                    {
+                        if (p is not [CppUserValue other])
+                            throw new UnreachableException("Received invalid parameter");
+                        
+                        var instance = new CppUserValue(typeDef.Type);
+
+                        foreach (var variable in b.Variables)
+                        {
+                            // TODO: use the copy constructor instead
+                            instance.MemberValues[variable.MemberInfo.Name] =
+                                other.MemberValues[variable.MemberInfo.Name].Copy();
+                        }
+                        return instance;
+                    },
+                    typeDef.Type,
+                    [ new CppFunctionParameter("", typeDef.Type, true) ]
+                );
+                
+                b.AddConstructor(constructorFunction);
+                scope.BindFunction(constructorFunction, typeDef.Type.Name);
+            }
+            
+            
+            
+            // TODO: register constructors as value scope functions
             
             // TODO: other members
         });
 
         return new Stage2CompoundTypeDefinition(typeDef.Type);
     }
+    
+    
     
     public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {

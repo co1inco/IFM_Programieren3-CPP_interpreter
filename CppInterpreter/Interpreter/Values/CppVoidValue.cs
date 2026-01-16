@@ -9,4 +9,5 @@ public struct CppVoidValue : ICppValueT
 
     public string StringRep() => "(void)";
     public bool ToBool() => false;
+    public ICppValue Copy() => this; // return self. is all the same anyways
 }

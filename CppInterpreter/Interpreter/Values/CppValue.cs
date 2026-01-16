@@ -22,6 +22,8 @@ public interface ICppValue
     string StringRep();
     
     bool ToBool();
+
+    ICppValue Copy();
 }
 
 /// <summary>

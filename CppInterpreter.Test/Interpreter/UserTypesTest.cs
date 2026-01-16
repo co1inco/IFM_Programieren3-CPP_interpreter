@@ -116,4 +116,38 @@ public class UserTypesTest
         member.GetValue(userValue).ShouldBeOfType<CppInt32Value>().Value.ShouldBe(5);
     }
     
+    [TestMethod]
+    public void DefaultConstructor()
+    {
+        //Arrange
+        var ast = new AstCompoundTypeDefinition(
+            AstIdentifier("testType"),
+            [],
+            [],
+            [
+                AstMemberValue(AstVisibility.Public, "int", "testMember", AstLiteral(5))
+            ],
+            AstCompoundTypeDefinition.TypeKind.Class,
+            [],
+            null,
+            AstMetadata.Generated()
+        );
+        
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var valueScope = new Scope<ICppValue>();
+
+        //Act
+
+        var s1 = Stage1Parser.ParseCompoundTypeDefinition(ast, typeScope);
+        var s2 = Stage2Parser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
+        // var s3 = Stage3StatementParser.ParseCom
+        
+        //Assert
+        valueScope.TryGetSymbol("testType", out var callableValue).ShouldBeTrue();
+        var callable = callableValue.ShouldBeOfType<CppCallableValue>();
+        var instances = callable.Invoke([]).ShouldBeOfType<CppUserValue>();
+        instances.MemberValues.TryGetValue("testMember", out var testMemberValue).ShouldBeTrue();
+        testMemberValue.ShouldBeOfType<CppInt32Value>().Value.ShouldBe(5);
+    }
+    
 }

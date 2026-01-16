@@ -14,6 +14,17 @@ public class CppUserValue : ICppValue
     public ICppType GetCppType { get; }
     public string StringRep() => "<object>";
     public bool ToBool() => true;
+    
+    // TODO: this should? check for a copy  
+    public ICppValue Copy()
+    {
+        var instance = new CppUserValue(GetCppType);
+        foreach (var memberValue in MemberValues)
+        {
+            instance.MemberValues.Add(memberValue.Key, memberValue.Value);
+        }
+        return instance;
+    }
 }
 
 
