@@ -269,15 +269,15 @@ public static class Stage3StatementParser
 
                 while (condition.Eval(s).ToBool())
                 {
-                    incrementor?.StatementEval(s);
-                    
                     var bodyResult = body.StatementEval(s);
                     
                     if (bodyResult.TryPickT0(out var r, out var rem1))
                         return r;
                     if (bodyResult.TryPickT2(out var b, out _))
                         break;
-                    // no handling for continue required 
+                    // no handling for continue required
+                    
+                    incrementor?.StatementEval(s);
                 }
 
                 return new None();
