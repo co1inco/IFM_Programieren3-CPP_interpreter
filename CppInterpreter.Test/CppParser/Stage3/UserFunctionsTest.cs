@@ -47,7 +47,7 @@ public class UserFunctionsTest
             scope);
 
         //Act
-        var stmt = Stage3StatementParser.BuildFunction(ast, scope, typeScope);
+        var stmt = Stage3StatementParser.ParseStage2FunctionDefinition(ast, scope, typeScope);
         
         //Assert
         stmt.StatementEval(scope).IsNone.ShouldBeTrue();

@@ -9,14 +9,14 @@ namespace CppInterpreter.CppParser;
 
 public record Stage2CompoundTypeDefinition(
     CppUserType Type,
-    CppUserFunction[] Functions    
+    (CppUserFunction Func, Scope<ICppValue> Closure)[] Functions    
 );
 
 public static class Stage2UserTypeParser
 {
     public static Stage2CompoundTypeDefinition ParseCompoundTypeDefinition(Stage1CompoundTypeDefinition typeDef, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        List<CppUserFunction> userFunctions = [];    
+        List<(CppUserFunction Func, Scope<ICppValue> Closure)> userFunctions = [];    
         
         typeDef.Type.BuildMembers(scope, typeScope, (b, def, valueScope, typeScope) =>
         {

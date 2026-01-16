@@ -112,13 +112,18 @@ public partial class InterpreterStatementResult : OneOfBase<
 
 public static class Stage3StatementParser
 {
-    public static Stage3Statement BuildFunction(Stage2FuncDefinition definition, Scope<ICppValue> sc, Scope<ICppType> typeScope)
+    public static Stage3Statement ParseStage2FunctionDefinition(Stage2FuncDefinition definition, Scope<ICppValue> scope, Scope<ICppType> typeScope) 
     {
-        definition.Function.BuildBody(definition.Closure, (body, scope) =>
+        definition.Function.BuildBody(scope, typeScope, BuildFunction);
+        return new Stage3Statement(_ => new None(), []);
+    }
+    
+    public static Func<Scope<ICppValue>,ICppValue> BuildFunction(AstBlock body, ICppType returnType, Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    {
         {
             var bodyStatement = ParseBlock(body, scope, typeScope, suppressBlockScope: true);
 
-            var returnsVoid = definition.ReturnType.Equals(CppTypes.Void);
+            var returnsVoid = returnType.Equals(CppTypes.Void);
             
             foreach (var returnValue in bodyStatement.Results.EnsureNoLoopControl())
             {
@@ -130,16 +135,16 @@ public static class Stage3StatementParser
                 else
                 {
                     if (!returnValue.TryPickT0(out var r, out _)) // no return  ed value
-                        throw definition.Body.CreateException($"Function must return value of type '{definition.ReturnType.Name}'");
+                        throw body.CreateException($"Function must return value of type '{returnType.Name}'");
                     
                     // TODO: for inheritance this must check if the type is assignable
-                    if (!r.Type.Equals(definition.ReturnType)) // incorrect return type
-                        throw r.Node.CreateException($"Function must return value of type '{definition.ReturnType.Name}'");
+                    if (!r.Type.Equals(returnType)) // incorrect return type
+                        throw r.Node.CreateException($"Function must return value of type '{returnType.Name}'");
                 }
             }
 
             if (!returnsVoid && bodyStatement.Results.Length == 0)
-                throw definition.Body.CreateException("Non void function must return a value");
+                throw body.CreateException("Non void function must return a value");
             
             return s =>
             {
@@ -149,15 +154,13 @@ public static class Stage3StatementParser
                         r => r.Value,
                         n =>
                         {
-                            if (!definition.ReturnType.Equals(CppTypes.Void))
+                            if (!returnType.Equals(CppTypes.Void))
                                 throw new ParserException("Return statement missing", body.Metadata);
                             return new CppVoidValue();
                         }
                     );
             };
-        });
-
-        return new Stage3Statement(_ => new None(), []);
+        }
     }
     
     public static Stage3Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)

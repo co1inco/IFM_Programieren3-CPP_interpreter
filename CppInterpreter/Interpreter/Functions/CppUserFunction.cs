@@ -68,9 +68,9 @@ public sealed class CppUserFunction : ICppFunction
     public Func<Scope<ICppValue>, ICppValue>? Function { get; private set; }
     public Scope<ICppValue>? Closure { get; private set; }
     
-    public void BuildBody(Scope<ICppValue> closure, Func<AstBlock, Scope<ICppValue>, Func<Scope<ICppValue>, ICppValue>> builder)
+    public void BuildBody(Scope<ICppValue> closure, Scope<ICppType> typeScope, Func<AstBlock, ICppType, Scope<ICppValue>, Scope<ICppType>, Func<Scope<ICppValue>, ICppValue>> builder)
     {
         Closure = closure;
-        Function = builder(Body, BuildParserScope(Closure));
+        Function = builder(Body, ReturnType, BuildParserScope(Closure), typeScope);
     }
 }

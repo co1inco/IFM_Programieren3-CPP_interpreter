@@ -110,7 +110,7 @@ public class FunctionDefinitionTest
         var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
         
         //Assert
-        Should.Throw<ParserException>(() => Stage3StatementParser.BuildFunction(func, scope, stage1Scope))
+        Should.Throw<ParserException>(() => Stage3StatementParser.ParseStage2FunctionDefinition(func, scope, stage1Scope))
             .BaseMessage.ShouldContain("Function must return value of type");
     }
     
@@ -140,7 +140,7 @@ public class FunctionDefinitionTest
         var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
         
         //Assert
-        Should.NotThrow(() => Stage3StatementParser.BuildFunction(func, scope, stage1Scope));
+        Should.NotThrow(() => Stage3StatementParser.ParseStage2FunctionDefinition(func, scope, stage1Scope));
     }
     
     [TestMethod]
@@ -171,7 +171,7 @@ public class FunctionDefinitionTest
         var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
         
         //Assert
-        Should.Throw<ParserException>(() => Stage3StatementParser.BuildFunction(func, scope, stage1Scope))
+        Should.Throw<ParserException>(() => Stage3StatementParser.ParseStage2FunctionDefinition(func, scope, stage1Scope))
             .BaseMessage.ShouldContain("Function must return value of type");
     }
 }

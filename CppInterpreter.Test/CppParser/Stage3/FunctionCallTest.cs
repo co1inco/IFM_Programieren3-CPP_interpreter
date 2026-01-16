@@ -227,7 +227,7 @@ public class FunctionCallTest
         var scope = new Scope<ICppValue>();
         
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
-        Stage3StatementParser.BuildFunction(fnDef, scope, typeScope);
+        Stage3StatementParser.ParseStage2FunctionDefinition(fnDef, scope, typeScope);
         
         var callingScope = new Scope<ICppValue>(scope);
         var value = new CppInt32Value(42);
@@ -280,7 +280,7 @@ public class FunctionCallTest
         scope.TryBindSymbol("check", callable);
         
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
-        Stage3StatementParser.BuildFunction(fnDef, scope, typeScope);
+        Stage3StatementParser.ParseStage2FunctionDefinition(fnDef, scope, typeScope);
         
         var callingScope = new Scope<ICppValue>(scope);
         var value = new CppInt32Value(42);

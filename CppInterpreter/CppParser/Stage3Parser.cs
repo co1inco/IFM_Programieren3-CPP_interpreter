@@ -25,10 +25,10 @@ public static class Stage3Parser
             .Select(x => x.Match(
                 e => Stage3ExpressionParser.ParseExpression(e, scope).ToStatement(),
                 v => Stage3StatementParser.ParseVariableDefinition(v, scope),
-                f => Stage3StatementParser.BuildFunction(f, scope, program.TypeScope),
+                f => Stage3StatementParser.ParseStage2FunctionDefinition(f, scope, program.TypeScope),
                 s => throw s.CreateException("Statement can not be top level"),
                 none => null!,
-                ParseCompoundTypeDefinition
+                c => ParseCompoundTypeDefinition(c, program.TypeScope)
             ))
             .Where(x => x is not null)
             .ToArray();
@@ -52,9 +52,9 @@ public static class Stage3Parser
         var parsedStatement = stmt.Match(
             e => Stage3ExpressionParser.ParseExpression(e, scope).ToStatement(),
             v => Stage3StatementParser.ParseVariableDefinition(v, scope),
-            f => Stage3StatementParser.BuildFunction(f, scope, typeScope),
+            f => Stage3StatementParser.ParseStage2FunctionDefinition(f, scope, typeScope),
             s => Stage3StatementParser.ParseStatement(s, scope, typeScope),
-            ParseCompoundTypeDefinition
+            c => ParseCompoundTypeDefinition(c, typeScope)
         );
         
         return new Stage3Statement(s =>
@@ -65,10 +65,15 @@ public static class Stage3Parser
     }
 
 
-    public static Stage3Statement ParseCompoundTypeDefinition(Stage2CompoundTypeDefinition typeDefinition)
+    public static Stage3Statement ParseCompoundTypeDefinition(Stage2CompoundTypeDefinition typeDefinition, Scope<ICppType> typeScope)
     {
         typeDefinition.Type.BuildMemberFunctions(() => null!);
 
+        foreach (var (func, closure) in typeDefinition.Functions)
+        {
+            func.BuildBody(closure, typeScope, Stage3StatementParser.BuildFunction);
+        }
+        
         return new Stage3Statement(
             s => new None(), 
             []
