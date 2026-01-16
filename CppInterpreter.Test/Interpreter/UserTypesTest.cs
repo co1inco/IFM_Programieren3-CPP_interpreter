@@ -61,7 +61,7 @@ public class UserTypesTest
         //Act
 
         var s1 = Stage1Parser.ParseCompoundTypeDefinition(ast, typeScope);
-        var s2 = Stage2Parser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
+        var s2 = Stage2UserTypeParser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
         // var s3 = Stage3StatementParser.ParseCom
         
         //Assert
@@ -100,7 +100,7 @@ public class UserTypesTest
         //Act
 
         var s1 = Stage1Parser.ParseCompoundTypeDefinition(ast, typeScope);
-        var s2 = Stage2Parser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
+        var s2 = Stage2UserTypeParser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
         // var s3 = Stage3StatementParser.ParseCom
         
         //Assert
@@ -139,7 +139,7 @@ public class UserTypesTest
         //Act
 
         var s1 = Stage1Parser.ParseCompoundTypeDefinition(ast, typeScope);
-        var s2 = Stage2Parser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
+        var s2 = Stage2UserTypeParser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
         // var s3 = Stage3StatementParser.ParseCom
         
         //Assert

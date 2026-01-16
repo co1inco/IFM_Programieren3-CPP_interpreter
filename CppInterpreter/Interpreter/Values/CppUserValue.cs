@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Interpreter.Functions;
+﻿using CppInterpreter.CppParser;
+using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
 
 namespace CppInterpreter.Interpreter.Values;
@@ -102,5 +103,59 @@ public sealed class DefaultAssignmentOperator(CppUserType type) : ICppFunction
         }
         
         return instance;
+    }
+}
+
+public sealed class BaseUserTypeConstructor : ICppFunction
+{
+    private readonly Dictionary<string, InterpreterExpressionResult> _initializers;
+    private readonly ICppFunction? _userFunction;
+    private readonly Scope<ICppValue> _closure;
+    
+    public BaseUserTypeConstructor(
+        CppUserType type,
+        Scope<ICppValue> closure,
+        IEnumerable<(string Name, InterpreterExpressionResult InitialValue)> initializers,
+        ICppFunction? userFunction)
+    {
+        if (!userFunction?.ReturnType.Equals(CppTypes.Void) ?? false)
+            throw new ArgumentException("User constructor functions must return void");
+        
+        Name = type.Name;
+        ReturnType = type;
+        _userFunction = userFunction;
+        ParameterTypes = userFunction?.ParameterTypes ?? [];
+
+        _closure = closure;
+        _initializers = initializers.ToDictionary(x => x.Name, x => x.InitialValue);
+    }
+
+    
+    public string Name { get; }
+    public ICppType ReturnType { get; }
+    public ICppType? InstanceType => null;
+    public CppFunctionParameter[] ParameterTypes { get; }
+    
+    public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
+    {
+        if (instance is not null)
+            throw new Exception("Function is not a member function");
+
+        var newInstance = new CppUserValue(ReturnType);
+
+        //TODO: base class constructor before
+        
+        foreach (var member in ReturnType.GetMembers(CppMemberBindingFlags.AnyInstance))
+        {
+            if (_initializers.TryGetValue(member.Name, out var initializer))
+                //TODO: should create new scope with parameters for constructor based initializers
+                newInstance.MemberValues[member.Name] = initializer.Eval(_closure); 
+            else
+                newInstance.MemberValues[member.Name] = member.MemberType.Create();
+        }
+
+        _userFunction?.Invoke(null, parameters);
+        
+        return newInstance;
     }
 }

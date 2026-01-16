@@ -40,8 +40,6 @@ public record Stage2FuncDefinition(
     Scope<ICppValue> Closure
 );
 
-public record Stage2CompoundTypeDefinition(CppUserType Type);
-
 
 public record Stage2SymbolTree(Stage2Statement[] Statement, Scope<ICppValue> Scope, Scope<ICppType> TypeScope);
 
@@ -108,113 +106,10 @@ public static class Stage2Parser
         Scope<ICppType> typeScope) =>
         symbol.Match<Stage2Statement>(
             s => ParseStatement(s, scope, typeScope),
-            c => ParseCompoundTypeDefinition(c, scope, typeScope)
+            c => Stage2UserTypeParser.ParseCompoundTypeDefinition(c, scope, typeScope)
         );
 
-    public static Stage2CompoundTypeDefinition ParseCompoundTypeDefinition(Stage1CompoundTypeDefinition typeDef, Scope<ICppValue> scope, Scope<ICppType> typeScope)
-    {
-        typeDef.Type.BuildMembers(scope, typeScope, (b, def, valueScope, typeScope) =>
-        {
-            // TODO: check for duplicate definitions
-            List<(string Name, ICppType Type)> memberVariables = []; 
-            
-            foreach (var variable in def.Variables)
-            {
-                if (!typeScope.TryGetSymbol(variable.Member.Type.Ident, out var type))
-                    throw variable.Member.Type.CreateException("Unknown type");
 
-                var visibility = variable.Visibility switch
-                {
-                    AstVisibility.Public => MemberVisibility.Public,
-                    AstVisibility.Private => MemberVisibility.Private,  
-                    AstVisibility.Protected => MemberVisibility.Protected,
-                    _ => throw new ArgumentOutOfRangeException()
-                };
-
-                var initializer = variable.Member.Initializer is null
-                    ? null
-                    : Stage3ExpressionParser.ParseExpression(variable.Member.Initializer, scope);
-                
-                b.AddVariable(
-                    variable.Member.Ident.Value,
-                    type,
-                    initializer,
-                    visibility
-                );
-            }
-
-            bool hasAssignOperator = false;
-            foreach (var function in def.Functions)
-            {
-                throw new NotImplementedException("member functions");
-            }
-
-            if (!hasAssignOperator)
-            {
-                var f = new DefaultAssignmentOperator(typeDef.Type);
-                b.AddFunction(f.Name, f, MemberVisibility.Public);
-            }
-            
-            
-            bool hasCopyConstructor = false;
-            foreach (var constructor in def.Constructors)
-            {
-                throw new NotImplementedException("User defined constructors");
-            }
-
-            if (def.Constructors.Length == 0)
-            {
-                var constructorFunction = new CppFunction<CppUserValue>(
-                    "ctor",
-                    () =>
-                    {
-                        var instance = new CppUserValue(typeDef.Type);
-
-                        foreach (var variable in b.Variables)
-                        {
-                            if (variable.Initializer is null)
-                            {
-                                instance.MemberValues.Add(
-                                    variable.MemberInfo.Name, 
-                                    variable.MemberInfo.MemberType.Create()
-                                );
-                            }
-                            else
-                            {
-                                var initResult = variable.Initializer.Eval(scope);
-                                
-                                instance.MemberValues.Add(
-                                    variable.MemberInfo.Name, 
-                                    initResult
-                                );
-                            }
-                        }
-                        return instance;
-                    },
-                    typeDef.Type
-                );
-                
-                b.AddConstructor(constructorFunction);
-                scope.BindFunction(constructorFunction, typeDef.Type.Name);
-            }
-
-            if (!hasCopyConstructor)
-            {
-                var constructorFunction = new DefaultCopyConstructor(typeDef.Type);
-                b.AddConstructor(constructorFunction);
-                scope.BindFunction(constructorFunction, typeDef.Type.Name);
-            }
-            
-            
-            
-            // TODO: register constructors as value scope functions
-            
-            // TODO: other members
-        });
-
-        return new Stage2CompoundTypeDefinition(typeDef.Type);
-    }
-    
     
     
     public static Stage2Statement ParseStatement(AstStatement statement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
