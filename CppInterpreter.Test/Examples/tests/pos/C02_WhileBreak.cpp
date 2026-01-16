@@ -20,7 +20,7 @@ int main() {
     while (i<5) {
         i = i + 1;
         
-        if (count == 3)
+        if (i == 3)
         {
             continue;
         }
@@ -31,6 +31,7 @@ int main() {
     return 0;
 }
 /* EXPECT:
+0
 1
 2
 3

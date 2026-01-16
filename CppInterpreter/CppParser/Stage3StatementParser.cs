@@ -313,18 +313,13 @@ public static class Stage3StatementParser
         bool allPathsReturn = false;
         foreach (var stmt in statements)
         {
-            foreach (var r in stmt.Results)
-            {
-                r.Switch(
-                    r => results.Add(r),
-                    c => results.Add(c),
-                    b => results.Add(b),
-                    _ => {} // filter non returning paths
-                    );
-                
-            }
-
-            if (stmt.Results.All(x => x.IsT0))
+            stmt.Results.ForEach(x => x.Switch(
+                r => results.Add(r),
+                c => results.Add(c),
+                b => results.Add(b),
+                _ => {} // filter non returning paths
+            ));
+            if (stmt.Results.Any() && stmt.Results.All(x => x.IsT0))
             {
                 allPathsReturn = true;
                 break;
