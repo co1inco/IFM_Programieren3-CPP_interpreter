@@ -61,6 +61,7 @@ public class Examples
     [DataRow("P01_vars.cpp")]
     // [DataRow("P02_expr.cpp")]
     [DataRow("P05_operators.cpp")]
+    [DataRow("P11_class_custom.cpp")]
     public void Positive_Manual(string filename)
     {
         //Arrange

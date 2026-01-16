@@ -34,6 +34,18 @@ public class CppUserType : ICppType
         return other.Name == Name;
     }
 
+    public Scope<ICppValue> GetParserValueScope()
+    {
+        var scope = new Scope<ICppValue>(Closure);
+
+        foreach (var member in _values)
+        {
+            scope.TryAddSymbol(member.MemberInfo.Name, member.MemberInfo.MemberType.Create());
+        }
+
+        return scope;
+    }
+    
     public ICppValue Create()
     {
         if (_defaultConstructor == null)

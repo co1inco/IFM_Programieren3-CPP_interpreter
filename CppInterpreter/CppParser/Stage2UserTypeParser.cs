@@ -16,7 +16,7 @@ public static class Stage2UserTypeParser
 {
     public static Stage2CompoundTypeDefinition ParseCompoundTypeDefinition(Stage1CompoundTypeDefinition typeDef, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        List<(CppUserFunction Func, Scope<ICppValue> Closure)> userFunctions = [];    
+        List<(CppUserFunction Func, Scope<ICppValue> Closure)> functionsToInitialize = [];    
         
         typeDef.Type.BuildMembers(scope, typeScope, (b, def, valueScope, typeScope) =>
         {
@@ -27,6 +27,8 @@ public static class Stage2UserTypeParser
                 ParseMemberVariable(variable, typeScope, valueScope, b.AddVariable);
             }
 
+            var userTypeParseScope = typeDef.Type.GetParserValueScope();
+            
             bool hasAssignOperator = false;
             foreach (var function in def.Functions)
             {
@@ -39,23 +41,36 @@ public static class Stage2UserTypeParser
                 b.AddFunction(f.Name, f, MemberVisibility.Public);
             }
             
-            
+            var membersToInitialize = b.Variables
+                .Select(x => (
+                    x.MemberInfo.Name,
+                    x.Initializer))
+                .Where(x => x.Initializer is not null)
+                .ToArray();
             bool hasCopyConstructor = false;
+            
             foreach (var constructor in def.Constructors)
             {
+                var userFunction = Stage2Parser.ParseFuncDefinition(constructor.Member, scope, typeScope);
+                functionsToInitialize.Add((userFunction.Function, userTypeParseScope));
+
+                if (userFunction.Function.ParameterTypes is [{ IsReference: true } p] && p.Type.Equals(typeDef.Type))
+                    hasCopyConstructor = true;
                 
-                throw new NotImplementedException("User defined constructors");
+                var constructorFunction = new BaseUserTypeConstructor(
+                    typeDef.Type,
+                    userTypeParseScope,
+                    membersToInitialize!,
+                    userFunction.Function
+                );
+                
+                b.AddConstructor(constructorFunction);
+                if (constructor.Visibility == AstVisibility.Public)
+                    scope.BindFunction(constructorFunction, typeDef.Type.Name);
             }
 
             if (def.Constructors.Length == 0)
             {
-
-                var membersToInitialize = b.Variables
-                    .Select(x => (
-                        x.MemberInfo.Name,
-                        x.Initializer))
-                    .Where(x => x.Initializer is not null);
-                
                 var constructorFunction = new BaseUserTypeConstructor(
                     typeDef.Type,
                     valueScope,
@@ -81,7 +96,7 @@ public static class Stage2UserTypeParser
             // TODO: other members
         });
 
-        return new Stage2CompoundTypeDefinition(typeDef.Type, userFunctions.ToArray());
+        return new Stage2CompoundTypeDefinition(typeDef.Type, functionsToInitialize.ToArray());
     }
 
     public static void ParseMemberVariable(
