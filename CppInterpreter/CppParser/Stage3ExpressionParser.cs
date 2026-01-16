@@ -96,7 +96,8 @@ public static class Stage3ExpressionParser
     {
         if (expression.TryPickT1(out var atom, out var rem1))
             return ParseAtom(atom, scope);
-        //TODO: member access
+        if (expression.TryPickT7(out AstMemberAccess member, out var _))
+            return  ParseMemberAccess(member, scope);
         
         throw expression.CreateException("Target of an assignment must be an identifier or a member accessor");
     }
