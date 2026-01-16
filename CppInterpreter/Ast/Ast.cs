@@ -161,9 +161,9 @@ public record AstWhile(
 ) : IAstNode;
 
 public record AstFor(
-    AstStatement Initializer,
+    AstStatement? Initializer,
     AstExpression Condition,
-    AstStatement Incrementor,
+    AstStatement? Incrementor,
     AstBlock Body,
     AstMetadata Metadata
 ) : IAstNode;

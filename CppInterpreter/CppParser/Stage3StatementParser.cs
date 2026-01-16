@@ -226,6 +226,7 @@ public static class Stage3StatementParser
                             return r;
                         if (result.TryPickT2(out var b, out _))
                             break;
+                        // no handling for continue required
                     } while (condition.Eval(s).ToBool());
                 }
                 else
@@ -237,6 +238,7 @@ public static class Stage3StatementParser
                             return r;
                         if (result.TryPickT2(out var b, out _))
                             break;
+                        // no handling for continue required
                     }  
                 }
 
@@ -250,7 +252,39 @@ public static class Stage3StatementParser
 
     public static Stage3Statement ParseFor(AstFor forStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        throw new  NotImplementedException("For loop");
+        var forScope = new Scope<ICppValue>(scope);
+        
+        // TODO: validate that initializer and incrementor do not return anything (Should be prevented by antlr though)
+        var initializer = forStatement.Initializer is null ? null : ParseStatement(forStatement.Initializer, forScope, typeScope);
+        var condition = Stage3ExpressionParser.ParseExpression(forStatement.Condition, forScope);
+        var incrementor = forStatement.Incrementor is null ? null : ParseStatement(forStatement.Incrementor, forScope, typeScope);
+        
+        var body = ParseBlock(forStatement.Body, forScope, typeScope);
+
+        return new Stage3Statement(s =>
+            {
+                s = new Scope<ICppValue>(s);
+
+                initializer?.StatementEval(s);
+
+                while (condition.Eval(s).ToBool())
+                {
+                    incrementor?.StatementEval(s);
+                    
+                    var bodyResult = body.StatementEval(s);
+                    
+                    if (bodyResult.TryPickT0(out var r, out var rem1))
+                        return r;
+                    if (bodyResult.TryPickT2(out var b, out _))
+                        break;
+                    // no handling for continue required 
+                }
+
+                return new None();
+            },
+            body.Results.FilterLoopControl()
+                .Append(new None()) // "else branch", we can not guarantee that a loop would always hit a return 
+                .ToImmutableArray());
     }
     
     
