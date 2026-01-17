@@ -26,7 +26,7 @@ public class FunctionDefinitionTest
         var scope = new Scope<ICppValue>();
         
         //Act
-        var result = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        var result = Stage2Parser.ParseFuncDefinition(ast, null, scope, stage1Scope);
 
         //Assert
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();
@@ -58,7 +58,7 @@ public class FunctionDefinitionTest
         var scope = new Scope<ICppValue>();
         
         //Act
-        var result = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        var result = Stage2Parser.ParseFuncDefinition(ast, null, scope, stage1Scope);
 
         //Assert
         scope.TryGetSymbol("test", out var test).ShouldBeTrue();
@@ -107,7 +107,7 @@ public class FunctionDefinitionTest
         var scope = new Scope<ICppValue>();
 
         //Act
-        var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        var func = Stage2Parser.ParseFuncDefinition(ast, null, scope, stage1Scope);
         
         //Assert
         Should.Throw<ParserException>(() => Stage3StatementParser.ParseStage2FunctionDefinition(func, scope, stage1Scope))
@@ -137,7 +137,7 @@ public class FunctionDefinitionTest
         var scope = new Scope<ICppValue>();
 
         //Act
-        var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        var func = Stage2Parser.ParseFuncDefinition(ast, null, scope, stage1Scope);
         
         //Assert
         Should.NotThrow(() => Stage3StatementParser.ParseStage2FunctionDefinition(func, scope, stage1Scope));
@@ -168,7 +168,7 @@ public class FunctionDefinitionTest
         var scope = new Scope<ICppValue>();
 
         //Act
-        var func = Stage2Parser.ParseFuncDefinition(ast, scope, stage1Scope);
+        var func = Stage2Parser.ParseFuncDefinition(ast, null, scope, stage1Scope);
         
         //Assert
         Should.Throw<ParserException>(() => Stage3StatementParser.ParseStage2FunctionDefinition(func, scope, stage1Scope))

@@ -13,7 +13,11 @@ public class CppCallableValue : ICppValueT
     public static ICppType TypeOf => CppTypes.Callable;
     public ICppType GetCppType => new CppCallableType(Overloads.ToArray());
 
-    public CppCallableValue(Scope<ICppValue> scope)
+    public CppCallableValue(Scope<ICppValue> scope) // TODO: remove this function 
+    {
+    }
+    
+    public CppCallableValue()
     {
     }
 

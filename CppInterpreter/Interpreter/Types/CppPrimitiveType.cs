@@ -35,6 +35,7 @@ public abstract class CppPrimitiveType : ICppType
     public bool Equals(ICppType? other) => Name == other?.Name;
 
     public abstract ICppValue Create();
+    public virtual ICppValue CreateParserDummy() => Create();
 
     // TODO: Implement accessibility
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => _members;

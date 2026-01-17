@@ -51,7 +51,7 @@ public static class Stage2UserTypeParser
             
             foreach (var constructor in def.Constructors)
             {
-                var userFunction = Stage2Parser.ParseFuncDefinition(constructor.Member, scope, typeScope);
+                var userFunction = Stage2Parser.ParseFuncDefinition(constructor.Member, typeDef.Type, scope, typeScope);
                 functionsToInitialize.Add((userFunction.Function, userTypeParseScope));
 
                 if (userFunction.Function.ParameterTypes is [{ IsReference: true } p] && p.Type.Equals(typeDef.Type))

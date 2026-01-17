@@ -226,7 +226,7 @@ public class FunctionCallTest
         var typeScope = Stage1Parser.CreateBaseScope();
         var scope = new Scope<ICppValue>();
         
-        var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
+        var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, null, scope, typeScope);
         Stage3StatementParser.ParseStage2FunctionDefinition(fnDef, scope, typeScope);
         
         var callingScope = new Scope<ICppValue>(scope);
@@ -279,7 +279,7 @@ public class FunctionCallTest
         callable.AddOverload(function);
         scope.TryBindSymbol("check", callable);
         
-        var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, scope, typeScope);
+        var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, null, scope, typeScope);
         Stage3StatementParser.ParseStage2FunctionDefinition(fnDef, scope, typeScope);
         
         var callingScope = new Scope<ICppValue>(scope);

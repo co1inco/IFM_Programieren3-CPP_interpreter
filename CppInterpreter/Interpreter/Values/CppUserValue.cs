@@ -113,7 +113,7 @@ public sealed class BaseUserTypeConstructor : ICppFunction
     private readonly Scope<ICppValue> _closure;
     
     public BaseUserTypeConstructor(
-        CppUserType type,
+        CppUserType instanceType,
         Scope<ICppValue> closure,
         IEnumerable<(string Name, InterpreterExpressionResult InitialValue)> initializers,
         ICppFunction? userFunction)
@@ -121,8 +121,8 @@ public sealed class BaseUserTypeConstructor : ICppFunction
         if (!userFunction?.ReturnType.Equals(CppTypes.Void) ?? false)
             throw new ArgumentException("User constructor functions must return void");
         
-        Name = type.Name;
-        ReturnType = type;
+        Name = instanceType.Name;
+        ReturnType = instanceType;
         _userFunction = userFunction;
         ParameterTypes = userFunction?.ParameterTypes ?? [];
 
@@ -139,7 +139,7 @@ public sealed class BaseUserTypeConstructor : ICppFunction
     public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
     {
         if (instance is not null)
-            throw new Exception("Function is not a member function");
+            throw new Exception("Base constructor is not a member function");
 
         var newInstance = new CppUserValue(ReturnType);
 
@@ -154,7 +154,7 @@ public sealed class BaseUserTypeConstructor : ICppFunction
                 newInstance.MemberValues[member.Name] = member.MemberType.Create();
         }
 
-        _userFunction?.Invoke(null, parameters);
+        _userFunction?.Invoke(newInstance, parameters);
         
         return newInstance;
     }

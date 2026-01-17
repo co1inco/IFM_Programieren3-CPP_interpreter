@@ -5,9 +5,6 @@ namespace CppInterpreter.Interpreter.Types;
 
 public class CppCallableType : ICppType
 {
-    public string Name => "Callable";
-
-    public bool Equals(ICppType? other) => Name == other?.Name;
 
     public CppCallableType() { }
 
@@ -16,6 +13,10 @@ public class CppCallableType : ICppType
         CallableFunctions = functions;
     }
 
+    public string Name => "Callable";
+
+    public bool Equals(ICppType? other) => Name == other?.Name;
+    
     public ICppFunction[] CallableFunctions { get; } = [];
     
     public ICppConstructor[] Constructor { get; } = [];
@@ -31,6 +32,8 @@ public class CppCallableType : ICppType
     {
         throw new NotSupportedException();
     }
+
+    public ICppValue CreateParserDummy() => new CppCallableValue();
 
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => [];
     public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags) => [];

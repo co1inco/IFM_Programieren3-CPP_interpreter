@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Ast;
+﻿using Antlr4.Runtime.Misc;
+using CppInterpreter.Ast;
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Functions;
@@ -32,6 +33,7 @@ public class UserFunctionsTest
         var userFunction = new CppUserFunction(
             "test",
             CppTypes.Void,
+            null,
             [],
             AstBlock([
                     AstFunctionCallExpr(AstAtom("foo"), [])
@@ -54,6 +56,76 @@ public class UserFunctionsTest
         userFunction.Invoke(null, []);
 
         dummyFunction.Received(1).Invoke(null, []);
+    }
+    
+    [TestMethod]
+    public void BuildInstanceUserFunction()
+    {
+        //Arrange
+
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var scope = new Scope<ICppValue>();
+
+        var dummyFunction = Substitute.For<ICppFunction>();
+        dummyFunction.ParameterTypes.Returns([
+            new CppFunctionParameter("", CppTypes.Int32, false)
+        ]);
+        scope.TryBindSymbol("dummyFunction", new CppCallableValue(scope)
+        {
+            Overloads = { dummyFunction }
+        });
+
+        var dummyInstance = CreateDummyInstance(scope, typeScope);
+        
+        var userFunction = new CppUserFunction(
+            "test",
+            CppTypes.Void,
+            dummyInstance.GetCppType,
+            [],
+            AstBlock([
+                AstFunctionCallExpr(AstAtom("dummyFunction"), [AstAtom("instanceMember")])
+            ])
+        );
+        
+        var ast = new Stage2FuncDefinition(
+            "test",
+            CppTypes.Void,
+            [], 
+            AstBlock([]), 
+            userFunction, 
+            scope);
+
+        //Act
+        var stmt = Stage3StatementParser.ParseStage2FunctionDefinition(ast, scope, typeScope);
+        
+        //Assert
+        stmt.StatementEval(scope).IsNone.ShouldBeTrue();
+        userFunction.Invoke(dummyInstance, []);
+
+        dummyFunction.Received(1).Invoke(
+            null, 
+            Arg.Is<ICppValue[]>(i => 
+                i.Length == 1 
+                && i[0] is CppInt32Value
+            ));
+    }
+
+
+    private ICppValue CreateDummyInstance(Scope<ICppValue> scope, Scope<ICppType> typeScope)
+    {
+        var instanceType = new CppUserType(
+            "dummyType",
+            null!
+        );
+        instanceType.BuildMembers(scope, typeScope, ((builder, definition, s, st) =>
+        {
+            builder.AddVariable("instanceMember", CppTypes.Int32, null, MemberVisibility.Private);
+            builder.AddConstructor(new BaseUserTypeConstructor(
+                instanceType, s, [], null
+            ));
+        }));
+        
+        return instanceType.Create();
     }
     
     // [TestMethod]

@@ -344,8 +344,12 @@ public static class GeneratedAstTreeBuilder
             m ?? AstMetadata.Generated()
         );
 
-    public static AstBlock AstBlock(AstStatement[] statements, AstMetadata? m = null) => 
+    public static AstBlock AstBlock(AstStatement[] statements, AstMetadata? m) => 
         new(statements, m ?? AstMetadata.Generated());
+    
+    public static AstBlock AstBlock(params AstStatement[] statements) => 
+        new(statements, AstMetadata.Generated());
+    
     
     // public static AstBlock AstBlock(params AstStatement[] statements) => 
     //     new(statements, m ?? AstMetadata.Generated());
@@ -378,7 +382,9 @@ public static class GeneratedAstTreeBuilder
         new (AstAtom(name), parameters, m ?? AstMetadata.Generated());
     
     public static AstExpression AstAssignmentExpr(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
-        AstAssignment(ident, value, null);
+        AstAssignment(ident, value, m ?? AstMetadata.Generated());
+    public static AstExpression AstAssignmentExpr(string ident, AstExpression value, AstMetadata? m = null) => 
+        AstAssignment(AstIdentifier(ident), value, m ?? AstMetadata.Generated());
     public static AstAssignment AstAssignment(AstIdentifier ident, AstExpression value, AstMetadata? m = null) => 
         new AstAssignment(new AstAtom(ident.Value, ident.Metadata), value, m ?? AstMetadata.Generated($"Assignment: {ident.Value}"));
     public static AstAssignment AstAssignment(AstExpression expr, AstExpression value, AstMetadata? m = null) => 
@@ -421,4 +427,7 @@ public static class GeneratedAstTreeBuilder
     
     public static AstCompoundTypeMember<AstVarDefinition> AstMemberValue(AstVisibility visibility, string type, string name, AstExpression? initializer = null, AstMetadata? m = null) => 
         new(AstVarDefinition(type, name, initializer) , visibility, m ?? AstMetadata.Generated());
+    
+    public static AstCompoundTypeMember<AstFuncDefinition> AstMemberFunction(AstVisibility visibility, AstFuncDefinition func, AstMetadata? m = null) => 
+        new(func, visibility, m ?? AstMetadata.Generated());
 }

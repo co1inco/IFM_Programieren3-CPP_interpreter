@@ -16,6 +16,8 @@ public interface ICppType : IEquatable<ICppType>
 
     ICppValue Create();
 
+    ICppValue CreateParserDummy();
+
     IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags);
 
     ICppMemberInfo? GetMember(string name, CppMemberBindingFlags flags) => 

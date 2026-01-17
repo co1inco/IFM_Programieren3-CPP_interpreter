@@ -53,6 +53,18 @@ public class CppUserType : ICppType
         return _defaultConstructor.Invoke(null, []);
     }
 
+    public ICppValue CreateParserDummy()
+    {
+        var instance = new CppUserValue(this);
+
+        foreach (var member in _members)
+        {
+            instance.MemberValues[member.MemberInfo.Name] = member.MemberInfo.MemberType.CreateParserDummy();
+        }
+        
+        return instance;
+    }
+
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags)
     {
         foreach (var member in _members)

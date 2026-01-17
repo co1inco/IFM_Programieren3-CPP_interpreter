@@ -97,7 +97,7 @@ public static class Stage2Parser
             return expr;
 
         if (astStmt.TryPickT2(out var func, out _))
-            return ParseFuncDefinition(func, scope, typeScope);
+            return ParseFuncDefinition(func, null, scope, typeScope);
 
         return astStmt;
     }
@@ -121,7 +121,7 @@ public static class Stage2Parser
             return ParseVarDefinition(v, scope, typeScope);
 
         if (r2.TryPickT0(out AstFuncDefinition f, out _))
-            return ParseFuncDefinition(f, scope, typeScope);
+            return ParseFuncDefinition(f, null, scope, typeScope);
 
         throw statement.CreateException("Unsupported top level statement");
     }
@@ -146,6 +146,7 @@ public static class Stage2Parser
 
     public static Stage2FuncDefinition ParseFuncDefinition(
         AstFuncDefinition definition,
+        ICppType? instanceType,
         Scope<ICppValue> scope,
         Scope<ICppType> typeScope)
     {
@@ -168,6 +169,7 @@ public static class Stage2Parser
         var function = new CppUserFunction(
             definition.Ident.Value, 
             returnType, 
+            instanceType,
             arguments.ToArray(),
             definition.Body
         );
