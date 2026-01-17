@@ -6,16 +6,29 @@ namespace CppInterpreter.Interpreter.Values;
 
 public class CppUserValue : ICppValue
 {
+    private readonly Dictionary<string, ICppValue> _memberValues = [];
+    
     public CppUserValue(ICppType type)
     {
         GetCppType = type;
     }
     
-    public Dictionary<string, ICppValue> MemberValues { get; } = [];
+    // public Dictionary<string, ICppValue> MemberValues { get; } = [];
+    public IReadOnlyDictionary<string, ICppValue> MemberValues => _memberValues;
     
     public ICppType GetCppType { get; }
     public string StringRep() => "<object>";
     public bool ToBool() => true;
+
+    //TODO: initialize scope with this pointer
+    public Scope<ICppValue> InstanceScope { get; } = new();
+
+    public void AddMember(string name, ICppValue value)
+    {
+        _memberValues[name] = value;
+        InstanceScope.TryBindSymbol(name, value);
+    }
+    
     
     // TODO: this should? check for a copy  
     public ICppValue Copy()
@@ -24,7 +37,7 @@ public class CppUserValue : ICppValue
         var instance = new CppUserValue(GetCppType);
         foreach (var memberValue in MemberValues)
         {
-            instance.MemberValues.Add(memberValue.Key, memberValue.Value);
+            instance.AddMember(memberValue.Key, memberValue.Value);
         }
         return instance;
     }
@@ -72,7 +85,7 @@ public sealed class DefaultCopyConstructor(CppUserType type) : ICppFunction
         var newInstance = new CppUserValue(type);
         foreach (var member in type.GetMembers(CppMemberBindingFlags.AnyInstance))
         {
-            newInstance.MemberValues[member.Name] = other.MemberValues[member.Name].Copy();
+            newInstance.AddMember(member.Name, other.MemberValues[member.Name].Copy());
         }
         
         return newInstance;
@@ -99,7 +112,7 @@ public sealed class DefaultAssignmentOperator(CppUserType type) : ICppFunction
 
         foreach (var member in userInstance.GetCppType.GetMembers(CppMemberBindingFlags.AnyInstance))    
         {
-            userInstance.MemberValues[member.Name] = other.MemberValues[member.Name].Copy();    
+            userInstance.AddMember(member.Name, other.MemberValues[member.Name].Copy());
         }
         
         return instance;
@@ -136,6 +149,7 @@ public sealed class BaseUserTypeConstructor : ICppFunction
     public ICppType? InstanceType => null;
     public CppFunctionParameter[] ParameterTypes { get; }
     
+    
     public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
     {
         if (instance is not null)
@@ -148,10 +162,9 @@ public sealed class BaseUserTypeConstructor : ICppFunction
         foreach (var member in ReturnType.GetMembers(CppMemberBindingFlags.AnyInstance))
         {
             if (_initializers.TryGetValue(member.Name, out var initializer))
-                //TODO: should create new scope with parameters for constructor based initializers
-                newInstance.MemberValues[member.Name] = initializer.Eval(_closure); 
+                newInstance.AddMember(member.Name, initializer.Eval(_closure));
             else
-                newInstance.MemberValues[member.Name] = member.MemberType.Create();
+                newInstance.AddMember(member.Name, member.MemberType.Create());
         }
 
         _userFunction?.Invoke(newInstance, parameters);

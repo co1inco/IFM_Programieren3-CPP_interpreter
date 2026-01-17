@@ -24,6 +24,8 @@ public interface ICppValue
     bool ToBool();
 
     ICppValue Copy();
+    
+    Scope<ICppValue> InstanceScope { get; }
 }
 
 /// <summary>

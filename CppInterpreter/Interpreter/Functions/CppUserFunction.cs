@@ -55,6 +55,7 @@ public sealed class CppUserFunction : ICppFunction
                 throw new Exception("Duplicate parameter name");
         }
 
+        // TODO: add GetParserScope to ICppType?
         if (InstanceType is not null)
         {
             // TODO: type needs a CreateDummy / CreateParse that works, even when no parameterless constructor is avaliable
@@ -73,7 +74,10 @@ public sealed class CppUserFunction : ICppFunction
 
     private Scope<ICppValue> BuildInterpreterScope(ICppValue[] parameters, ICppValue? instance)
     {
-        var scope = new Scope<ICppValue>(Closure);
+        var scope = new Scope<ICppValue>(instance is not null 
+            ? new IntermediateScope<ICppValue>(Closure, instance.InstanceScope) 
+            : Closure
+        );
         
         foreach (var (value, parameter) in parameters.Zip(ParameterTypes))
         {
@@ -82,19 +86,6 @@ public sealed class CppUserFunction : ICppFunction
                 : value.Copy(); // parameter.Type.Construct(value); // copy constructor
             
             scope.TryBindSymbol(parameter.Name, v);
-        }
-
-        if (instance is not null && InstanceType is not null) // Note: null mismatch should have been checked in caller 
-        {
-            // TODO: type needs a CreateDummy / CreateParse that works, even when no parameterless constructor is available
-            // TODO: "this" is a pointer, not a value 
-            // scope.TryAddSymbol("this", InstanceType.Create());
-
-            foreach (var member in InstanceType.GetMembers(CppMemberBindingFlags.AnyInstance))
-            {
-                scope.TryBindSymbol(member.Name, member.GetValue(instance));
-            }
-
         }
         
         return scope;

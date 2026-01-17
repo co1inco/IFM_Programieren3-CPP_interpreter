@@ -21,4 +21,7 @@ public abstract class CppPrimitiveValue<T, TType>(T value)
     public string StringRep() => Value?.ToString() ?? "(null)";
     
     public ICppValue Copy() => TType.Create(Value);
+    
+    public Scope<ICppValue> InstanceScope { get; } = new();
+
 }

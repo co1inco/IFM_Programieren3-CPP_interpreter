@@ -22,7 +22,7 @@ public class Scope<T>
     public bool TryGetSymbolLocal(string name, [NotNullWhen(true)] out T? value) =>
         _symbols.TryGetValue(name, out value);
     
-    public bool TryGetSymbol(string name, [NotNullWhen(true)] out T? value)
+    public virtual bool TryGetSymbol(string name, [NotNullWhen(true)] out T? value)
     {
         if (TryGetSymbolLocal(name, out value))
             return true;
@@ -34,7 +34,7 @@ public class Scope<T>
         return false;
     }
     
-    public bool HasSymbol(string name)
+    public virtual bool HasSymbol(string name)
     {
         if (_symbols.ContainsKey(name))
             return true;
@@ -56,4 +56,33 @@ public class Scope<T>
     public bool TryBindSymbol(string name, T symbol) => 
         TryAddSymbol(name, symbol);
     
+}
+
+//TODO: Don't inherit scope. Instead create a new IScope interface and replace all usage of Scope with IScope
+public class IntermediateScope<T> : Scope<T>
+{
+    private readonly Scope<T> _intermediateScope;
+
+    public IntermediateScope(Scope<T>? parentScope, Scope<T> intermediateScope) :base(parentScope)
+    {
+        _intermediateScope = intermediateScope;
+    }
+
+    public override bool TryGetSymbol(string name, [NotNullWhen(true)] out T? value)
+    {
+        if (TryGetSymbolLocal(name, out value))
+            return true;
+        if (_intermediateScope.TryGetSymbolLocal(name, out value))
+            return true;
+        return base.TryGetSymbol(name, out value);
+    }
+
+    public override bool HasSymbol(string name)
+    {
+        if (HasSymbolLocal(name))
+            return true;
+        if (_intermediateScope.HasSymbolLocal(name))
+            return true;
+        return base.HasSymbol(name);
+    }
 }

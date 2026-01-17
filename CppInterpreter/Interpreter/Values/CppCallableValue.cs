@@ -35,6 +35,7 @@ public class CppCallableValue : ICppValueT
     public string StringRep() => "<Callable>";
     public bool ToBool() => true;
     public ICppValue Copy() => this;
+    public Scope<ICppValue> InstanceScope { get; } = new();
 
     public IList<ICppFunction> Overloads => _overloads;
 

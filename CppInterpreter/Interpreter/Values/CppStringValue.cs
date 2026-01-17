@@ -13,6 +13,7 @@ public class CppStringValue(string initialValue) : ICppValueT
     public string StringRep() => $"\"{Value}\"";
     public bool ToBool() => !string.IsNullOrEmpty(Value) && Value != "\0";
     public ICppValue Copy() => new CppStringValue(Value);
+    public Scope<ICppValue> InstanceScope { get; } = new();
 
     public override string ToString() => StringRep();
 }

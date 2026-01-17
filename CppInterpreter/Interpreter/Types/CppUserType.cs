@@ -59,7 +59,7 @@ public class CppUserType : ICppType
 
         foreach (var member in _members)
         {
-            instance.MemberValues[member.MemberInfo.Name] = member.MemberInfo.MemberType.CreateParserDummy();
+            instance.AddMember(member.MemberInfo.Name, member.MemberInfo.MemberType.CreateParserDummy());
         }
         
         return instance;
