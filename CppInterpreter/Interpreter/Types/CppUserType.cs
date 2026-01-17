@@ -7,16 +7,14 @@ namespace CppInterpreter.Interpreter.Types;
 
 public class CppUserType : ICppType
 {
-    private readonly AstCompoundTypeDefinition _astNode;
     private readonly List<MemberData> _members = [];
     private readonly List<MemberValue> _values = [];
     private readonly List<MemberFunction> _functions = [];
     private readonly List<ICppFunction> _constructors = [];
     private ICppFunction? _defaultConstructor;
     
-    public CppUserType(string name, AstCompoundTypeDefinition astNode)
+    public CppUserType(string name)
     {
-        _astNode = astNode;
         Name = name;
     }
 
@@ -105,10 +103,10 @@ public class CppUserType : ICppType
     
     public void BuildMembers(
         Scope<ICppValue> closure,  
-        Action<ICppUserTypeMemberBuilder, AstCompoundTypeDefinition, Scope<ICppValue>> builder)
+        Action<ICppUserTypeMemberBuilder, Scope<ICppValue>> builder)
     {
         Closure = closure;
-        builder(new Builder(this), _astNode, closure);
+        builder(new Builder(this), closure);
     }
     
     public void BuildMemberFunctions(Func<object> builder)

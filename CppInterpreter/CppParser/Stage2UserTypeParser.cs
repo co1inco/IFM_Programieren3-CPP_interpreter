@@ -69,7 +69,7 @@ public static class Stage2UserTypeParser
     {
         List<(CppUserFunction Func, Scope<ICppValue> Closure)> functionsToInitialize = [];    
         
-        typeDef.Type.BuildMembers(namespaceScope, (b, def, valueScope) =>
+        typeDef.Type.BuildMembers(namespaceScope, (b, valueScope) =>
         {
             // TODO: check for duplicate definitions
             var builder = new UserTypeBuilderContext(
@@ -79,11 +79,11 @@ public static class Stage2UserTypeParser
                 typeScope
             );
             
-            ParseMemberVariables(def.Variables, builder);
+            ParseMemberVariables(typeDef.Ast.Variables, builder);
             
-            ParseMemberFunctions(def.Constructors, builder);
+            ParseMemberFunctions(typeDef.Ast.Functions, builder);
             
-            ParseConstructors(def.Constructors, builder);
+            ParseConstructors(typeDef.Ast.Constructors, builder);
             
             functionsToInitialize.AddRange(builder.FunctionsToInitialize.Select(x => (x, valueScope)));
         });

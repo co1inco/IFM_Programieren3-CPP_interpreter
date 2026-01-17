@@ -21,7 +21,10 @@ public record Stage1SymbolTree(Scope<ICppType> Scope, Stage1Symbol[] Statements)
 [GenerateOneOf]
 public partial class Stage1Statement : OneOfBase<AstStatement, None> {}
 
-public record Stage1CompoundTypeDefinition(CppUserType Type);
+public record Stage1CompoundTypeDefinition(
+    AstCompoundTypeDefinition Ast,
+    CppUserType Type
+);
 
 
 /// <summary>
@@ -63,10 +66,13 @@ public class Stage1Parser
 
     public static Stage1CompoundTypeDefinition ParseCompoundTypeDefinition(AstCompoundTypeDefinition typeDefinition, Scope<ICppType> scope)
     {
-        var userType = new CppUserType(typeDefinition.Ident.Value, typeDefinition);
+        var userType = new CppUserType(typeDefinition.Ident.Value);
         scope.TryBindSymbol(userType.Name, userType);
         
-        return new Stage1CompoundTypeDefinition(userType);
+        return new Stage1CompoundTypeDefinition(
+            typeDefinition,
+            userType
+        );
     }
 
     public static AstStatement ParseStatement(AstStatement statement, Scope<ICppType> scope) => statement;

@@ -113,11 +113,8 @@ public class UserFunctionsTest
 
     private ICppValue CreateDummyInstance(Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        var instanceType = new CppUserType(
-            "dummyType",
-            null!
-        );
-        instanceType.BuildMembers(scope, ((builder, definition, s) =>
+        var instanceType = new CppUserType("dummyType");
+        instanceType.BuildMembers(scope, ((builder, s) =>
         {
             builder.AddVariable("instanceMember", CppTypes.Int32, null, MemberVisibility.Private);
             builder.AddConstructor(new BaseUserTypeConstructor(
