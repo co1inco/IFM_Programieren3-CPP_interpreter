@@ -18,6 +18,12 @@ public interface ICppType : IEquatable<ICppType>
 
     ICppValue CreateParserDummy();
 
+    /// <summary>
+    /// Generate a scope with dummy values that can be used for validation during parsing
+    /// </summary>
+    /// <returns></returns>
+    Scope<ICppValue> CreateParserScope() => new();
+
     IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags);
 
     ICppMemberInfo? GetMember(string name, CppMemberBindingFlags flags) => 

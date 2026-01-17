@@ -26,8 +26,6 @@ public static class Stage2UserTypeParser
             {
                 ParseMemberVariable(variable, typeScope, valueScope, b.AddVariable);
             }
-
-            var userTypeParseScope = typeDef.Type.GetParserValueScope();
             
             bool hasAssignOperator = false;
             foreach (var function in def.Functions)
@@ -35,6 +33,8 @@ public static class Stage2UserTypeParser
                 throw new NotImplementedException("member functions");
             }
 
+            var userTypeParseScope = typeDef.Type.CreateParserScope();
+            
             if (!hasAssignOperator)
             {
                 var f = new DefaultAssignmentOperator(typeDef.Type);

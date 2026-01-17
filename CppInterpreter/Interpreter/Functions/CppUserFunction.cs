@@ -47,26 +47,16 @@ public sealed class CppUserFunction : ICppFunction
 
     private Scope<ICppValue> BuildParserScope()
     {
-        var scope = new Scope<ICppValue>(Closure);
+        var scope = new Scope<ICppValue>(InstanceType is not null 
+            ? new IntermediateScope<ICppValue>(Closure, InstanceType.CreateParserScope()) 
+            : Closure
+        );
 
+        
         foreach (var parameter in ParameterTypes)
         {
             if (!scope.TryBindSymbol(parameter.Name, parameter.Type.Create()))
                 throw new Exception("Duplicate parameter name");
-        }
-
-        // TODO: add GetParserScope to ICppType?
-        if (InstanceType is not null)
-        {
-            // TODO: type needs a CreateDummy / CreateParse that works, even when no parameterless constructor is avaliable
-            // TODO: "this" is a pointer, not a value 
-            // scope.TryAddSymbol("this", InstanceType.Create());
-
-            foreach (var member in InstanceType.GetMembers(CppMemberBindingFlags.AnyInstance))
-            {
-                scope.TryBindSymbol(member.Name, member.MemberType.CreateParserDummy());
-            }
-
         }
         
         return scope;
