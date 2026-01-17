@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Ast;
+﻿using System.Runtime.CompilerServices;
+using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
@@ -19,6 +20,8 @@ public class UserTypeBuilderContext(
     // Scope<ICppValue> instanceParseScope,
     Scope<ICppType> typeScope)
 {
+    private readonly List<ICppFunction> _functions = [];
+    
     public List<CppUserFunction> FunctionsToInitialize { get; } = [];
 
     public CppUserType Type => typeDefinition;
@@ -32,15 +35,26 @@ public class UserTypeBuilderContext(
     
     public IEnumerable<ICppFunction> AddedConstructors => builder.Constructors;
 
+    public IEnumerable<ICppFunction> RegisteredFunctions => _functions;
 
     public void AddVariable(string name, ICppType type, InterpreterExpressionResult? initializer, MemberVisibility visibility)
     {
         builder.AddVariable(name, type, initializer, visibility);
     }
 
+    [OverloadResolutionPriority(1)]
+    public void AddFunction(string name, CppUserFunction function, MemberVisibility visibility)
+    {
+        builder.AddFunction(name, function, visibility);
+        
+        FunctionsToInitialize.Add(function);
+        _functions.Add(function);
+    }
+    
     public void AddFunction(string name, ICppFunction function, MemberVisibility visibility)
     {
         builder.AddFunction(name, function, visibility);
+        _functions.Add(function);
     }
     
     /// <summary>
@@ -55,6 +69,7 @@ public class UserTypeBuilderContext(
             FunctionsToInitialize.Add(userFunction);
                 
         builder.AddConstructor(constructor);
+        
         if (visibility == MemberVisibility.Public)
             namespaceScope.BindFunction(constructor, typeDefinition.Name);
     }
@@ -130,13 +145,20 @@ public static class Stage2UserTypeParser
         IEnumerable<AstCompoundTypeMember<AstFuncDefinition>> functions,
         UserTypeBuilderContext builder)
     {
-        bool hasAssignOperator = false;
         foreach (var function in functions)
         {
-            throw new NotImplementedException("member functions");
+            //TODO: might be required to share a single instance parse scope
+            var s2Function = Stage2Parser.ParseFuncDefinition(
+                function.Member,
+                builder.Type,
+                builder.InstanceParserScope, 
+                builder.TypeScope
+            );
+            
+            builder.AddFunction(s2Function.Name, s2Function.Function, function.Visibility.ToMemberVisibility());
         }
             
-        if (!hasAssignOperator)
+        if (!HasAssignmentOperator(builder.RegisteredFunctions, builder.Type))
         {
             var f = new DefaultAssignmentOperator(builder.Type);
             builder.AddFunction(f.Name, f, MemberVisibility.Public);
@@ -209,6 +231,16 @@ public static class Stage2UserTypeParser
     public static bool HasCopyConstructor(IEnumerable<ICppFunction> functions, ICppType instanceType) => 
         functions.Any(x => x.ParameterTypes is [{ IsReference: true } p] && p.Type.Equals(instanceType));
 
+    public static bool HasAssignmentOperator(IEnumerable<ICppFunction> functions, ICppType instanceType) =>
+        functions.Any(function =>
+            function is
+            {
+                Name: "operator=", 
+                ParameterTypes: [{ IsReference: true } p]
+            } 
+            && p.Type.Equals(instanceType)
+        );
+    
     public static MemberVisibility ToMemberVisibility(this AstVisibility visibility) => visibility switch
     {
         AstVisibility.Public => MemberVisibility.Public,
@@ -216,4 +248,4 @@ public static class Stage2UserTypeParser
         AstVisibility.Protected => MemberVisibility.Protected,
         _ => throw new ArgumentOutOfRangeException(nameof(visibility), visibility, null)
     };
-}
+} 
