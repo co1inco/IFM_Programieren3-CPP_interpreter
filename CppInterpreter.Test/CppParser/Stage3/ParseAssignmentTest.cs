@@ -1,4 +1,5 @@
-﻿using CppInterpreter.Ast;
+﻿using System.Security.Cryptography.X509Certificates;
+using CppInterpreter.Ast;
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Functions;
@@ -55,7 +56,7 @@ public class ParseAssignmentTest
         type.Equals(type).Returns(true);
         type.Equals(CppTypes.Int32).Returns(true);
         type.GetFunction("operator=", CppMemberBindingFlags.PublicInstance)
-            .Returns(new CppMemberFunctionInfo("operator=", [assignmentOperator]));
+            .Returns(new CppMemberFunctionInfo("operator=", MemberVisibility.Public, [assignmentOperator]));
 
         
         var value =  Substitute.For<ICppValue>();

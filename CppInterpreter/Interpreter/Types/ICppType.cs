@@ -30,12 +30,14 @@ public interface ICppType : IEquatable<ICppType>
         GetMembers(flags)
             .FirstOrDefault(m => m.Name == name);
 
-    // MethodInfo useful for implementing the interpreter?
+    
     IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags);
-    // IEnumerable<CppMethodInfo> GetFunctions(CppMemberBindingFlags flags) => throw new NotImplementedException();
     CppMemberFunctionInfo? GetFunction(string name, CppMemberBindingFlags flags) => 
         GetFunctions(flags).FirstOrDefault(m => m.Name == name);
     
+    IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags);
+    CppMemberValue? GetField(string name, CppMemberBindingFlags flags) => 
+        GetFields(flags).FirstOrDefault(m => m.Name == name);
 }
 
 public static class CppTypeExtensions
@@ -102,16 +104,19 @@ public interface ICppMemberInfo
 {
     string Name { get; }
     ICppType MemberType { get; }
+    MemberVisibility Visibility { get; }
+    
     ICppValue GetValue(ICppValue instance);
 }
 
-public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICppMemberInfo
+public class CppMemberFunctionInfo(string name, MemberVisibility visibility, ICppFunction[] functions) : ICppMemberInfo
 {
     public string Name => name;
 
     private readonly CppCallableValue _dummyValue = new CppCallableValue(functions);
     
     public ICppType MemberType => _dummyValue.GetCppType;
+    public MemberVisibility Visibility => visibility;
 
     public ICppValue GetValue(ICppValue instance) => new CppCallableValue(instance, functions);
 
@@ -134,5 +139,24 @@ public class CppMemberFunctionInfo(string name, ICppFunction[] functions) : ICpp
         if (a is null)
             return b is null;
         return a.Equals(b);
+    }
+}
+
+
+public class CppMemberValue(string name, MemberVisibility visibility, ICppType type) : ICppMemberInfo
+{
+    public string Name { get; } = name;
+    public ICppType MemberType { get; } = type;
+    public MemberVisibility Visibility => visibility;
+
+    public ICppValue GetValue(ICppValue instance)
+    {
+        if (instance is not CppUserValue userValue)
+            throw new Exception("Instance is not a user type");
+        
+        if (!userValue.MemberValues.TryGetValue(Name, out var value))
+            throw new Exception($"Member value '{Name}' not found");
+
+        return value;
     }
 }

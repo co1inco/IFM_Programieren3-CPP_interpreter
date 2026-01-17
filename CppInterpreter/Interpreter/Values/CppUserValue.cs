@@ -44,22 +44,7 @@ public class CppUserValue : ICppValue
 }
 
 
-public class CppMemberValue(string name, ICppType type) : ICppMemberInfo
-{
-    public string Name { get; } = name;
-    public ICppType MemberType { get; } = type;
 
-    public ICppValue GetValue(ICppValue instance)
-    {
-        if (instance is not CppUserValue userValue)
-            throw new Exception("Instance is not a user type");
-        
-        if (!userValue.MemberValues.TryGetValue(Name, out var value))
-            throw new Exception($"Member value '{Name}' not found");
-
-        return value;
-    }
-}
 
 public sealed class DefaultCopyConstructor(CppUserType type) : ICppFunction
 {
@@ -83,7 +68,7 @@ public sealed class DefaultCopyConstructor(CppUserType type) : ICppFunction
         // TODO: Validate that other is assignable to this (ie. has all values that are required for copy)
 
         var newInstance = new CppUserValue(type);
-        foreach (var member in type.GetMembers(CppMemberBindingFlags.AnyInstance))
+        foreach (var member in type.GetFields(CppMemberBindingFlags.AnyInstance))
         {
             newInstance.AddMember(member.Name, other.MemberValues[member.Name].Copy());
         }
@@ -110,7 +95,7 @@ public sealed class DefaultAssignmentOperator(CppUserType type) : ICppFunction
         if (parameters is not [CppUserValue other ])
             throw new Exception("Invalid arguments");
 
-        foreach (var member in userInstance.GetCppType.GetMembers(CppMemberBindingFlags.AnyInstance))    
+        foreach (var member in userInstance.GetCppType.GetFields(CppMemberBindingFlags.AnyInstance))    
         {
             userInstance.AddMember(member.Name, other.MemberValues[member.Name].Copy());
         }
@@ -159,7 +144,7 @@ public sealed class BaseUserTypeConstructor : ICppFunction
 
         //TODO: base class constructor before
         
-        foreach (var member in ReturnType.GetMembers(CppMemberBindingFlags.AnyInstance))
+        foreach (var member in ReturnType.GetFields(CppMemberBindingFlags.AnyInstance))
         {
             if (_initializers.TryGetValue(member.Name, out var initializer))
                 newInstance.AddMember(member.Name, initializer.Eval(_closure));

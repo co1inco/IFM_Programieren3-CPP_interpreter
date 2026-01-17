@@ -27,6 +27,7 @@
     &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.Examples.Positive_Manual&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.UserTypesTest.CustomConstructorConstructor&lt;/TestId&gt;&#xD;
     &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.CppParser.Stage3.UserFunctionsTest.BuildInstanceUserFunction&lt;/TestId&gt;&#xD;
+    &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.UserTypesTest.WithField_Initialized&lt;/TestId&gt;&#xD;
   &lt;/TestAncestor&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	

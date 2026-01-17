@@ -72,7 +72,7 @@ public class UserTypesTest
             x => x.Key.ShouldBe("testMember")
         );
 
-        var member = userType.GetMembers(CppMemberBindingFlags.PublicInstance).ShouldHaveSingleItem();
+        var member = userType.GetFields(CppMemberBindingFlags.PublicInstance).ShouldHaveSingleItem();
         member.Name.ShouldBe("testMember");
         member.GetValue(userValue).ShouldBeOfType<CppInt32Value>();
     }
@@ -111,7 +111,7 @@ public class UserTypesTest
             x => x.Key.ShouldBe("testMember")
         );
 
-        var member = userType.GetMembers(CppMemberBindingFlags.PublicInstance).ShouldHaveSingleItem();
+        var member = userType.GetFields(CppMemberBindingFlags.PublicInstance).ShouldHaveSingleItem();
         member.Name.ShouldBe("testMember");
         member.GetValue(userValue).ShouldBeOfType<CppInt32Value>().Value.ShouldBe(5);
     }
@@ -194,5 +194,55 @@ public class UserTypesTest
         var instances = callable.Invoke([]).ShouldBeOfType<CppUserValue>();
         instances.MemberValues.TryGetValue("testMember", out var testMemberValue).ShouldBeTrue();
         testMemberValue.ShouldBeOfType<CppInt32Value>().Value.ShouldBe(10);
+    }
+    
+    [TestMethod]
+    public void MemberFunction()
+    {
+        //Arrange
+        var ast = new AstCompoundTypeDefinition(
+            AstIdentifier("testType"),
+            [],
+            [
+                AstMemberFunction(
+                    AstVisibility.Public,
+                    AstFuncDefinition(
+                        AstIdentifier("foo"),
+                        AstTypeIdentifier("void", false)
+                    )
+                )
+            ],
+            [],
+            AstCompoundTypeDefinition.TypeKind.Class,
+            [],
+            null,
+            AstMetadata.Generated()
+        );
+        
+        var typeScope = Stage1Parser.CreateBaseScope();
+        var valueScope = new Scope<ICppValue>();
+
+        //Act
+
+        var s1 = Stage1Parser.ParseCompoundTypeDefinition(ast, typeScope);
+        var s2 = Stage2UserTypeParser.ParseCompoundTypeDefinition(s1, valueScope, typeScope);
+        var s3 = Stage3Parser.ParseCompoundTypeDefinition(s2, typeScope);
+        // var s3 = Stage3StatementParser.ParseCom
+        
+        //Assert
+
+        var userType = s1.Type;
+        var functions = userType.GetFunctions(CppMemberBindingFlags.Public);
+        functions.FirstOrDefault(x => x.Name == "foo")
+            .ShouldNotBeNull()
+            .ShouldSatisfyAllConditions(
+                x => x.Name.ShouldBe("foo"),
+                x => x.MemberType.ShouldBeOfType<CppCallableType>()
+            );
+
+        ((ICppType)userType).GetMembers(CppMemberBindingFlags.Public)
+            .FirstOrDefault(x => x.Name == "foo")
+            .ShouldNotBeNull()
+            .ShouldBeOfType<CppMemberFunctionInfo>();
     }
 }

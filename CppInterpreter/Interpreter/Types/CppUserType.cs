@@ -7,7 +7,7 @@ namespace CppInterpreter.Interpreter.Types;
 
 public class CppUserType : ICppType
 {
-    private readonly List<MemberData> _members = [];
+    // private readonly List<MemberData> _members = [];
     private readonly List<MemberValue> _values = [];
     private readonly List<MemberFunction> _functions = [];
     private readonly List<ICppFunction> _constructors = [];
@@ -60,7 +60,7 @@ public class CppUserType : ICppType
     {
         var instance = new CppUserValue(this);
 
-        foreach (var member in _members)
+        foreach (var member in _values)
         {
             instance.AddMember(member.MemberInfo.Name, member.MemberInfo.MemberType.CreateParserDummy());
         }
@@ -68,45 +68,54 @@ public class CppUserType : ICppType
         return instance;
     }
 
-    public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags)
-    {
-        foreach (var member in _members)
+    private static bool VisibilityMatches(CppMemberBindingFlags flags, MemberVisibility visibility) =>
+        visibility switch
         {
-            switch (member.Visibility)
-            {
-                case MemberVisibility.Public 
-                    when flags.HasFlag(CppMemberBindingFlags.Public):
-                    yield return member.MemberInfo;
-                    break;
-                case MemberVisibility.Private or MemberVisibility.Protected
-                    when flags.HasFlag(CppMemberBindingFlags.NonPublic):
-                    yield return member.MemberInfo;
-                    break;
-            }
-        }
-    }
+            MemberVisibility.Public => flags.HasFlag(CppMemberBindingFlags.Public),
+            MemberVisibility.Private => flags.HasFlag(CppMemberBindingFlags.NonPublic),
+            MemberVisibility.Protected => flags.HasFlag(CppMemberBindingFlags.NonPublic),
+            _ => throw new ArgumentOutOfRangeException()
+        };
     
-    public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags)
-    {
-        return _functions.GroupBy(x => x.Name)
+    public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) =>
+        Enumerable.Empty<ICppMemberInfo>()
+            .Concat(_values
+                .Where(x => VisibilityMatches(flags, x.Visibility))
+                .Select(x => new CppMemberValue(
+                    x.Name, 
+                    x.Visibility, 
+                    x.MemberInfo.MemberType)))
+            .Concat(_functions
+                .Where(x => VisibilityMatches(flags, x.Visibility))
+                .GroupBy(x => x.Name)
+                .Select(x => new CppMemberFunctionInfo(
+                    x.Key,
+                    x.First().Visibility,
+                    x.Select(y => y.Function).ToArray()))
+            );
+
+    public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags) =>
+        _functions
+            .Where(x => VisibilityMatches(flags, x.Visibility))
+            .GroupBy(x => x.Name)
             .Select(x => new CppMemberFunctionInfo(
                 x.Key,
-                x.Where(y =>
-                        (y.Visibility == MemberVisibility.Public && flags.HasFlag(CppMemberBindingFlags.Public))
-                        ||
-                        (y.Visibility != MemberVisibility.Public && flags.HasFlag(CppMemberBindingFlags.NonPublic)))
-                    .Select(y => y.Function)
-                    .ToArray())
-        );
-    }
+                x.First().Visibility,
+                x.Select(y => y.Function).ToArray()));
 
-    
+    public IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags) =>
+        _values
+            .Where(x => VisibilityMatches(flags, x.Visibility))
+            .Select(x => new CppMemberValue(x.Name, x.Visibility, x.MemberInfo.MemberType));
+
+
     public void BuildMembers(
         Scope<ICppValue> closure,  
-        Action<ICppUserTypeMemberBuilder, Scope<ICppValue>> builder)
+        Action<ICppUserTypeMemberBuilder, Scope<ICppValue>> builderFunction)
     {
         Closure = closure;
-        builder(new Builder(this), closure);
+        var builder = new Builder(this);
+        builderFunction(builder, closure);
     }
     
     public void BuildMemberFunctions(Func<object> builder)
@@ -119,9 +128,8 @@ public class CppUserType : ICppType
 
         public void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility)
         {
-            var memberValue = new CppMemberValue(name, value);
-            instance._members.Add(new MemberData(memberValue, visibility));
-            instance._values.Add(new MemberValue(memberValue, initializer));
+            var memberValue = new CppMemberValue(name, visibility, value);
+            instance._values.Add(new MemberValue(name, memberValue, visibility, initializer));
         }
 
         public IEnumerable<MemberValue> Variables => instance._values;
@@ -145,9 +153,9 @@ public class CppUserType : ICppType
         public IEnumerable<ICppFunction> Constructors => instance._constructors;
     }
     
-    private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
+    // private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
 
-    public record MemberValue(ICppMemberInfo MemberInfo, InterpreterExpressionResult? Initializer);
+    public record MemberValue(string Name, ICppMemberInfo MemberInfo, MemberVisibility Visibility, InterpreterExpressionResult? Initializer);
     
     private record MemberFunction(string Name, ICppFunction Function, MemberVisibility Visibility);
 }

@@ -30,11 +30,12 @@ public class CppCallableType : ICppType
 
     public ICppValue Create()
     {
-        throw new NotSupportedException();
+        throw new NotSupportedException("Creating callable");
     }
 
     public ICppValue CreateParserDummy() => new CppCallableValue();
 
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => [];
     public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags) => [];
+    public IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags) => [];
 }

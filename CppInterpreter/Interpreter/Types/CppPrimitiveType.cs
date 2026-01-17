@@ -16,7 +16,7 @@ public abstract class CppPrimitiveType : ICppType
         
         _members = functions?
             .GroupBy(x => x.Name)
-            .Select(ICppMemberInfo (x) => new CppMemberFunctionInfo(x.Key, x.ToArray()))
+            .Select(ICppMemberInfo (x) => new CppMemberFunctionInfo(x.Key, MemberVisibility.Public, x.ToArray()))
             .ToArray() ?? [];
         // typeof(int).GetMethod("").
 
@@ -44,7 +44,9 @@ public abstract class CppPrimitiveType : ICppType
     {
         foreach (var function in Functions.GroupBy(x => x.Name))
         {
-            yield return new CppMemberFunctionInfo(function.Key, function.ToArray());
+            yield return new CppMemberFunctionInfo(function.Key, MemberVisibility.Public, function.ToArray());
         }
     }
+
+    public IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags) => [];
 }
