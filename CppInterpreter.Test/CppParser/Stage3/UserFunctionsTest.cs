@@ -117,7 +117,7 @@ public class UserFunctionsTest
             "dummyType",
             null!
         );
-        instanceType.BuildMembers(scope, typeScope, ((builder, definition, s, st) =>
+        instanceType.BuildMembers(scope, ((builder, definition, s) =>
         {
             builder.AddVariable("instanceMember", CppTypes.Int32, null, MemberVisibility.Private);
             builder.AddConstructor(new BaseUserTypeConstructor(

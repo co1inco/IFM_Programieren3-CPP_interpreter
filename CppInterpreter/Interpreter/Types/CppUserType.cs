@@ -104,12 +104,11 @@ public class CppUserType : ICppType
 
     
     public void BuildMembers(
-        Scope<ICppValue> closure, 
-        Scope<ICppType> typeScope, 
-        Action<ICppUserTypeMemberBuilder, AstCompoundTypeDefinition, Scope<ICppValue>, Scope<ICppType>> builder)
+        Scope<ICppValue> closure,  
+        Action<ICppUserTypeMemberBuilder, AstCompoundTypeDefinition, Scope<ICppValue>> builder)
     {
         Closure = closure;
-        builder(new Builder(this), _astNode, closure, typeScope);
+        builder(new Builder(this), _astNode, closure);
     }
     
     public void BuildMemberFunctions(Func<object> builder)
@@ -144,6 +143,8 @@ public class CppUserType : ICppType
             if (constructorFunction.ParameterTypes.Length == 0)
                 instance._defaultConstructor = constructorFunction;
         }
+
+        public IEnumerable<ICppFunction> Constructors => instance._constructors;
     }
     
     private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
@@ -160,6 +161,7 @@ public enum MemberVisibility
     Protected,
 }
 
+
 public interface ICppUserTypeMemberBuilder
 {
     void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility);
@@ -168,4 +170,5 @@ public interface ICppUserTypeMemberBuilder
     void AddFunction(string name, ICppFunction func, MemberVisibility visibility);
 
     void AddConstructor(ICppFunction constructorFunction);
+    IEnumerable<ICppFunction> Constructors { get; }
 }
