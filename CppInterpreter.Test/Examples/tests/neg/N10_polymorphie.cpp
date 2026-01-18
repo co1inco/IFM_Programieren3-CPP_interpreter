@@ -43,7 +43,7 @@ int main() {
     B b = B(9);
     A a = b;
 
-    a.bar();    // nicht erlaubt!
+    a.bar();    // Fehler: nicht erlaubt!
 
     return 0;
 }

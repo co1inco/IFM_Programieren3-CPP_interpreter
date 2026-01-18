@@ -14,6 +14,7 @@ namespace CppInterpreter.Test.Interpreter;
 public class Examples
 {
     private static readonly Regex ExpectedParser = new(@"/\* EXPECT(?: \(Zeile für Zeile\))?:(?:\r\n|\r|\n)((?:(.*?)(?:\r\n|\r|\n))*?)\*/", RegexOptions.Multiline);
+    private static readonly Regex ExpectedErrorParser = new(@"// Fehler: (.*)");
     
     public static string[] PositiveFiles { get; private set; }
     public static string[] NegativeFiles { get; private set; }
@@ -48,13 +49,14 @@ public class Examples
     }
 
     [TestMethod]
-    public void Check_Negative()
+    [DynamicData(nameof(NegativeFiles))]
+    public void Negative(string filename)
     {
-        var filename = "Examples/tests/Check_01.cpp";
-        var expected = GetExpectedOutput(filename);
-        var output = EvaluateFile(filename);
+        // Arrange
+        var expected = GetExpectedError(filename);
         
-        output.ShouldNotBe(expected);
+        // Act / Assert
+        Should.Throw<ParserException>(() => EvaluateFile(filename), expected);
     }
     
     [TestMethod]
@@ -135,5 +137,15 @@ public class Examples
         if (!match.Success)
             throw new Exception($"Failed to parse expected output for file: {source}");
         return match.Groups[1].Value.Replace("\r\n", "\n");
+    }
+
+    private string GetExpectedError(string source)
+    {
+        var text = File.ReadAllText(source);
+        var match = ExpectedErrorParser.Match(text);
+
+        if (!match.Success)
+            throw new Exception($"Failed to parse expected error for file: {source}");
+        return match.Groups[1].Value;
     }
 }
