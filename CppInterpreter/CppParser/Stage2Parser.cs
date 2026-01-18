@@ -60,11 +60,11 @@ public static class Stage2Parser
         var print = new CppCallableValue(scope);
         scope.TryBindSymbol("print", print);
         
-        print.AddOverload(new CppAction<CppInt32Value>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppInt64ValueT>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppBoolValue>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppStringValue>("print", stdOut.WriteLine));
-        print.AddOverload(new CppAction<CppCharValueT>("print", stdOut.WriteLine));
+        print.TryAddOverload(new CppAction<CppInt32Value>("print", stdOut.WriteLine));
+        print.TryAddOverload(new CppAction<CppInt64ValueT>("print", stdOut.WriteLine));
+        print.TryAddOverload(new CppAction<CppBoolValue>("print", stdOut.WriteLine));
+        print.TryAddOverload(new CppAction<CppStringValue>("print", stdOut.WriteLine));
+        print.TryAddOverload(new CppAction<CppCharValueT>("print", stdOut.WriteLine));
         
         scope.BindFunction(new CppAction<CppInt32Value>("print_int", stdOut.WriteLine));
         scope.BindFunction(new CppAction<CppInt64ValueT>("print_long", stdOut.WriteLine));
@@ -174,8 +174,9 @@ public static class Stage2Parser
             definition.Body
         );
         
-        if (!scope.TryBindFunction(definition.Ident.Value, function))
-            definition.Ident.Throw($"Failed to bind function '{definition.Ident.Value}' to environment");
+        if (scope.TryBindFunction(definition.Ident.Value, function).TryGetError(out var error))
+            definition.Ident.Throw(error);
+            // definition.Ident.Throw($"Failed to bind function '{definition.Ident.Value}' to environment");
         
         return new Stage2FuncDefinition(
             definition.Ident.Value,

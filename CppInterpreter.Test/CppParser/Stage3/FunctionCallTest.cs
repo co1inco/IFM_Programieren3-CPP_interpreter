@@ -32,7 +32,7 @@ public class FunctionCallTest
         function.Invoke(null, []).Returns(new CppVoidValue());
         
         var callable = new CppCallableValue(scope);
-        callable.AddOverload(function);
+        callable.TryAddOverload(function);
         
         scope.TryBindSymbol("test", callable);
 
@@ -66,7 +66,7 @@ public class FunctionCallTest
         function.Invoke(null, Arg.Any<ICppValue[]>()).Returns(new CppVoidValue());
         
         var callable = new CppCallableValue(scope);
-        callable.AddOverload(function);
+        callable.TryAddOverload(function);
         
         scope.TryBindSymbol("test", callable);
 
@@ -99,7 +99,7 @@ public class FunctionCallTest
         function.Invoke(null, []).Returns(new CppInt32Value(42));
         
         var callable = new CppCallableValue(scope);
-        callable.AddOverload(function);
+        callable.TryAddOverload(function);
         
         scope.TryBindSymbol("test", callable);
 
@@ -140,7 +140,7 @@ public class FunctionCallTest
             });
         
         var callable = new CppCallableValue(scope);
-        callable.AddOverload(function);
+        callable.TryAddOverload(function);
         
         scope.TryBindSymbol("test", callable);
 
@@ -183,7 +183,7 @@ public class FunctionCallTest
             });
         
         var callable = new CppCallableValue(scope);
-        callable.AddOverload(function);
+        callable.TryAddOverload(function);
         
         scope.TryBindSymbol("test", callable);
 
@@ -276,7 +276,7 @@ public class FunctionCallTest
         var scope = new Scope<ICppValue>();
 
         var callable = new CppCallableValue(scope);
-        callable.AddOverload(function);
+        callable.TryAddOverload(function);
         scope.TryBindSymbol("check", callable);
         
         var fnDef = Stage2Parser.ParseFuncDefinition(functionAst, null, scope, typeScope);

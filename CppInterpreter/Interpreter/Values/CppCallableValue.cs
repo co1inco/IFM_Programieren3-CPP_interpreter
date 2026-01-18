@@ -39,10 +39,11 @@ public class CppCallableValue : ICppValueT
 
     public IList<ICppFunction> Overloads => _overloads;
 
-    public bool AddOverload(ICppFunction overload)
+    public bool TryAddOverload(ICppFunction overload)
     {
         if (_overloads.Any(x => x.ParametersMatch(overload)))
-            throw new Exception("Overloads already exists");
+            return false;
+            // throw new Exception("Overloads already exists");
         
         _overloads.Add(overload);
         return true;

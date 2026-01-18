@@ -63,7 +63,7 @@ public class UserTypeBuilderContext(
     /// <param name="constructor">A function that sets up a new instance, initializes members and calls the user defined constructor</param>
     /// <param name="userFunction"></param>
     /// <param name="visibility"></param>
-    public void AddConstructor(ICppFunction constructor, CppUserFunction? userFunction, MemberVisibility visibility)
+    public bool AddConstructor(ICppFunction constructor, CppUserFunction? userFunction, MemberVisibility visibility)
     {
         if (userFunction is not null)
             FunctionsToInitialize.Add(userFunction);
@@ -71,7 +71,8 @@ public class UserTypeBuilderContext(
         builder.AddConstructor(constructor);
         
         if (visibility == MemberVisibility.Public)
-            namespaceScope.BindFunction(constructor, typeDefinition.Name);
+            return namespaceScope.BindFunction(constructor, typeDefinition.Name);
+        return true;
     }
 }
 
@@ -177,6 +178,7 @@ public static class Stage2UserTypeParser
             .Where(x => x.Initializer is not null)
             .ToArray();
             
+        
         foreach (var constructor in userConstructors)
         {
             ParseConstructor(
@@ -186,20 +188,27 @@ public static class Stage2UserTypeParser
                 membersToInitialize!
             );
         }
-
-        if (userConstructors.Count == 0)
+        
+        if (builder.AddedConstructors.All(x => x.ParameterTypes.Length != 0))
         {
+            // If no constructors, add auto generated constructor
+            // If any constructor, add private constructor to generate "uninitialized" instance
+            //  TODO: better handling of the later one? 
+            var visibility = userConstructors.Count == 0
+                ? MemberVisibility.Public
+                : MemberVisibility.Private;
+            
             ParseConstructor(
                 builder,
                 null,
-                MemberVisibility.Public,
+                visibility,
                 membersToInitialize!
             );
         }
 
         if (!HasCopyConstructor(builder.AddedConstructors, builder.Type))
         {
-            builder.AddConstructor(new DefaultCopyConstructor(builder.Type), null,  MemberVisibility.Public);
+            builder.AddConstructor(new DefaultCopyConstructor(builder.Type), null, MemberVisibility.Public);
         }
     }
     
@@ -225,7 +234,9 @@ public static class Stage2UserTypeParser
             userFunction?.Function
         );
 
-        builderContext.AddConstructor(constructor, userFunction?.Function, visibility);
+        if (!builderContext.AddConstructor(constructor, userFunction?.Function, visibility))
+            if (userFunctionAst is not null)
+                throw userFunctionAst.CreateException("Failed to bind constructor");
     }
     
     public static bool HasCopyConstructor(IEnumerable<ICppFunction> functions, ICppType instanceType) => 

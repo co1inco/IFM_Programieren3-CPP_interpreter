@@ -2,6 +2,7 @@
 using System.Reflection;
 using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
+using CSharpFunctionalExtensions;
 
 namespace CppInterpreter.Interpreter.Values;
 
@@ -44,32 +45,27 @@ public static class CppValues
     
     extension(Scope<ICppValue> scope)
     {
-        public bool TryBindFunction(string name, ICppFunction func)
+        public Result TryBindFunction(string name, ICppFunction func)
         {
-
-            if (!scope.TryEnsureCallable(name, out var callable))
-                return false;
-
-            callable.AddOverload(func);
-            return true;
+            return scope.TryEnsureCallable(name)
+                .Ensure(c => c.TryAddOverload(func), "Ovlerload already exists");
         }
 
-        private bool TryEnsureCallable(string name, [NotNullWhen(true)] out CppCallableValue? callable)
+        private Result<CppCallableValue> TryEnsureCallable(string name)
         {
-            if (!scope.TryGetSymbol(name, out var symbol))
+            if (scope.TryGetSymbol(name, out var symbol))
             {
-                callable = new CppCallableValue(scope);
-                return scope.TryBindSymbol(name, callable);
+                return symbol is CppCallableValue c
+                    ? Result.Success(c)
+                    : Result.Failure<CppCallableValue>($"Symbol '{name}' is not callable");
             }
-
-            if (symbol is not CppCallableValue c)
-            {
-                callable = null;
-                return false;
-            }
-
-            callable = c;
-            return true;
+            
+            var callable = new CppCallableValue(scope);
+            return Result.SuccessIf(
+                scope.TryBindSymbol(name, callable),
+                callable,
+                $"Failed to bind callable '{name}'"
+            );
         } 
         
         public int ExecuteFunction(string name = "main")
@@ -87,7 +83,7 @@ public static class CppValues
             return 0;
         }
 
-        public void BindFunction(ICppFunction function, string? name = null)
+        public bool BindFunction(ICppFunction function, string? name = null)
         {
             name ??= function.Name;
 
@@ -95,7 +91,7 @@ public static class CppValues
             {
                 if (value is not CppCallableValue callable)
                     throw new Exception($"Symbol '{name}' is not callable");
-                callable.AddOverload(function);
+                return callable.TryAddOverload(function);
             }
             else
             {
@@ -103,8 +99,7 @@ public static class CppValues
                 if (!scope.TryBindSymbol(name, callable))
                     throw new Exception($"Symbol '{name}' already exists");
                 
-                callable.AddOverload(function);
-                
+                return callable.TryAddOverload(function);
             }
         }
         
