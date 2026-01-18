@@ -9,6 +9,11 @@ public sealed class CppBoolValue(bool value)
     public static ICppType TypeOf => CppTypes.Boolean;
     public static CppBoolValue Create(bool value) => new CppBoolValue(value);
     public bool ToBool() => Value;
+
+    public void Assign(ICppValue value)
+    {
+        Value = value.ToBool();
+    }
     
     public ICppValue Copy() => new CppBoolValue(Value);
 }

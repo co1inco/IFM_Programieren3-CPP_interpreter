@@ -13,5 +13,7 @@ public readonly struct CppVoidValue : ICppValueT
     public bool ToBool() => false;
     public ICppValue Copy() => this; // return self. is all the same anyways
     
+    public void Assign(ICppValue value) => throw new NotSupportedException("void can not be assigned to");
+    
     public Scope<ICppValue> InstanceScope { get; } = new();
 }

@@ -26,6 +26,8 @@ public interface ICppValue
 
     ICppValue Copy();
     
+    void Assign(ICppValue value);
+    
     Scope<ICppValue> InstanceScope { get; }
 }
 

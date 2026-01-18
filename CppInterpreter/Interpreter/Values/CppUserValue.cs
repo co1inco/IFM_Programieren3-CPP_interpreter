@@ -20,7 +20,7 @@ public class CppUserValue : ICppValue
     public string StringRep() => "<object>";
     public bool ToBool() => true;
 
-    //TODO: initialize scope with this pointer
+    //TODO: initialize scope with "this" pointer
     public Scope<ICppValue> InstanceScope { get; } = new();
 
     public void AddMember(string name, ICppValue value)
@@ -40,6 +40,14 @@ public class CppUserValue : ICppValue
             instance.AddMember(memberValue.Key, memberValue.Value);
         }
         return instance;
+    }
+
+    public void Assign(ICppValue value)
+    {
+        var function = GetCppType.GetFunction("operator=", CppMemberBindingFlags.AnyInstance);
+        if (function is null)
+            throw new Exception("Type has no assignment operator");
+        function.Invoke(this, value);
     }
 }
 
@@ -89,15 +97,15 @@ public sealed class DefaultAssignmentOperator(CppUserType type) : ICppFunction
     
     public ICppValue Invoke(ICppValue? instance, ICppValue[] parameters)
     {   
-        if (instance is not CppUserValue userInstance)
+        if (instance is not CppUserValue targetInstance)
             throw new Exception("Instance is not a user type");
         
         if (parameters is not [CppUserValue other ])
             throw new Exception("Invalid arguments");
 
-        foreach (var member in userInstance.GetCppType.GetFields(CppMemberBindingFlags.AnyInstance))    
+        foreach (var member in targetInstance.GetCppType.GetFields(CppMemberBindingFlags.AnyInstance))
         {
-            userInstance.AddMember(member.Name, other.MemberValues[member.Name].Copy());
+            targetInstance.MemberValues[member.Name].Assign(other.MemberValues[member.Name]);
         }
         
         return instance;

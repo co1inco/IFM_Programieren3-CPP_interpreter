@@ -35,6 +35,8 @@ public class CppCallableValue : ICppValueT
     public string StringRep() => "<Callable>";
     public bool ToBool() => true;
     public ICppValue Copy() => this;
+    public void Assign(ICppValue value) =>  throw new NotSupportedException("callable can not be assigned to");
+    
     public Scope<ICppValue> InstanceScope { get; } = new();
 
     public IList<ICppFunction> Overloads => _overloads;

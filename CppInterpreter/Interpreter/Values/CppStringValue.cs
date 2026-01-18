@@ -13,6 +13,14 @@ public class CppStringValue(string initialValue) : ICppValueT
     public string StringRep() => $"\"{Value}\"";
     public bool ToBool() => !string.IsNullOrEmpty(Value) && Value != "\0";
     public ICppValue Copy() => new CppStringValue(Value);
+
+    public void Assign(ICppValue value)
+    {
+        if (value is not CppStringValue c)
+            throw new Exception($"Can not assign '{value.GetCppType.Name}' to '{GetCppType.Name}'");
+        Value = c.Value;
+    }
+    
     public Scope<ICppValue> InstanceScope { get; } = new();
 
     public override string ToString() => StringRep();

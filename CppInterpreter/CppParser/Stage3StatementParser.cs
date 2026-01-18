@@ -365,7 +365,7 @@ public static class Stage3StatementParser
         if (!typeScope.TryGetSymbol(definition.Type.Ident, out var type))
             definition.Type.ThrowNotFound();
         
-        if (!scope.TryBindSymbol(definition.Ident.Value,type.Create()))
+        if (!scope.TryBindSymbol(definition.Ident.Value,type.CreateParserDummy()))
             throw new Exception($"Variable '{definition.Ident.Value}' was already defined");
         
         if (definition.Type.IsReference)

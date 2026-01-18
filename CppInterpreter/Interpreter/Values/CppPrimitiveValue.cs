@@ -21,7 +21,14 @@ public abstract class CppPrimitiveValue<T, TType>(T value)
     public string StringRep() => Value?.ToString() ?? "(null)";
     
     public ICppValue Copy() => TType.Create(Value);
+
+    public void Assign(ICppValue value)
+    {
+        if (value is not ICppPrimitiveValueT<T, TType> c)
+            throw new Exception($"Can not assign '{value.GetCppType.Name}' to '{GetCppType.Name}'");
+        Value = c.Value;
+    }
     
     public Scope<ICppValue> InstanceScope { get; } = new();
-
+    
 }

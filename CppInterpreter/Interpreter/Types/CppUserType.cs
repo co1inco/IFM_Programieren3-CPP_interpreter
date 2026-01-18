@@ -38,7 +38,7 @@ public class CppUserType : ICppType
 
         foreach (var member in _values)
         {
-            scope.TryAddSymbol(member.MemberInfo.Name, member.MemberInfo.MemberType.Create());
+            scope.TryAddSymbol(member.MemberInfo.Name, member.MemberInfo.MemberType.CreateParserDummy());
         }
 
         foreach (var function in _functions)
