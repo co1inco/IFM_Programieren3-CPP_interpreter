@@ -5,7 +5,7 @@ using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter.Types;
 
-public interface ICppType : IEquatable<ICppType>, IDisposable
+public interface ICppType : IEquatable<ICppType>
 {
     string Name { get; }   
 

@@ -74,6 +74,12 @@ public class UserTypeBuilderContext(
             return namespaceScope.BindFunction(constructor, typeDefinition.Name);
         return true;
     }
+
+    public void SetDestructor(Stage2FuncDefinition userFunction)
+    {
+        builder.SetDestructor(userFunction.Function);
+        FunctionsToInitialize.Add(userFunction);
+    }
 }
 
 public static class Stage2UserTypeParser
@@ -100,6 +106,8 @@ public static class Stage2UserTypeParser
             ParseMemberFunctions(typeDef.Ast.Functions, builder);
             
             ParseConstructors(typeDef.Ast.Constructors, builder);
+            
+            ParseDestructor(typeDef.Ast.Destructor, builder);
             
             functionsToInitialize.AddRange(builder.FunctionsToInitialize.Select(x => (x, valueScope)));
         });
@@ -238,6 +246,22 @@ public static class Stage2UserTypeParser
             if (userFunctionAst is not null)
                 throw userFunctionAst.CreateException("Failed to bind constructor");
     }
+
+    public static void ParseDestructor(AstFuncDefinition? destructorFunction, UserTypeBuilderContext builder)
+    {
+        if (destructorFunction is null)
+            return;
+        
+        var destructor = Stage2Parser.ParseFuncDefinition(
+            destructorFunction, 
+            builder.Type,
+            builder.InstanceParserScope,
+            builder.TypeScope
+        );
+        
+        builder.SetDestructor(destructor);
+    }
+    
     
     public static bool HasCopyConstructor(IEnumerable<ICppFunction> functions, ICppType instanceType) => 
         functions.Any(x => x.ParameterTypes is [{ IsReference: true } p] && p.Type.Equals(instanceType));

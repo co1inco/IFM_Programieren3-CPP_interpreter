@@ -59,7 +59,7 @@ public static class Stage2Parser
         print.TryAddOverload(new CppAction<CppInt32Value>("print", stdOut.WriteLine));
         print.TryAddOverload(new CppAction<CppInt64ValueT>("print", stdOut.WriteLine));
         print.TryAddOverload(new CppAction<CppBoolValue>("print", stdOut.WriteLine));
-        print.TryAddOverload(new CppAction<CppStringValue>("print", stdOut.WriteLine));
+        print.TryAddOverload(new CppAction<CppStringValue>("print", s => stdOut.WriteLine(s.Value)));
         print.TryAddOverload(new CppAction<CppCharValueT>("print", stdOut.WriteLine));
         
         scope.BindFunction(new CppAction<CppInt32Value>("print_int", stdOut.WriteLine));

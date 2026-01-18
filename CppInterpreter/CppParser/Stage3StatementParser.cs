@@ -255,7 +255,8 @@ public static class Stage3StatementParser
 
     public static Stage3Statement ParseFor(AstFor forStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        using var forScope = new Scope<ICppValue>(scope);
+        // using var forScope = new Scope<ICppValue>(scope);
+        var forScope = new Scope<ICppValue>(scope);
         
         // TODO: validate that initializer and incrementor do not return anything (Should be prevented by antlr though)
         var initializer = forStatement.Initializer is null ? null : ParseStatement(forStatement.Initializer, forScope, typeScope);
@@ -306,7 +307,8 @@ public static class Stage3StatementParser
     public static Stage3Statement ParseBlock(AstBlock block, Scope<ICppValue> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
         // Note: using might not be required here as it is primarily used to call the destructors 
-        using var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
+        // using var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
+        var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
             
         var statements = block.Statements
             .Select(x => ParseStatement(x, parseScope, typeScope))

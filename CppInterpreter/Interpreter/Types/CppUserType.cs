@@ -12,6 +12,7 @@ public class CppUserType : ICppType
     private readonly List<MemberFunction> _functions = [];
     private readonly List<ICppFunction> _constructors = [];
     private ICppFunction? _defaultConstructor;
+    private ICppFunction? _destructor;
     
     public CppUserType(string name)
     {
@@ -68,9 +69,9 @@ public class CppUserType : ICppType
         return instance;
     }
 
-    public void Dispose()
+    public void Destruct(CppUserValue instance)
     {
-        throw new NotImplementedException();
+        _destructor?.Invoke(instance, []);
     }
 
     private static bool VisibilityMatches(CppMemberBindingFlags flags, MemberVisibility visibility) =>
@@ -156,6 +157,11 @@ public class CppUserType : ICppType
         }
 
         public IEnumerable<ICppFunction> Constructors => instance._constructors;
+        
+        public void SetDestructor(ICppFunction destructorFunction)
+        {
+            instance._destructor = destructorFunction;
+        }
     }
     
     // private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
@@ -182,4 +188,6 @@ public interface ICppUserTypeMemberBuilder
 
     void AddConstructor(ICppFunction constructorFunction);
     IEnumerable<ICppFunction> Constructors { get; }
+    
+    void SetDestructor(ICppFunction destructorFunction);
 }

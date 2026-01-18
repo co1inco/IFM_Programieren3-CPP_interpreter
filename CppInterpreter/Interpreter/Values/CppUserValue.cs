@@ -4,7 +4,7 @@ using CppInterpreter.Interpreter.Types;
 
 namespace CppInterpreter.Interpreter.Values;
 
-public class CppUserValue : ICppValue
+public class CppUserValue : ICppValue, IDisposable
 {
     private readonly Dictionary<string, ICppValue> _memberValues = [];
     
@@ -48,6 +48,12 @@ public class CppUserValue : ICppValue
         if (function is null)
             throw new Exception("Type has no assignment operator");
         function.Invoke(this, value);
+    }
+
+    public void Dispose()
+    {
+        if (GetCppType is CppUserType userType)
+            userType.Destruct(this);
     }
 }
 
