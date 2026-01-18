@@ -48,9 +48,10 @@ public class UserFunctionTest
         ICppType instanceType,
         Func<Scope<ICppValue>, ICppValue> functionBody)
     {
-        var f = new CppUserFunction("", returnType, instanceType, [], new AstBlock([], AstMetadata.Generated()));
+        var f = new CppUserFunction("", returnType, instanceType, []);
+        var ast = new AstBlock([], AstMetadata.Generated());
         
-        f.BuildBody(new Scope<ICppValue>(), new Scope<ICppType>(), (block, type, s1, s2) => functionBody);
+        f.BuildBody(ast, new Scope<ICppValue>(), new Scope<ICppType>(), (block, type, s1, s2) => functionBody);
 
         return f;
     }

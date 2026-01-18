@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using CppInterpreter.Ast;
 using CppInterpreter.Interpreter;
 using CppInterpreter.Interpreter.Functions;
@@ -10,7 +11,7 @@ namespace CppInterpreter.CppParser;
 
 public record Stage2CompoundTypeDefinition(
     CppUserType Type,
-    (CppUserFunction Func, Scope<ICppValue> Closure)[] Functions    
+    (Stage2FuncDefinition Func, Scope<ICppValue> Closure)[] Functions    
 );
 
 public class UserTypeBuilderContext(
@@ -22,7 +23,7 @@ public class UserTypeBuilderContext(
 {
     private readonly List<ICppFunction> _functions = [];
     
-    public List<CppUserFunction> FunctionsToInitialize { get; } = [];
+    public List<Stage2FuncDefinition> FunctionsToInitialize { get; } = [];
 
     public CppUserType Type => typeDefinition;
     
@@ -42,13 +43,12 @@ public class UserTypeBuilderContext(
         builder.AddVariable(name, type, initializer, visibility);
     }
 
-    [OverloadResolutionPriority(1)]
-    public void AddFunction(string name, CppUserFunction function, MemberVisibility visibility)
+    public void AddFunction(string name, Stage2FuncDefinition function, MemberVisibility visibility)
     {
-        builder.AddFunction(name, function, visibility);
+        builder.AddFunction(name, function.Function, visibility);
         
         FunctionsToInitialize.Add(function);
-        _functions.Add(function);
+        _functions.Add(function.Function);
     }
     
     public void AddFunction(string name, ICppFunction function, MemberVisibility visibility)
@@ -63,7 +63,7 @@ public class UserTypeBuilderContext(
     /// <param name="constructor">A function that sets up a new instance, initializes members and calls the user defined constructor</param>
     /// <param name="userFunction"></param>
     /// <param name="visibility"></param>
-    public bool AddConstructor(ICppFunction constructor, CppUserFunction? userFunction, MemberVisibility visibility)
+    public bool AddConstructor(ICppFunction constructor, Stage2FuncDefinition? userFunction, MemberVisibility visibility)
     {
         if (userFunction is not null)
             FunctionsToInitialize.Add(userFunction);
@@ -83,7 +83,7 @@ public static class Stage2UserTypeParser
         Scope<ICppValue> namespaceScope, 
         Scope<ICppType> typeScope)
     {
-        List<(CppUserFunction Func, Scope<ICppValue> Closure)> functionsToInitialize = [];    
+        List<(Stage2FuncDefinition Func, Scope<ICppValue> Closure)> functionsToInitialize = [];    
         
         typeDef.Type.BuildMembers(namespaceScope, (b, valueScope) =>
         {
@@ -156,7 +156,7 @@ public static class Stage2UserTypeParser
                 builder.TypeScope
             );
             
-            builder.AddFunction(s2Function.Name, s2Function.Function, function.Visibility.ToMemberVisibility());
+            builder.AddFunction(s2Function.Function.Name, s2Function, function.Visibility.ToMemberVisibility());
         }
             
         if (!HasAssignmentOperator(builder.RegisteredFunctions, builder.Type))
@@ -234,7 +234,7 @@ public static class Stage2UserTypeParser
             userFunction?.Function
         );
 
-        if (!builderContext.AddConstructor(constructor, userFunction?.Function, visibility))
+        if (!builderContext.AddConstructor(constructor, userFunction, visibility))
             if (userFunctionAst is not null)
                 throw userFunctionAst.CreateException("Failed to bind constructor");
     }

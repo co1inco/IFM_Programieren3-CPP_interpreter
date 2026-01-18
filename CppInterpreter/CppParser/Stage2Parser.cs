@@ -32,12 +32,8 @@ public partial class Stage2Statement : OneOfBase<
 
 public record Stage2VarDefinition(ICppType Type, string Name, AstExpression? Initializer);
 public record Stage2FuncDefinition(
-    string Name, 
-    ICppType ReturnType, 
-    CppFunctionParameter[] Arguments,
     AstBlock Body,
-    CppUserFunction Function,
-    Scope<ICppValue> Closure
+    CppUserFunction Function
 );
 
 
@@ -170,8 +166,7 @@ public static class Stage2Parser
             definition.Ident.Value, 
             returnType, 
             instanceType,
-            arguments.ToArray(),
-            definition.Body
+            arguments.ToArray()
         );
         
         if (scope.TryBindFunction(definition.Ident.Value, function).TryGetError(out var error))
@@ -179,12 +174,8 @@ public static class Stage2Parser
             // definition.Ident.Throw($"Failed to bind function '{definition.Ident.Value}' to environment");
         
         return new Stage2FuncDefinition(
-            definition.Ident.Value,
-            returnType,
-            arguments.ToArray(),
             definition.Body,
-            function,
-            scope
+            function
         );
     }
 }

@@ -36,9 +36,9 @@ public class FunctionDefinitionTest
                 x => x.Name.ShouldBe("test"),
                 x => x.ParameterTypes.ShouldBeEmpty());
         
-        result.Name.ShouldBe("test");
-        result.ReturnType.ShouldBeOfType<CppVoidType>();
-        result.Arguments.ShouldBeEmpty();
+        result.Function.Name.ShouldBe("test");
+        result.Function.ReturnType.ShouldBeOfType<CppVoidType>();
+        result.Function.ParameterTypes.ShouldBeEmpty();
     }
     
     [TestMethod]
@@ -68,16 +68,16 @@ public class FunctionDefinitionTest
                 x => x.Name.ShouldBe("test"),
                 x => x.ParameterTypes.ShouldHaveCount(2));
         
-        result.Name.ShouldBe("test");
-        result.ReturnType.ShouldBeOfType<CppVoidType>();
-        result.Arguments.ShouldHaveCount(2);
+        result.Function.Name.ShouldBe("test");
+        result.Function.ReturnType.ShouldBeOfType<CppVoidType>();
+        result.Function.ParameterTypes.ShouldHaveCount(2);
         
-        result.Arguments[0].ShouldSatisfyAllConditions(
+        result.Function.ParameterTypes[0].ShouldSatisfyAllConditions(
             x => x.Name.ShouldBe("param1"),
             x => x.Type.ShouldBeOfType<CppInt32Type>()
         );
         
-        result.Arguments[1].ShouldSatisfyAllConditions(
+        result.Function.ParameterTypes[1].ShouldSatisfyAllConditions(
             x => x.Name.ShouldBe("param2"),
             x => x.Type.ShouldBeOfType<CppInt64Type>()
         );

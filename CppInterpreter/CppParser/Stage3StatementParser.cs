@@ -114,7 +114,7 @@ public static class Stage3StatementParser
 {
     public static Stage3Statement ParseStage2FunctionDefinition(Stage2FuncDefinition definition, Scope<ICppValue> scope, Scope<ICppType> typeScope) 
     {
-        definition.Function.BuildBody(scope, typeScope, BuildFunction);
+        definition.Function.BuildBody(definition.Body, scope, typeScope, BuildFunction);
         return new Stage3Statement(_ => new None(), []);
     }
     

@@ -11,14 +11,12 @@ public sealed class CppUserFunction : ICppFunction
         string name,
         ICppType returnType, 
         ICppType? instanceType,
-        CppFunctionParameter[] arguments,
-        AstBlock body)
+        CppFunctionParameter[] arguments)
     {
         Name = name;
         ReturnType = returnType;
         InstanceType = instanceType;
         ParameterTypes = arguments;
-        Body = body;
     }
     
     public string Name { get; }
@@ -81,14 +79,16 @@ public sealed class CppUserFunction : ICppFunction
         return scope;
     }
     
-    public AstBlock Body { get; }
-    
     public Func<Scope<ICppValue>, ICppValue>? Function { get; private set; }
     public Scope<ICppValue>? Closure { get; private set; }
     
-    public void BuildBody(Scope<ICppValue> closure, Scope<ICppType> typeScope, Func<AstBlock, ICppType, Scope<ICppValue>, Scope<ICppType>, Func<Scope<ICppValue>, ICppValue>> builder)
+    public void BuildBody(
+        AstBlock body,
+        Scope<ICppValue> closure, 
+        Scope<ICppType> typeScope, 
+        Func<AstBlock, ICppType, Scope<ICppValue>, Scope<ICppType>, Func<Scope<ICppValue>, ICppValue>> builder)
     {
         Closure = closure;
-        Function = builder(Body, ReturnType, BuildParserScope(), typeScope);
+        Function = builder(body, ReturnType, BuildParserScope(), typeScope);
     }
 }

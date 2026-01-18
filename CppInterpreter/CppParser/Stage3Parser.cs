@@ -71,7 +71,7 @@ public static class Stage3Parser
 
         foreach (var (func, closure) in typeDefinition.Functions)
         {
-            func.BuildBody(closure, typeScope, Stage3StatementParser.BuildFunction);
+            func.Function.BuildBody(func.Body, closure, typeScope, Stage3StatementParser.BuildFunction);
         }
         
         return new Stage3Statement(

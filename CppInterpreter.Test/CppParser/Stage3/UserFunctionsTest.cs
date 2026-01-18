@@ -34,19 +34,14 @@ public class UserFunctionsTest
             "test",
             CppTypes.Void,
             null,
-            [],
-            AstBlock([
-                    AstFunctionCallExpr(AstAtom("foo"), [])
-            ])
+            []
         );
         
-        var ast = new Stage2FuncDefinition(
-            "test",
-            CppTypes.Void,
-            [], 
-            AstBlock([]), 
-            userFunction, 
-            scope);
+        var ast = new Stage2FuncDefinition( 
+            AstBlock([
+                AstFunctionCallExpr(AstAtom("foo"), [])
+            ]), 
+            userFunction);
 
         //Act
         var stmt = Stage3StatementParser.ParseStage2FunctionDefinition(ast, scope, typeScope);
@@ -81,19 +76,15 @@ public class UserFunctionsTest
             "test",
             CppTypes.Void,
             dummyInstance.GetCppType,
-            [],
-            AstBlock([
-                AstFunctionCallExpr(AstAtom("dummyFunction"), [AstAtom("instanceMember")])
-            ])
+            []
         );
         
         var ast = new Stage2FuncDefinition(
-            "test",
-            CppTypes.Void,
-            [], 
-            AstBlock([]), 
-            userFunction, 
-            scope);
+            AstBlock([
+                AstFunctionCallExpr(AstAtom("dummyFunction"), [AstAtom("instanceMember")])
+            ]), 
+            userFunction
+        );
 
         //Act
         var stmt = Stage3StatementParser.ParseStage2FunctionDefinition(ast, scope, typeScope);
