@@ -68,6 +68,11 @@ public class CppUserType : ICppType
         return instance;
     }
 
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+
     private static bool VisibilityMatches(CppMemberBindingFlags flags, MemberVisibility visibility) =>
         visibility switch
         {

@@ -2,7 +2,7 @@
 
 namespace CppInterpreter.Interpreter;
 
-public class Scope<T>
+public class Scope<T> : IDisposable
 {
     private readonly Dictionary<string, T> _symbols = [];
     private readonly Scope<T>? _parentScope;
@@ -55,7 +55,15 @@ public class Scope<T>
     
     public bool TryBindSymbol(string name, T symbol) => 
         TryAddSymbol(name, symbol);
-    
+
+    public void Dispose()
+    {
+        foreach (var symbol in _symbols)
+        {
+            if (symbol.Value is IDisposable d)
+                d.Dispose();
+        }
+    }
 }
 
 //TODO: Don't inherit scope. Instead create a new IScope interface and replace all usage of Scope with IScope

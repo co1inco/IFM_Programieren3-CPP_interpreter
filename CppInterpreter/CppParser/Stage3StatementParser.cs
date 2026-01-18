@@ -255,7 +255,7 @@ public static class Stage3StatementParser
 
     public static Stage3Statement ParseFor(AstFor forStatement, Scope<ICppValue> scope, Scope<ICppType> typeScope)
     {
-        var forScope = new Scope<ICppValue>(scope);
+        using var forScope = new Scope<ICppValue>(scope);
         
         // TODO: validate that initializer and incrementor do not return anything (Should be prevented by antlr though)
         var initializer = forStatement.Initializer is null ? null : ParseStatement(forStatement.Initializer, forScope, typeScope);
@@ -266,13 +266,13 @@ public static class Stage3StatementParser
 
         return new Stage3Statement(s =>
             {
-                s = new Scope<ICppValue>(s);
+                using var interpreterScope = new Scope<ICppValue>(s);
 
-                initializer?.StatementEval(s);
+                initializer?.StatementEval(interpreterScope);
 
-                while (condition.Eval(s).ToBool())
+                while (condition.Eval(interpreterScope).ToBool())
                 {
-                    var bodyResult = body.StatementEval(s);
+                    var bodyResult = body.StatementEval(interpreterScope);
                     
                     if (bodyResult.TryPickT0(out var r, out var rem1))
                         return r;
@@ -280,7 +280,7 @@ public static class Stage3StatementParser
                         break;
                     // no handling for continue required
                     
-                    incrementor?.StatementEval(s);
+                    incrementor?.StatementEval(interpreterScope);
                 }
 
                 return new None();
@@ -305,7 +305,8 @@ public static class Stage3StatementParser
 
     public static Stage3Statement ParseBlock(AstBlock block, Scope<ICppValue> scope, Scope<ICppType> typeScope, bool suppressBlockScope = false)
     {
-        var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
+        // Note: using might not be required here as it is primarily used to call the destructors 
+        using var parseScope = suppressBlockScope ? scope : new Scope<ICppValue>(scope);
             
         var statements = block.Statements
             .Select(x => ParseStatement(x, parseScope, typeScope))
@@ -333,7 +334,7 @@ public static class Stage3StatementParser
         
         return new Stage3Statement(s =>
             {
-                var blockScope = suppressBlockScope ? s : new Scope<ICppValue>(s);
+                using var blockScope = suppressBlockScope ? s : new Scope<ICppValue>(s);
 
                 foreach (var statement in statements)
                 {

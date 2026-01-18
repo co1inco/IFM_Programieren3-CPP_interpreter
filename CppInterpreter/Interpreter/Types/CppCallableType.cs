@@ -34,7 +34,8 @@ public class CppCallableType : ICppType
     }
 
     public ICppValue CreateParserDummy() => new CppCallableValue();
-
+    public void Dispose() {}
+    
     public IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags) => [];
     public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags) => [];
     public IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags) => [];

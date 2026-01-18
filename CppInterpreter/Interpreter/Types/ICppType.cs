@@ -5,7 +5,7 @@ using CppInterpreter.Interpreter.Values;
 
 namespace CppInterpreter.Interpreter.Types;
 
-public interface ICppType : IEquatable<ICppType>
+public interface ICppType : IEquatable<ICppType>, IDisposable
 {
     string Name { get; }   
 
@@ -18,6 +18,7 @@ public interface ICppType : IEquatable<ICppType>
 
     ICppValue CreateParserDummy();
 
+    
     /// <summary>
     /// Generate a scope with dummy values that can be used for validation during parsing
     /// </summary>
