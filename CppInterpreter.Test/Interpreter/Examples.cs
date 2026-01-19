@@ -66,6 +66,7 @@ public class Examples
     [DataRow("P11_class_custom.cpp")]
     [DataRow("P14_methods_refs_chaining.cpp")]
     [DataRow("C04_MemberUsage.cpp")]
+    [DataRow("P17_inheritance.cpp")]
     public void Positive_Manual(string filename)
     {
         //Arrange

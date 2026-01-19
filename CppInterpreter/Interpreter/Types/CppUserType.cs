@@ -34,23 +34,6 @@ public class CppUserType : ICppType
         // return other == this;
         return other.Name == Name;
     }
-
-    public Scope<ICppValue> CreateParserScope()
-    {
-        var scope = new Scope<ICppValue>(Closure);
-
-        foreach (var member in _values)
-        {
-            scope.TryAddSymbol(member.MemberInfo.Name, member.MemberInfo.MemberType.CreateParserDummy());
-        }
-
-        foreach (var function in _functions)
-        {
-            scope.TryBindFunction(function.Name, function.Function);
-        }
-        
-        return scope;
-    }
     
     /// <summary>
     /// Create a basic type instance without any special initialization 
@@ -83,6 +66,11 @@ public class CppUserType : ICppType
         );
     }
     
+    public void Destruct(CppUserValue instance)
+    {
+        _destructor?.Invoke(instance, []);
+    }
+    
     public ICppValue CreateParserDummy()
     {
         return new CppUserValue(
@@ -92,10 +80,23 @@ public class CppUserType : ICppType
         );
     }
 
-    public void Destruct(CppUserValue instance)
+    public Scope<ICppValue> CreateParserScope()
     {
-        _destructor?.Invoke(instance, []);
+        var scope = new Scope<ICppValue>(Closure);
+
+        foreach (var member in GetMembers(CppMemberBindingFlags.AnyInstance))
+        {
+            scope.TryAddSymbol(member.Name, member.MemberType.CreateParserDummy());
+        }
+
+        // foreach (var function in _functions)
+        // {
+        //     scope.TryBindFunction(function.Name, function.Function);
+        // }
+        
+        return scope;
     }
+    
 
     private static bool VisibilityMatches(CppMemberBindingFlags flags, MemberVisibility visibility) =>
         visibility switch

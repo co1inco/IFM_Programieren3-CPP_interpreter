@@ -24,6 +24,16 @@ public class CppUserValue : ICppValue, IDisposable
         }
         
         BaseValues = baseValues.ToArray();
+        foreach (var baseValue in BaseValues)
+        {
+            // TODO: currently ignores members with the same name
+            foreach (var baseMember in baseValue.GetCppType
+                         .GetMembers(CppMemberBindingFlags.AnyInstance)
+                         .Where(x => x.Visibility is MemberVisibility.Public or MemberVisibility.Protected))
+            {
+                InstanceScope.TryBindSymbol(baseMember.Name, baseMember.GetValue(baseValue));
+            }
+        }
     }
     
     // public Dictionary<string, ICppValue> MemberValues { get; } = [];
@@ -35,7 +45,10 @@ public class CppUserValue : ICppValue, IDisposable
     public string StringRep() => "<object>";
     public bool ToBool() => true;
 
-    
+    /// <summary>
+    /// Scope containing all member values of this instance.
+    /// This is currently the way how private / protected members are accessed
+    /// </summary>
     public Scope<ICppValue> InstanceScope { get; }
 
     
@@ -85,9 +98,14 @@ public sealed class DefaultAssignmentOperator(CppUserType type) : ICppFunction
         if (parameters is not [CppUserValue other ])
             throw new Exception("Invalid arguments");
 
-        foreach (var member in targetInstance.GetCppType.GetFields(CppMemberBindingFlags.AnyInstance))
+        // foreach (var member in targetInstance.GetCppType.GetFields(CppMemberBindingFlags.AnyInstance))
+        // {
+        //     targetInstance.MemberValues[member.Name].Assign(other.MemberValues[member.Name]);
+        // }
+
+        foreach (var (key, value) in targetInstance.MemberValues)
         {
-            targetInstance.MemberValues[member.Name].Assign(other.MemberValues[member.Name]);
+            value.Assign(other.MemberValues[key]);
         }
         
         return instance;

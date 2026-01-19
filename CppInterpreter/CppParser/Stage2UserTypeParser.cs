@@ -83,6 +83,11 @@ public class UserTypeBuilderContext(
         builder.SetDestructor(userFunction.Function);
         FunctionsToInitialize.Add(userFunction);
     }
+    
+    public void AddBaseType(ICppType type, MemberVisibility visibility) 
+    {
+        builder.AddBaseType(type, visibility);
+    }
 }
 
 public static class Stage2UserTypeParser
@@ -103,6 +108,14 @@ public static class Stage2UserTypeParser
                 namespaceScope,
                 typeScope
             );
+
+            foreach (var baseType in typeDef.Ast.BaseTypes)
+            {
+                if (!typeScope.TryGetSymbol(baseType.Member.Value, out var type))
+                    throw baseType.CreateException($"Type {baseType.Member.Value} not found");
+                
+                builder.AddBaseType(type, baseType.Visibility.ToMemberVisibility());
+            }
             
             ParseMemberVariables(typeDef.Ast.Variables, builder);
             
