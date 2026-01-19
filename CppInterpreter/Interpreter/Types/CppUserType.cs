@@ -2,6 +2,7 @@
 using CppInterpreter.CppParser;
 using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Values;
+using CSharpFunctionalExtensions;
 
 namespace CppInterpreter.Interpreter.Types;
 
@@ -10,8 +11,8 @@ public class CppUserType : ICppType
     // private readonly List<MemberData> _members = [];
     private readonly List<MemberValue> _values = [];
     private readonly List<MemberFunction> _functions = [];
-    private readonly List<ICppFunction> _constructors = [];
-    private ICppFunction? _defaultConstructor;
+    private readonly List<MemberConstructor> _constructors = [];
+    // private ICppFunction? _defaultConstructor;
     private ICppFunction? _destructor;
     private readonly List<BaseType> _baseTypes = [];
     
@@ -51,23 +52,44 @@ public class CppUserType : ICppType
         return scope;
     }
     
+    /// <summary>
+    /// Create a basic type instance without any special initialization 
+    /// </summary>
+    /// <returns></returns>
     public ICppValue Create()
     {
-        if (_defaultConstructor == null)
-                throw new Exception("Type has no default constructor");
-        return _defaultConstructor.Invoke(null, []);
+        return new CppUserValue(
+            this,
+            _values.Select(x => (x.Name, x.Initializer())),
+            _baseTypes.Select(x => x.Type.Create())
+        );
     }
 
+    public ICppValue Create(
+        (string Name, ICppValue Value)[] initialValues,
+        ICppValue[] baseValues
+        )
+    {
+        return new CppUserValue(
+            this,
+            _values.Select(x => (
+                x.Name,
+                initialValues.TryFirst(y => x.Name == y.Name)
+                    .Match(
+                        v => v.Value,
+                        () => x.Initializer())
+            )),
+            baseValues
+        );
+    }
+    
     public ICppValue CreateParserDummy()
     {
-        var instance = new CppUserValue(this);
-
-        foreach (var member in _values)
-        {
-            instance.AddMember(member.MemberInfo.Name, member.MemberInfo.MemberType.CreateParserDummy());
-        }
-        
-        return instance;
+        return new CppUserValue(
+            this,
+            _values.Select(x => (x.Name, x.MemberInfo.MemberType.CreateParserDummy())),
+            []
+        );
     }
 
     public void Destruct(CppUserValue instance)
@@ -123,6 +145,11 @@ public class CppUserType : ICppType
             .Where(x => VisibilityMatches(flags, x.Visibility))
             .SelectMany(x => x.Type.GetFields(flags)));
 
+    // public IEnumerable<ICppFunction> Constructors(CppMemberBindingFlags flags)
+    // {
+    //     
+    // }
+    //
 
     public void BuildMembers(
         Scope<ICppValue> closure,  
@@ -140,14 +167,15 @@ public class CppUserType : ICppType
     }
 
     //TODO: Instead of building an existing type, the builder could create the type once.
-    // To make sure that references already work, a CppDeferedType could be added where the type can later be added  
+    // To make sure that references already work, a CppDeferredType could be added where the type can later be added  
     private class Builder(CppUserType instance) : ICppUserTypeMemberBuilder
     {
 
-        public void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility)
+        public void AddVariable(string name, ICppType type, InterpreterExpressionResult? initializer, MemberVisibility visibility)
         {
-            var memberValue = new CppMemberValue(name, visibility, value);
-            instance._values.Add(new MemberValue(name, memberValue, visibility, initializer));
+            var memberValue = new CppMemberValue(name, visibility, type);
+            var initializerFunc = () => initializer?.Eval(instance.Closure) ?? type.Create();
+            instance._values.Add(new MemberValue(name, memberValue, visibility, initializerFunc));
         }
 
         public IEnumerable<MemberValue> Variables => instance._values;
@@ -157,18 +185,13 @@ public class CppUserType : ICppType
             instance._functions.Add(new MemberFunction(name, func, visibility));
         }
 
-        public void AddConstructor(ICppFunction constructorFunction)
+        public void AddConstructor(ICppFunction constructorFunction, MemberVisibility visibility)
         {
             if (constructorFunction.ReturnType != instance)
                 throw new Exception("Constructor must return instance of itself");
             
-            instance._constructors.Add(constructorFunction);
-
-            if (constructorFunction.ParameterTypes.Length == 0)
-                instance._defaultConstructor = constructorFunction;
+            instance._constructors.Add(new MemberConstructor(constructorFunction, visibility));
         }
-
-        public IEnumerable<ICppFunction> Constructors => instance._constructors;
         
         public void SetDestructor(ICppFunction destructorFunction)
         {
@@ -183,11 +206,13 @@ public class CppUserType : ICppType
     
     // private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
 
-    public record MemberValue(string Name, ICppMemberInfo MemberInfo, MemberVisibility Visibility, InterpreterExpressionResult? Initializer);
+    public record MemberValue(string Name, ICppMemberInfo MemberInfo, MemberVisibility Visibility, Func<ICppValue> Initializer);
     
     private record MemberFunction(string Name, ICppFunction Function, MemberVisibility Visibility);
     
     private record BaseType(ICppType Type, MemberVisibility Visibility);
+    
+    private record MemberConstructor(ICppFunction UserFunction, MemberVisibility Visibility);
 }
 
 public enum MemberVisibility
@@ -200,13 +225,12 @@ public enum MemberVisibility
 
 public interface ICppUserTypeMemberBuilder
 {
-    void AddVariable(string name, ICppType value, InterpreterExpressionResult? initializer, MemberVisibility visibility);
+    void AddVariable(string name, ICppType type, InterpreterExpressionResult? initializer, MemberVisibility visibility);
     IEnumerable<CppUserType.MemberValue> Variables { get; }
     
     void AddFunction(string name, ICppFunction func, MemberVisibility visibility);
 
-    void AddConstructor(ICppFunction constructorFunction);
-    IEnumerable<ICppFunction> Constructors { get; }
+    void AddConstructor(ICppFunction constructorFunction, MemberVisibility visibility);
     
     void SetDestructor(ICppFunction destructorFunction);
 

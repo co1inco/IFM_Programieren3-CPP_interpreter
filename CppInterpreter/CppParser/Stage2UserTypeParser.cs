@@ -21,7 +21,10 @@ public class UserTypeBuilderContext(
     // Scope<ICppValue> instanceParseScope,
     Scope<ICppType> typeScope)
 {
+    private readonly List<(string Name, InterpreterExpressionResult? Initializer)> _variables = [];
     private readonly List<ICppFunction> _functions = [];
+    private readonly List<ICppFunction> _constructors = [];
+    
     
     public List<Stage2FuncDefinition> FunctionsToInitialize { get; } = [];
 
@@ -32,14 +35,14 @@ public class UserTypeBuilderContext(
     public Scope<ICppType>  TypeScope => typeScope;
     
 
-    public IEnumerable<CppUserType.MemberValue> AddedVariables => builder.Variables;
-    
-    public IEnumerable<ICppFunction> AddedConstructors => builder.Constructors;
+    public IEnumerable<(string Name, InterpreterExpressionResult? Initializer)> RegisteredVariables => _variables; 
+    public IEnumerable<ICppFunction> RegisteredConstructors => _constructors;
 
     public IEnumerable<ICppFunction> RegisteredFunctions => _functions;
 
     public void AddVariable(string name, ICppType type, InterpreterExpressionResult? initializer, MemberVisibility visibility)
     {
+        _variables.Add((name, initializer));
         builder.AddVariable(name, type, initializer, visibility);
     }
 
@@ -68,7 +71,7 @@ public class UserTypeBuilderContext(
         if (userFunction is not null)
             FunctionsToInitialize.Add(userFunction);
                 
-        builder.AddConstructor(constructor);
+        builder.AddConstructor(constructor, visibility);
         
         if (visibility == MemberVisibility.Public)
             return namespaceScope.BindFunction(constructor, typeDefinition.Name);
@@ -179,9 +182,9 @@ public static class Stage2UserTypeParser
         ICollection<AstCompoundTypeMember<AstFuncDefinition>> userConstructors,
         UserTypeBuilderContext builder)
     {
-        var membersToInitialize = builder.AddedVariables
+        var membersToInitialize = builder.RegisteredVariables
             .Select(x => (
-                x.MemberInfo.Name,
+                x.Name,
                 x.Initializer))
             .Where(x => x.Initializer is not null)
             .ToArray();
@@ -197,7 +200,8 @@ public static class Stage2UserTypeParser
             );
         }
         
-        if (builder.AddedConstructors.All(x => x.ParameterTypes.Length != 0))
+        // Add a default parameterless constructor if no constructor was provided by teh user 
+        if (builder.RegisteredConstructors.All(x => x.ParameterTypes.Length != 0))
         {
             // If no constructors, add auto generated constructor
             // If any constructor, add private constructor to generate "uninitialized" instance
@@ -214,7 +218,7 @@ public static class Stage2UserTypeParser
             );
         }
 
-        if (!HasCopyConstructor(builder.AddedConstructors, builder.Type))
+        if (!HasCopyConstructor(builder.RegisteredConstructors, builder.Type))
         {
             builder.AddConstructor(new DefaultCopyConstructor(builder.Type), null, MemberVisibility.Public);
         }

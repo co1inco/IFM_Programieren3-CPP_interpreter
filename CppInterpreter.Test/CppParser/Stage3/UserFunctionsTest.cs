@@ -108,9 +108,6 @@ public class UserFunctionsTest
         instanceType.BuildMembers(scope, ((builder, s) =>
         {
             builder.AddVariable("instanceMember", CppTypes.Int32, null, MemberVisibility.Private);
-            builder.AddConstructor(new BaseUserTypeConstructor(
-                instanceType, s, [], null
-            ));
         }));
         
         return instanceType.Create();

@@ -60,14 +60,12 @@ public class InheritanceTest
                 new InterpreterExpressionResult(_ => CppInt32Value.Create(5), CppTypes.Int32),
                 MemberVisibility.Public
             );
-            b.AddConstructor(new BaseUserTypeConstructor(baseType, closure, [], null));
         });
         
         var derivedType = new CppUserType("derivedType");
         derivedType.BuildMembers(valueScope, (b, closure) =>
         {
             b.AddBaseType(baseType, MemberVisibility.Public);
-            b.AddConstructor(new BaseUserTypeConstructor(derivedType, closure, [], null));
         });
 
         var inheritedMember = derivedType.GetFields(CppMemberBindingFlags.Public).First(x => x.Name == "baseValue");

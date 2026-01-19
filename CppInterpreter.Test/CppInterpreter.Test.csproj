@@ -27,6 +27,7 @@
         <None Include="Examples\**\*.cpp">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
+        <None Remove="Examples\tests\pos\P13_ambiguous_overload.exe" />
     </ItemGroup>
 
     <ItemGroup>

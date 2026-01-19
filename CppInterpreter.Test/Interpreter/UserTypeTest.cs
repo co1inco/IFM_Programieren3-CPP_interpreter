@@ -28,16 +28,8 @@ public class UserTypeTest
         
         type.BuildMembers(new Scope<ICppValue>(), (builder, scope) =>
         {
-            builder.AddVariable("x", CppTypes.Int32, null, MemberVisibility.Public);
+            builder.AddVariable("x", CppTypes.Int32, new InterpreterExpressionResult(s => memberValue, CppTypes.Int32 ), MemberVisibility.Public);
             builder.AddFunction("foo", memberFunction, MemberVisibility.Public);
-            
-            builder.AddConstructor(new BaseUserTypeConstructor(
-                type, 
-                scope, 
-                [
-                    ("x", new InterpreterExpressionResult(s => memberValue, CppTypes.Int32 ))
-                ], 
-                null));
         });
         var value = type.Create();
         
@@ -64,15 +56,7 @@ public class UserTypeTest
         
         type.BuildMembers(new Scope<ICppValue>(), (builder, scope) =>
         {
-            builder.AddVariable("x", CppTypes.Int32, null, MemberVisibility.Public);
-            
-            builder.AddConstructor(new BaseUserTypeConstructor(
-                type, 
-                scope, 
-                [
-                    ("x", new InterpreterExpressionResult(s => memberValue, CppTypes.Int32 ))
-                ], 
-                null));
+            builder.AddVariable("x", CppTypes.Int32, new InterpreterExpressionResult(s => memberValue, CppTypes.Int32 ), MemberVisibility.Public);
         });
         
         
@@ -86,7 +70,7 @@ public class UserTypeTest
     
     
     [TestMethod]
-    public void UsedMembersInstance()
+    public void PassInstanceToConstructor()
     {
         //Arrange
 
@@ -106,23 +90,26 @@ public class UserTypeTest
         
         type.BuildMembers(new Scope<ICppValue>(), (builder, scope) =>
         {
-            builder.AddVariable("x", CppTypes.Int32, null, MemberVisibility.Public);
-            
-            builder.AddConstructor(new BaseUserTypeConstructor(
-                type, 
-                scope, 
-                [
-                    ("x", new InterpreterExpressionResult(s => memberValue, CppTypes.Int32 ))
-                ], 
-                constructorFunction));
+            builder.AddVariable(
+                "x", 
+                CppTypes.Int32, 
+                new InterpreterExpressionResult(s => memberValue, CppTypes.Int32 ), 
+                MemberVisibility.Public
+            );
         });
         
         var xField = type
             .GetFields(CppMemberBindingFlags.AnyInstance)
             .First(x => x.Name == "x");
+
+        var constructor = new BaseUserTypeConstructor(
+            type,
+            null!,
+            [],
+            constructorFunction);
         
         //Act
-        var value = type.Create();
+        var value = constructor.Invoke(null, []);
         
         //Assert
         
@@ -142,15 +129,8 @@ public class UserTypeTest
         
         type.BuildMembers(new Scope<ICppValue>(), (builder, scope) =>
         {
-            builder.AddVariable("x", CppTypes.Int32, null, MemberVisibility.Public);
+            builder.AddVariable("x", CppTypes.Int32, new InterpreterExpressionResult(s => new CppInt32Value(5), CppTypes.Int32 ), MemberVisibility.Public);
             builder.AddFunction("operator=", new DefaultAssignmentOperator(type), MemberVisibility.Public);
-            builder.AddConstructor(new BaseUserTypeConstructor(
-                type, 
-                scope, 
-                [
-                    ("x", new InterpreterExpressionResult(s => new CppInt32Value(5), CppTypes.Int32 ))
-                ], 
-                null));
         });
         
         var xField = type
@@ -183,15 +163,13 @@ public class UserTypeTest
         
         type.BuildMembers(new Scope<ICppValue>(), (builder, scope) =>
         {
-            builder.AddVariable("x", memberValue.GetCppType, null, MemberVisibility.Public);
+            builder.AddVariable(
+                "x", 
+                memberValue.GetCppType, 
+                new InterpreterExpressionResult(s => memberValue, memberValue.GetCppType), 
+                MemberVisibility.Public
+            );
             builder.AddFunction("operator=", new DefaultAssignmentOperator(type), MemberVisibility.Public);
-            builder.AddConstructor(new BaseUserTypeConstructor(
-                type, 
-                scope, 
-                [
-                    ("x", new InterpreterExpressionResult(s => memberValue, memberValue.GetCppType ))
-                ], 
-                null));
         });
 
         return type;
