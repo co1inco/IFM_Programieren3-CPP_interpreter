@@ -2,6 +2,7 @@
 using CppInterpreter.Ast;
 using CppInterpreter.Helper;
 using CppInterpreter.Interpreter;
+using CppInterpreter.Interpreter.Functions;
 using CppInterpreter.Interpreter.Types;
 using CppInterpreter.Interpreter.Values;
 using OneOf;
@@ -390,6 +391,12 @@ public static class Stage3StatementParser
                 }, []);
         }
      
+        // if (type.GetConstructors(CppMemberBindingFlags.Public)
+        //         .FirstOrDefault(x => x.ParameterTypes.Length == 0)
+        //         is not { } constructor)
+        //     throw definition.Type.CreateException("Type does not have an accessible parameterless constructor");
+            
+        
         var initializer = definition.Initializer is null
             ? null
             : Stage3ExpressionParser.ParseAssignment(new AstAssignment(
@@ -400,7 +407,9 @@ public static class Stage3StatementParser
         
         return new Stage3Statement(s =>
             {
+                // var instance = constructor.Invoke(null, []);
                 var instance = type.Create();
+                
                 if (!s.TryBindSymbol(definition.Ident.Value, instance))
                     definition.Ident.Throw($"Variable '{definition.Ident.Value}' was already defined");
 

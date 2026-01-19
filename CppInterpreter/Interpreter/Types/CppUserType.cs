@@ -34,7 +34,9 @@ public class CppUserType : ICppType
         // return other == this;
         return other.Name == Name;
     }
-    
+
+    public override string ToString() => $"<{Name}>";
+
     /// <summary>
     /// Create a basic type instance without any special initialization 
     /// </summary>
@@ -102,8 +104,8 @@ public class CppUserType : ICppType
         visibility switch
         {
             MemberVisibility.Public => flags.HasFlag(CppMemberBindingFlags.Public),
-            MemberVisibility.Private => flags.HasFlag(CppMemberBindingFlags.NonPublic),
-            MemberVisibility.Protected => flags.HasFlag(CppMemberBindingFlags.NonPublic),
+            MemberVisibility.Private => flags.HasFlag(CppMemberBindingFlags.Private),
+            MemberVisibility.Protected => flags.HasFlag(CppMemberBindingFlags.Protected),
             _ => throw new ArgumentOutOfRangeException()
         };
     
@@ -147,11 +149,15 @@ public class CppUserType : ICppType
             .Where(x => VisibilityMatches(flags, x.Visibility))
             .SelectMany(x => x.Type.GetFields(flags)));
 
-    // public IEnumerable<ICppFunction> Constructors(CppMemberBindingFlags flags)
-    // {
-    //     
-    // }
-    //
+    public IEnumerable<ICppFunction> GetConstructors(CppMemberBindingFlags flags) =>
+        _constructors
+            .Where(x => VisibilityMatches(flags, x.Visibility))
+            .Select(x => x.UserFunction);
+
+    public IEnumerable<ICppType> GetBaseTypes(CppMemberBindingFlags flags) =>
+        _baseTypes
+            .Where(x => VisibilityMatches(flags, x.Visibility))
+            .Select(x => x.Type);
 
     public void BuildMembers(
         Scope<ICppValue> closure,  

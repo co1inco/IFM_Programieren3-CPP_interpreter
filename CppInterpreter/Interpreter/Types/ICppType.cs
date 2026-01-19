@@ -9,7 +9,7 @@ public interface ICppType : IEquatable<ICppType>
 {
     string Name { get; }   
 
-    ICppConstructor[] Constructor { get; }
+    // ICppConstructor[] Constructor { get; }
     ICppConverter[] Converter { get; }
 
     public bool IsAssignableTo(ICppType other);
@@ -39,6 +39,9 @@ public interface ICppType : IEquatable<ICppType>
     IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags);
     CppMemberValue? GetField(string name, CppMemberBindingFlags flags) => 
         GetFields(flags).FirstOrDefault(m => m.Name == name);
+
+    // TODO: remove default. implement for all types
+    IEnumerable<ICppFunction> GetConstructors(CppMemberBindingFlags flags) => [];
 }
 
 public static class CppTypeExtensions
@@ -72,31 +75,31 @@ public static class CppTypeExtensions
             return true;
         }
         
-        public ICppValueT Construct<T>(params ICppValueT[] parameters) where T : ICppValueT
-        {
-            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
-            
-            var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
-                x.ParameterTypes.FunctionParametersMatch(parameterTypes));
-            
-            if (ctor is null)
-                throw new Exception($"Constructor '{typeof(T)}' not found");
-            
-            return ctor.Construct(parameters);
-        }
-        
-        public ICppValueT Construct(params ICppValue[] parameters)
-        {
-            var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
-            
-            var ctor = type.Constructor.FirstOrDefault(x =>
-                x.ParameterTypes.FunctionParametersMatch(parameterTypes));
-            
-            if (ctor is null)
-                throw new Exception($"Constructor '{type}' not found");
-            
-            return ctor.Construct(parameters);
-        }
+        // public ICppValueT Construct<T>(params ICppValueT[] parameters) where T : ICppValueT
+        // {
+        //     var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
+        //     
+        //     var ctor = T.TypeOf.Constructor.FirstOrDefault(x =>
+        //         x.ParameterTypes.FunctionParametersMatch(parameterTypes));
+        //     
+        //     if (ctor is null)
+        //         throw new Exception($"Constructor '{typeof(T)}' not found");
+        //     
+        //     return ctor.Construct(parameters);
+        // }
+        //
+        // public ICppValueT Construct(params ICppValue[] parameters)
+        // {
+        //     var parameterTypes = parameters.Select<ICppValue, ICppType>(x => x.GetCppType).ToArray();
+        //     
+        //     var ctor = type.Constructor.FirstOrDefault(x =>
+        //         x.ParameterTypes.FunctionParametersMatch(parameterTypes));
+        //     
+        //     if (ctor is null)
+        //         throw new Exception($"Constructor '{type}' not found");
+        //     
+        //     return ctor.Construct(parameters);
+        // }
     }
 }
 

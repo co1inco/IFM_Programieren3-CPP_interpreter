@@ -69,8 +69,11 @@ public class UserTypeBuilderContext(
     public bool AddConstructor(ICppFunction constructor, Stage2FuncDefinition? userFunction, MemberVisibility visibility)
     {
         if (userFunction is not null)
+        {
             FunctionsToInitialize.Add(userFunction);
-                
+            _constructors.Add(userFunction.Function);            
+        }
+        
         builder.AddConstructor(constructor, visibility);
         
         if (visibility == MemberVisibility.Public)

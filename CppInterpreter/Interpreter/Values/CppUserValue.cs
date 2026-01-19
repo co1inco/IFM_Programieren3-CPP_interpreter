@@ -31,7 +31,9 @@ public class CppUserValue : ICppValue, IDisposable
                          .GetMembers(CppMemberBindingFlags.AnyInstance)
                          .Where(x => x.Visibility is MemberVisibility.Public or MemberVisibility.Protected))
             {
-                InstanceScope.TryBindSymbol(baseMember.Name, baseMember.GetValue(baseValue));
+                var value = baseMember.GetValue(baseValue);
+                _memberValues[baseMember.Name] = value;
+                InstanceScope.TryBindSymbol(baseMember.Name, value);
             }
         }
     }
@@ -103,7 +105,8 @@ public sealed class DefaultAssignmentOperator(CppUserType type) : ICppFunction
         //     targetInstance.MemberValues[member.Name].Assign(other.MemberValues[member.Name]);
         // }
 
-        foreach (var (key, value) in targetInstance.MemberValues)
+        foreach (var (key, value) in targetInstance.MemberValues
+                     .Where(x => x.Value is not CppCallableValue))
         {
             value.Assign(other.MemberValues[key]);
         }
@@ -150,14 +153,26 @@ public sealed class BaseUserTypeConstructor : ICppFunction
             throw new Exception("Base constructor is not a member function");
 
         
-
         //TODO: base class constructor before
 
+        var t = _userType.GetBaseTypes(CppMemberBindingFlags.AnyInstance);
+        
+        var baseClasses = _userType
+            .GetBaseTypes(CppMemberBindingFlags.AnyInstance)
+            .Select(x => x
+                        .GetConstructors(CppMemberBindingFlags.DerivedPublicInstance)
+                        .FirstOrDefault(y => y.ParameterTypes.Length == 0)
+                    is { } baseCtor
+                    ? baseCtor.Invoke(null, [])
+                    : x.Create()
+            );
+        
         var newInstance = _userType.Create(
             _initializers
                 .Select(x => (x.Key, x.Value.Eval(_closure)))
                 .ToArray(),
-            []
+            baseClasses
+                .ToArray()
         );
 
         _userFunction?.Invoke(newInstance, parameters);

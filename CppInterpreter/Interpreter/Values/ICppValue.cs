@@ -10,11 +10,14 @@ namespace CppInterpreter.Interpreter.Values;
 public enum CppMemberBindingFlags
 {
     Public = 1,
-    NonPublic = 2,
-    Static = 4,
-    Instance = 8,
-    PublicInstance = 1 | 8,
-    AnyInstance = 1 | 2 | 8
+    Private = 2,
+    Protected = 4,
+    Static = 8,
+    Instance = 16,
+    NonPublic = Private | Protected,
+    PublicInstance = Public | Instance,
+    AnyInstance = Public | NonPublic | Instance,
+    DerivedPublicInstance = Public | Protected | Instance
 }
 
 public interface ICppValue
