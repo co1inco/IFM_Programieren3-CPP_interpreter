@@ -13,6 +13,7 @@ public class CppUserType : ICppType
     private readonly List<ICppFunction> _constructors = [];
     private ICppFunction? _defaultConstructor;
     private ICppFunction? _destructor;
+    private readonly List<BaseType> _baseTypes = [];
     
     public CppUserType(string name)
     {
@@ -97,8 +98,10 @@ public class CppUserType : ICppType
                 .Select(x => new CppMemberFunctionInfo(
                     x.Key,
                     x.First().Visibility,
-                    x.Select(y => y.Function).ToArray()))
-            );
+                    x.Select(y => y.Function).ToArray())))
+            .Concat(_baseTypes
+                .Where(x => VisibilityMatches(flags, x.Visibility))
+                .SelectMany(x => x.Type.GetMembers(flags)));
 
     public IEnumerable<CppMemberFunctionInfo> GetFunctions(CppMemberBindingFlags flags) =>
         _functions
@@ -107,12 +110,18 @@ public class CppUserType : ICppType
             .Select(x => new CppMemberFunctionInfo(
                 x.Key,
                 x.First().Visibility,
-                x.Select(y => y.Function).ToArray()));
+                x.Select(y => y.Function).ToArray()))
+        .Concat(_baseTypes
+            .Where(x => VisibilityMatches(flags, x.Visibility))
+            .SelectMany(x => x.Type.GetFunctions(flags)));
 
     public IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags) =>
         _values
             .Where(x => VisibilityMatches(flags, x.Visibility))
-            .Select(x => new CppMemberValue(x.Name, x.Visibility, x.MemberInfo.MemberType));
+            .Select(x => new CppMemberValue(x.Name, x.Visibility, x.MemberInfo.MemberType))
+        .Concat(_baseTypes
+            .Where(x => VisibilityMatches(flags, x.Visibility))
+            .SelectMany(x => x.Type.GetFields(flags)));
 
 
     public void BuildMembers(
@@ -124,11 +133,14 @@ public class CppUserType : ICppType
         builderFunction(builder, closure);
     }
     
+    // TODO: remove
     public void BuildMemberFunctions(Func<object> builder)
     {
         
     }
 
+    //TODO: Instead of building an existing type, the builder could create the type once.
+    // To make sure that references already work, a CppDeferedType could be added where the type can later be added  
     private class Builder(CppUserType instance) : ICppUserTypeMemberBuilder
     {
 
@@ -162,6 +174,11 @@ public class CppUserType : ICppType
         {
             instance._destructor = destructorFunction;
         }
+
+        public void AddBaseType(ICppType type, MemberVisibility visibility)
+        {
+            instance._baseTypes.Add(new BaseType(type, visibility));
+        }
     }
     
     // private record MemberData(ICppMemberInfo MemberInfo, MemberVisibility Visibility);
@@ -169,6 +186,8 @@ public class CppUserType : ICppType
     public record MemberValue(string Name, ICppMemberInfo MemberInfo, MemberVisibility Visibility, InterpreterExpressionResult? Initializer);
     
     private record MemberFunction(string Name, ICppFunction Function, MemberVisibility Visibility);
+    
+    private record BaseType(ICppType Type, MemberVisibility Visibility);
 }
 
 public enum MemberVisibility
@@ -190,4 +209,6 @@ public interface ICppUserTypeMemberBuilder
     IEnumerable<ICppFunction> Constructors { get; }
     
     void SetDestructor(ICppFunction destructorFunction);
+
+    void AddBaseType(ICppType type, MemberVisibility visibility);
 }

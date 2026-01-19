@@ -99,7 +99,7 @@ expression : '(' brace=expression ')'
 		   // Coma 
 		   // Utility
 		   | atom
-		   | literal; //TODO
+		   | literal;
 
 
 atom : IDENTIFIER;

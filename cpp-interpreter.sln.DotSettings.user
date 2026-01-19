@@ -24,14 +24,10 @@
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AType_002ECoreCLR_002Ecs_002Fl_003AC_0021_003FUsers_003FColin_003FAppData_003FRoaming_003FJetBrains_003FRider2025_002E3_003Fresharper_002Dhost_003FSourcesCache_003F76bfc310d2c1ee89b5a3bb7f318b5c55015f66ebdf298211386b17a57fc25b_003FType_002ECoreCLR_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/CodeInspection/ExcludedFiles/FilesAndFoldersToSkip2/=7020124F_002D9FFC_002D4AC3_002D8F3D_002DAAB8E0240759_002Ff_003AType_002Ecs_002Fl_003AC_0021_003FUsers_003FColin_003FAppData_003FRoaming_003FJetBrains_003FRider2025_002E3_003Fresharper_002Dhost_003FSourcesCache_003Fe22fcaf21f5efd4c8fffde98fc15ebc2453e36f1bf7618eb72e47a63bd0facf_003FType_002Ecs/@EntryIndexedValue">ForceIncluded</s:String>
 	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=1e3767a6_002D9f6d_002D4104_002Da10f_002D6996eca809dd/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="Positive_Manual" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.Examples.Positive_Manual&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.UserTypesTest.CustomConstructorConstructor&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.CppParser.Stage3.UserFunctionsTest.BuildInstanceUserFunction&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.UserTypesTest.WithField_Initialized&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;VsTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::executor://mstestadapter/v4#CppInterpreter.Test.Interpreter.Examples.Positive_Manual&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;MSTest::FDF941E5-68C5-4CFE-8363-4ED175BA56AD::net10.0::CppInterpreter.Test.Interpreter.Examples&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
+  &lt;And&gt;&#xD;
+    &lt;Namespace&gt;CppInterpreter.Test&lt;/Namespace&gt;&#xD;
+    &lt;Project Location="G:\dev\IFM-Semester3\Compilerbau\8\cpp-interpreter\CppInterpreter.Test" Presentation="&amp;lt;CppInterpreter.Test&amp;gt;" /&gt;&#xD;
+  &lt;/And&gt;&#xD;
 &lt;/SessionState&gt;</s:String>
 	
 	
