@@ -1,5 +1,6 @@
 ﻿grammar Grammar;
 
+//program : topLevelStatement* EOF;
 program : topLevelStatement*;
 
 replStatement : statement | expression | topLevelStatement;
@@ -161,6 +162,9 @@ IDENTIFIER : [a-zA-Z_][a-zA-Z0-9_]*;
 INCLUDE: '#include' .*? '\n' -> skip;
 
 SPACES1: [ \t\n\r\f]+ -> skip;
+
+//BUG: expecting newline means that a // comment can not be at the end of input, without trailing \n
 COMMENT: '//' .*? '\n' -> skip;
+//COMMENT: '//' .*? ('\n'|EOF) -> skip;
 ML_COMMENT: '/*' .*? '*/' -> skip;
 

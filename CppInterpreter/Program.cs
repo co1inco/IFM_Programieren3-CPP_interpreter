@@ -80,8 +80,8 @@ OneOf.OneOf<AstStatement, AstExpression, Quit> ReadUserInput()
     var line = "";
     while (true)
     {
-        line += Console.ReadLine();
-
+        line += Console.ReadLine() + "\n"; // newLine prevents crash when entering // comments
+        
         if (line == "quit")
             return new Quit();
         

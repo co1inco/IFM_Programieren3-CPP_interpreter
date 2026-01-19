@@ -105,8 +105,11 @@ public static class AstParser
             return ParseContinue(continueStmt);
         if (ctx.forStmt() is {} forStmt)
             return ParseFor(forStmt);
-            throw new UnexpectedAntlrStateException(ctx, "'for' loop not implemented");
-            
+
+        if (ctx.children is null)
+            return new AstExpression(new AstLiteral(0));
+        
+        
         throw new UnexpectedAntlrStateException(ctx, "Unknown statement variation");
     }
     
