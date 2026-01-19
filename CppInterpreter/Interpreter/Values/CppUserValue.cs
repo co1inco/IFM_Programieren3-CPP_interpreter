@@ -23,10 +23,13 @@ public class CppUserValue : ICppValue, IDisposable
             InstanceScope.TryBindSymbol(name, value);
         }
         
+        BaseValues = baseValues.ToArray();
     }
     
     // public Dictionary<string, ICppValue> MemberValues { get; } = [];
     public IReadOnlyDictionary<string, ICppValue> MemberValues => _memberValues;
+    
+    public ICppValue[] BaseValues { get; }
     
     public ICppType GetCppType { get; }
     public string StringRep() => "<object>";

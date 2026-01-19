@@ -113,7 +113,8 @@ public class CppUserType : ICppType
                 .Select(x => new CppMemberValue(
                     x.Name, 
                     x.Visibility, 
-                    x.MemberInfo.MemberType)))
+                    x.MemberInfo.MemberType,
+                    this)))
             .Concat(_functions
                 .Where(x => VisibilityMatches(flags, x.Visibility))
                 .GroupBy(x => x.Name)
@@ -140,7 +141,7 @@ public class CppUserType : ICppType
     public IEnumerable<CppMemberValue> GetFields(CppMemberBindingFlags flags) =>
         _values
             .Where(x => VisibilityMatches(flags, x.Visibility))
-            .Select(x => new CppMemberValue(x.Name, x.Visibility, x.MemberInfo.MemberType))
+            .Select(x => new CppMemberValue(x.Name, x.Visibility, x.MemberInfo.MemberType, this))
         .Concat(_baseTypes
             .Where(x => VisibilityMatches(flags, x.Visibility))
             .SelectMany(x => x.Type.GetFields(flags)));
@@ -173,7 +174,7 @@ public class CppUserType : ICppType
 
         public void AddVariable(string name, ICppType type, InterpreterExpressionResult? initializer, MemberVisibility visibility)
         {
-            var memberValue = new CppMemberValue(name, visibility, type);
+            var memberValue = new CppMemberValue(name, visibility, type, instance);
             var initializerFunc = () => initializer?.Eval(instance.Closure) ?? type.Create();
             instance._values.Add(new MemberValue(name, memberValue, visibility, initializerFunc));
         }

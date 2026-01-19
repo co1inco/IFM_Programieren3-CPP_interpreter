@@ -144,20 +144,34 @@ public class CppMemberFunctionInfo(string name, MemberVisibility visibility, ICp
 }
 
 
-public class CppMemberValue(string name, MemberVisibility visibility, ICppType type) : ICppMemberInfo
+public class CppMemberValue(string name, MemberVisibility visibility, ICppType type, ICppType instanceType) : ICppMemberInfo
 {
     public string Name { get; } = name;
     public ICppType MemberType { get; } = type;
+    public ICppType InstanceType { get; } = instanceType;
     public MemberVisibility Visibility => visibility;
 
     public ICppValue GetValue(ICppValue instance)
     {
-        if (instance is not CppUserValue userValue)
-            throw new Exception("Instance is not a user type");
+        var userValue = FindUserValue(instance);       
         
         if (!userValue.MemberValues.TryGetValue(Name, out var value))
             throw new Exception($"Member value '{Name}' not found");
 
         return value;
+    }
+
+    private CppUserValue FindUserValue(ICppValue instance)
+    {
+        if (instance is not CppUserValue userValue)
+            throw new Exception("Instance is not a user type");
+            
+        if (instance.GetCppType.Equals(InstanceType))
+            return userValue;
+
+        if (userValue.BaseValues.FirstOrDefault(x => x.GetCppType == InstanceType) is CppUserValue baseValue)
+            return baseValue;
+        
+        throw new Exception("Instance is not a user type");
     }
 }
