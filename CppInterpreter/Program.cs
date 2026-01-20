@@ -80,7 +80,7 @@ OneOf.OneOf<AstStatement, AstExpression, Quit> ReadUserInput()
     var line = "";
     while (true)
     {
-        line += Console.ReadLine() + "\n"; // newLine prevents crash when entering // comments
+        line += Console.ReadLine(); 
         
         if (line == "quit")
             return new Quit();
@@ -88,7 +88,7 @@ OneOf.OneOf<AstStatement, AstExpression, Quit> ReadUserInput()
         if (string.IsNullOrWhiteSpace(line))
             continue;
         
-        var lexer = new GrammarLexer(CharStreams.fromString(line));
+        var lexer = new GrammarLexer(CharStreams.fromString(line + "\n")); // newLine prevents crash when entering // comments
         var aParser = new GrammarParser(new CommonTokenStream(lexer));
         aParser.RemoveErrorListeners();
         aParser.AddErrorListener(new AntlrErrorListener());
