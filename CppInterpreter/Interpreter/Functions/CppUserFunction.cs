@@ -53,7 +53,7 @@ public sealed class CppUserFunction : ICppFunction
         
         foreach (var parameter in ParameterTypes)
         {
-            if (!scope.TryBindSymbol(parameter.Name, parameter.Type.Create()))
+            if (!scope.TryBindSymbol(parameter.Name, parameter.Type.CreateParserDummy()))
                 throw new Exception("Duplicate parameter name");
         }
         

@@ -41,6 +41,8 @@ public class CppUserValue : ICppValue, IDisposable
     // public Dictionary<string, ICppValue> MemberValues { get; } = [];
     public IReadOnlyDictionary<string, ICppValue> MemberValues => _memberValues;
     
+    // TODO: This is probably not necessary. slicing is done through an assignment which would simply copy the values from here
+    //  On the other hand, The scopes are used for visibility as well, so maybe not?
     public ICppValue[] BaseValues { get; }
     
     public ICppType GetCppType { get; }

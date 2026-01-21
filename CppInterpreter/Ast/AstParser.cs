@@ -255,6 +255,9 @@ public static class AstParser
             ? new AstTypeIdentifier("void", false, ctx)
             : ParseTypeUsage(ctx.typeIdentifierUsage());
 
+        if (ctx.parameterList() is null)
+            throw new ParserException("Function declaration missing parameter list", ctx);
+        
         return new AstFuncDefinition(
             new AstIdentifier(ctx.ident.Text, ctx),
             returnType,

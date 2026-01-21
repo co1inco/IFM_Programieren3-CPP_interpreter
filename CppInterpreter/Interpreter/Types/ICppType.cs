@@ -14,17 +14,26 @@ public interface ICppType : IEquatable<ICppType>
 
     public bool IsAssignableTo(ICppType other);
 
+    /// <summary>
+    /// Creates an instance uninitialized instance of a type
+    /// </summary>
+    /// <returns></returns>
     ICppValue Create();
 
+    /// <summary>
+    /// Create a dummy instance for Semantic analysis. Not intended for use in Interpretation 
+    /// </summary>
+    /// <returns></returns>
     ICppValue CreateParserDummy();
 
     
     /// <summary>
-    /// Generate a scope with dummy values that can be used for validation during parsing
+    /// Generate a scope with dummy values that can be used for Semantic analysis
     /// </summary>
     /// <returns></returns>
     Scope<ICppValue> CreateParserScope() => new();
 
+    
     IEnumerable<ICppMemberInfo> GetMembers(CppMemberBindingFlags flags);
 
     ICppMemberInfo? GetMember(string name, CppMemberBindingFlags flags) => 
@@ -55,6 +64,7 @@ public static class CppTypeExtensions
             ICppType[] args, 
             [NotNullWhen(true)] out ICppFunction? function)
         {
+            
             if (type.GetFunction(name, flags) is not { } functionInfo)
             {
                 function = null;

@@ -66,6 +66,7 @@ public static class Stage3ExpressionParser
         if (target.ResultType.Equals(CppTypes.Callable))
             assignment.Throw("Can not assign to callable");
 
+        // TODO: remove this. Instead check if type has a matching assignment overload
         if (!target.ResultType.Equals(inner.ResultType))
             assignment.Throw($"Incompatible types. Expected '{target.ResultType}' got '{inner.ResultType}'");
         
@@ -78,7 +79,7 @@ public static class Stage3ExpressionParser
                 
                 var exprValue = inner.Eval(s);
                 
-                // TODO: Can this be outside the interpreter or will this interfere with inheritance?
+                // TODO: Can this be outside the interpreter or will this interfere with inheritance (virtual members)?
                 // TODO: change assignment resolution. The generated (all?) overloads should be resolved to base class assignments 
                 var function = targetValue.GetCppType.GetFunction("operator=", CppMemberBindingFlags.PublicInstance);
                 if (function is null)
@@ -109,7 +110,7 @@ public static class Stage3ExpressionParser
         var right = ParseExpression(op.Right, scope);
 
         // Special handler for short-circuiting && and || (don't evaluate unnecessary)
-        if (op.Operator.TryPickT3(out var boolOp, out var remaining))
+        if (op.Operator.TryPickT3(out AstBinOpOperator.BoolOp boolOp, out _))
         {
             // check if type has an overload for the operator. short-circuit is not supported for custom operators 
             var functionName = $"operator{BoolOpString(boolOp)}";
